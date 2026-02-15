@@ -26,21 +26,39 @@ class MessengerWebhookController extends Controller
             'token_expected' => $verifyToken,
             'challenge' => $challenge,
             'token_match' => $token === $verifyToken,
+            'all_params' => $request->all(),
         ]);
 
-        // Facebook يتطلب أن يكون الـ mode = 'subscribe' والـ token متطابق
+        // التحقق من وجود جميع المعاملات المطلوبة
+        if (empty($mode) || empty($token) || empty($challenge)) {
+            Log::warning('Messenger Webhook verification failed - missing parameters', [
+                'mode' => $mode,
+                'token' => $token,
+                'challenge' => $challenge,
+            ]);
+            return response('Bad Request', 400);
+        }
+
+        // Facebook يتطلب أن يكون الـ mode = 'subscribe' والـ token متطابق تماماً
         if ($mode === 'subscribe' && $token === $verifyToken) {
-            Log::info('Messenger Webhook verified successfully');
-            // إرجاع الـ challenge كنص عادي (plain text)
-            return response($challenge, 200)
-                ->header('Content-Type', 'text/plain');
+            Log::info('Messenger Webhook verified successfully', [
+                'challenge' => $challenge,
+            ]);
+            
+            // إرجاع الـ challenge كنص خام (Facebook يتطلب هذا التنسيق بالضبط)
+            return response($challenge, 200, [
+                'Content-Type' => 'text/plain',
+            ]);
         }
 
         Log::warning('Messenger Webhook verification failed', [
             'mode' => $mode,
+            'mode_match' => $mode === 'subscribe',
             'token_match' => $token === $verifyToken,
             'expected_token' => $verifyToken,
             'received_token' => $token,
+            'token_length_expected' => strlen($verifyToken ?? ''),
+            'token_length_received' => strlen($token ?? ''),
         ]);
 
         return response('Forbidden', 403);

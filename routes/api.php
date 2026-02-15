@@ -21,3 +21,12 @@ Route::prefix('webhook')->group(function () {
     Route::post('/messenger', [MessengerWebhookController::class, 'handle']);
 });
 
+// مسار اختبار للتحقق من الإعدادات (يمكن حذفه لاحقاً)
+Route::get('/webhook/test-config', function () {
+    return response()->json([
+        'verify_token' => config('services.messenger.verify_token'),
+        'has_token' => !empty(config('services.messenger.verify_token')),
+        'token_length' => strlen(config('services.messenger.verify_token') ?? ''),
+    ]);
+});
+
