@@ -19,14 +19,28 @@ class MessengerWebhookController extends Controller
         $token = $request->query('hub_verify_token');
         $challenge = $request->query('hub_challenge');
 
+        // تسجيل معلومات الطلب للمساعدة في التشخيص
+        Log::info('Messenger Webhook verification attempt', [
+            'mode' => $mode,
+            'token_received' => $token,
+            'token_expected' => $verifyToken,
+            'challenge' => $challenge,
+            'token_match' => $token === $verifyToken,
+        ]);
+
+        // Facebook يتطلب أن يكون الـ mode = 'subscribe' والـ token متطابق
         if ($mode === 'subscribe' && $token === $verifyToken) {
             Log::info('Messenger Webhook verified successfully');
-            return response($challenge, 200);
+            // إرجاع الـ challenge كنص عادي (plain text)
+            return response($challenge, 200)
+                ->header('Content-Type', 'text/plain');
         }
 
         Log::warning('Messenger Webhook verification failed', [
             'mode' => $mode,
             'token_match' => $token === $verifyToken,
+            'expected_token' => $verifyToken,
+            'received_token' => $token,
         ]);
 
         return response('Forbidden', 403);
