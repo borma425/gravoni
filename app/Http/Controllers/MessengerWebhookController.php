@@ -13,7 +13,8 @@ class MessengerWebhookController extends Controller
      */
     public function verify(Request $request)
     {
-        $verifyToken = config('services.messenger.verify_token');
+        // قراءة القيمة من config، وإذا كانت null نقرأها مباشرة من .env
+        $verifyToken = config('services.messenger.verify_token') ?? env('MESSENGER_VERIFY_TOKEN');
 
         $mode = $request->query('hub_mode');
         $token = $request->query('hub_verify_token');
