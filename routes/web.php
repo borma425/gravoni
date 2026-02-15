@@ -13,3 +13,13 @@ Route::get('/test-messenger-config', function () {
         'has_token' => !empty(config('services.messenger.verify_token')),
     ];
 });
+
+// سياسة الخصوصية
+Route::get('/privacy-policy', function () {
+    return view('privacy-policy');
+})->name('privacy-policy');
+
+// شروط الخدمة
+Route::get('/terms-of-service', function () {
+    return view('terms-of-service');
+})->name('terms-of-service');
