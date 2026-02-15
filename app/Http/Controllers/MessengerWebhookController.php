@@ -106,8 +106,8 @@ class MessengerWebhookController extends Controller
                 'text' => $messageText,
             ]);
 
-            // يمكنك إضافة منطق الرد هنا
-            // $this->sendReply($senderId, "تم استلام رسالتك: $messageText");
+            // الرد التلقائي على الرسائل
+            $this->handleAutoReply($senderId, $messageText);
         }
 
         // معالجة الـ Postback (الأزرار)
@@ -117,7 +117,54 @@ class MessengerWebhookController extends Controller
                 'sender_id' => $senderId,
                 'payload' => $postbackPayload,
             ]);
+
+            // الرد على الأزرار
+            $this->handlePostback($senderId, $postbackPayload);
         }
+    }
+
+    /**
+     * معالجة الرد التلقائي
+     */
+    protected function handleAutoReply(string $senderId, string $messageText)
+    {
+        // تحويل النص إلى حروف صغيرة للمقارنة
+        $lowerText = mb_strtolower($messageText);
+
+        // ردود تلقائية بناءً على الكلمات المفتاحية
+        if (str_contains($lowerText, 'مرحبا') || str_contains($lowerText, 'هلا') || str_contains($lowerText, 'السلام')) {
+            $reply = "مرحباً بك! 👋\nكيف يمكنني مساعدتك اليوم؟";
+        } elseif (str_contains($lowerText, 'سعر') || str_contains($lowerText, 'اسعار') || str_contains($lowerText, 'كم')) {
+            $reply = "للاستفسار عن الأسعار، يرجى زيارة موقعنا أو التواصل مع فريق المبيعات.\n📞 سنتواصل معك قريباً!";
+        } elseif (str_contains($lowerText, 'شكر')) {
+            $reply = "شكراً لتواصلك معنا! 🙏\nنحن سعداء بخدمتك.";
+        } elseif (str_contains($lowerText, 'مساعد') || str_contains($lowerText, 'help')) {
+            $reply = "بالتأكيد! 😊\nيمكنك:\n• الاستفسار عن الخدمات\n• طلب معلومات\n• التحدث مع فريق الدعم\n\nكيف يمكنني مساعدتك؟";
+        } else {
+            // رد افتراضي
+            $reply = "شكراً لرسالتك! 📩\nتم استلام رسالتك وسيتم الرد عليك في أقرب وقت.\n\nللاستفسارات العاجلة، يرجى الاتصال بنا مباشرة.";
+        }
+
+        $this->sendReply($senderId, $reply);
+    }
+
+    /**
+     * معالجة الـ Postback (الأزرار)
+     */
+    protected function handlePostback(string $senderId, string $payload)
+    {
+        switch ($payload) {
+            case 'GET_STARTED':
+                $reply = "أهلاً وسهلاً بك! 🎉\nمرحباً بك في صفحتنا.\nكيف يمكننا مساعدتك اليوم؟";
+                break;
+            case 'CONTACT_US':
+                $reply = "للتواصل معنا:\n📧 البريد: info@gravoni.com\n🌐 الموقع: gravoni.com";
+                break;
+            default:
+                $reply = "شكراً لتفاعلك! كيف يمكنني مساعدتك؟";
+        }
+
+        $this->sendReply($senderId, $reply);
     }
 
     /**
