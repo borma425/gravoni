@@ -128,6 +128,15 @@ class MessengerWebhookController extends Controller
      */
     protected function handleAutoReply(string $senderId, string $messageText)
     {
+        // التحقق من تفعيل الرد التلقائي
+        if (!config('services.messenger.auto_reply_enabled', true)) {
+            Log::info('Auto-reply is disabled, skipping reply', [
+                'sender_id' => $senderId,
+                'message' => $messageText,
+            ]);
+            return;
+        }
+
         // تحويل النص إلى حروف صغيرة للمقارنة
         $lowerText = mb_strtolower($messageText);
 
