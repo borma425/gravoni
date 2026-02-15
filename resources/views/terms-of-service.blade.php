@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شروط الخدمة - {{ config('app.name', 'Gravoni') }}</title>
+    <title>Terms of Service - {{ config('app.name', 'Gravoni') }}</title>
     <style>
         * {
             margin: 0;
@@ -36,20 +36,20 @@
             color: #34495e;
             margin-top: 30px;
             margin-bottom: 15px;
-            font-size: 1.8em;
+            font-size: 1.5em;
         }
         h3 {
             color: #555;
             margin-top: 20px;
             margin-bottom: 10px;
-            font-size: 1.3em;
+            font-size: 1.2em;
         }
         p {
             margin-bottom: 15px;
             text-align: justify;
         }
         ul, ol {
-            margin-right: 30px;
+            margin-left: 30px;
             margin-bottom: 15px;
         }
         li {
@@ -61,10 +61,31 @@
             margin-bottom: 30px;
             padding: 10px;
             background: #ecf0f1;
-            border-right: 4px solid #e74c3c;
+            border-left: 4px solid #e74c3c;
+        }
+        .highlight-box {
+            background: #fef9e7;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #f1c40f;
+        }
+        .warning-box {
+            background: #fdedec;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #e74c3c;
+        }
+        .info-box {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
         }
         .contact-info {
-            background: #ffe8e8;
+            background: #fadbd8;
             padding: 20px;
             border-radius: 5px;
             margin-top: 30px;
@@ -79,149 +100,258 @@
         .back-link:hover {
             text-decoration: underline;
         }
-        .warning {
-            background: #fff3cd;
-            border-right: 4px solid #ffc107;
-            padding: 15px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
             margin: 20px 0;
-            border-radius: 5px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #e74c3c;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>شروط الخدمة</h1>
+        <h1>Terms of Service</h1>
         
         <div class="last-updated">
-            آخر تحديث: {{ date('Y-m-d') }}
+            Last Updated: {{ date('F d, Y') }}
         </div>
 
         <section>
-            <h2>1. القبول</h2>
+            <h2>1. Acceptance of Terms</h2>
             <p>
-                من خلال الوصول إلى واستخدام موقع {{ config('app.name', 'Gravoni') }} وخدماته، 
-                فإنك تقبل وتوافق على الالتزام بشروط الخدمة هذه. إذا كنت لا توافق على هذه الشروط، 
-                يرجى عدم استخدام خدماتنا.
+                By using {{ config('app.name', 'Gravoni') }}'s automated Messenger service, you agree to be bound 
+                by these Terms of Service. If you do not agree to these terms, please do not use our service.
             </p>
         </section>
 
         <section>
-            <h2>2. استخدام الخدمة</h2>
-            <h3>2.1 الأهلية</h3>
-            <p>يجب أن تكون:</p>
+            <h2>2. Description of Service</h2>
+            <p>
+                {{ config('app.name', 'Gravoni') }} provides an automated messaging service through Facebook Messenger. 
+                Our service includes:
+            </p>
             <ul>
-                <li>عمرك 18 عاماً على الأقل، أو لديك موافقة الوالدين</li>
-                <li>قادراً قانونياً على الدخول في اتفاقية ملزمة</li>
-                <li>غير محظور من استخدام الخدمة بموجب القانون</li>
+                <li><strong>Automated Responses:</strong> Instant replies to your messages using AI technology</li>
+                <li><strong>Customer Support:</strong> Basic automated customer service assistance</li>
+                <li><strong>Information Delivery:</strong> Automated information about our products and services</li>
             </ul>
 
-            <h3>2.2 حساب المستخدم</h3>
-            <p>أنت مسؤول عن:</p>
-            <ul>
-                <li>الحفاظ على سرية معلومات حسابك</li>
-                <li>جميع الأنشطة التي تحدث تحت حسابك</li>
-                <li>إبلاغنا فوراً بأي استخدام غير مصرح به</li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>3. قواعد الاستخدام</h2>
-            <div class="warning">
-                <strong>تحذير:</strong> يحظر عليك استخدام خدماتنا لأي غرض غير قانوني أو غير مصرح به.
+            <div class="info-box">
+                <strong>Important:</strong> This is an automated service. Responses are generated by artificial 
+                intelligence (AI) systems including OpenAI and Google Gemini. Responses may not always be 
+                accurate or complete.
             </div>
-            <p>يُحظر عليك:</p>
+        </section>
+
+        <section>
+            <h2>3. AI-Powered Service</h2>
+            <p>Our automated messaging service uses artificial intelligence to process and respond to your messages.</p>
+            
+            <h3>3.1 Third-Party AI Providers</h3>
+            <p>Your messages may be processed by:</p>
+            <table>
+                <tr>
+                    <th>Provider</th>
+                    <th>Purpose</th>
+                    <th>Privacy Policy</th>
+                </tr>
+                <tr>
+                    <td>OpenAI</td>
+                    <td>Natural language processing and response generation</td>
+                    <td><a href="https://openai.com/privacy" target="_blank">View Policy</a></td>
+                </tr>
+                <tr>
+                    <td>Google Gemini</td>
+                    <td>AI-powered conversation and response generation</td>
+                    <td><a href="https://policies.google.com/privacy" target="_blank">View Policy</a></td>
+                </tr>
+            </table>
+
+            <h3>3.2 AI Limitations</h3>
+            <div class="warning-box">
+                <p><strong>Please be aware:</strong></p>
+                <ul>
+                    <li>AI-generated responses may contain errors or inaccuracies</li>
+                    <li>The AI may not understand complex or ambiguous requests</li>
+                    <li>Responses should not be considered professional advice (legal, medical, financial, etc.)</li>
+                    <li>For critical matters, please contact a human representative</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>4. User Responsibilities</h2>
+            <p>When using our service, you agree to:</p>
+            
+            <h3>4.1 Acceptable Use</h3>
             <ul>
-                <li>انتهاك أي قوانين أو لوائح محلية أو دولية</li>
-                <li>انتهاك حقوق الملكية الفكرية للآخرين</li>
-                <li>إرسال محتوى ضار أو خبيث أو فيروسي</li>
-                <li>محاولة الوصول غير المصرح به إلى أنظمتنا</li>
-                <li>استخدام الخدمة لإرسال رسائل غير مرغوب فيها</li>
-                <li>انتحال شخصية أي شخص أو كيان</li>
-                <li>التدخل في عمل الخدمة أو تعطيلها</li>
+                <li>Use the service only for lawful purposes</li>
+                <li>Provide accurate information when requested</li>
+                <li>Not attempt to abuse, spam, or overload the service</li>
+                <li>Not use the service to harass, threaten, or harm others</li>
+            </ul>
+
+            <h3>4.2 Prohibited Activities</h3>
+            <div class="warning-box">
+                <p>You may NOT use our service to:</p>
+                <ul>
+                    <li>Send illegal, harmful, or offensive content</li>
+                    <li>Attempt to extract proprietary information or prompts</li>
+                    <li>Impersonate others or misrepresent your identity</li>
+                    <li>Interfere with or disrupt the service</li>
+                    <li>Attempt to bypass any security measures</li>
+                    <li>Use automated tools to interact with the service (except as intended)</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>5. Data Handling</h2>
+            
+            <h3>5.1 What We Collect</h3>
+            <p>When you use our Messenger service, we collect:</p>
+            <ul>
+                <li>Your messages (text content)</li>
+                <li>Your Facebook Messenger User ID</li>
+                <li>Timestamps of interactions</li>
+            </ul>
+
+            <h3>5.2 How We Use Your Data</h3>
+            <ul>
+                <li>To provide automated responses to your messages</li>
+                <li>To process your messages through AI services (OpenAI, Google Gemini)</li>
+                <li>To improve our service quality</li>
+            </ul>
+
+            <h3>5.3 Data Retention</h3>
+            <div class="highlight-box">
+                <p><strong>Retention Period:</strong> We retain your message data for a maximum of <strong>30 days</strong>.</p>
+                <p>After this period, your data is automatically and permanently deleted.</p>
+            </div>
+
+            <h3>5.4 Your Data Rights</h3>
+            <p>You have the right to:</p>
+            <ul>
+                <li><strong>Request Deletion:</strong> Ask us to delete all your data at any time</li>
+                <li><strong>Access Your Data:</strong> Request a copy of your stored data</li>
+                <li><strong>Opt-Out:</strong> Stop using the service at any time</li>
+            </ul>
+
+            <div class="info-box">
+                <p><strong>How to Request Data Deletion:</strong></p>
+                <ol>
+                    <li>Send "DELETE MY DATA" to our Messenger</li>
+                    <li>Or email: privacy@gravoni.com</li>
+                </ol>
+                <p>Deletion requests are processed within 48 hours.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>6. Intellectual Property</h2>
+            <p>
+                All content, features, and functionality of our service are owned by {{ config('app.name', 'Gravoni') }} 
+                and are protected by copyright, trademark, and other intellectual property laws.
+            </p>
+            <p>
+                You retain ownership of the messages you send to us. By sending messages, you grant us a 
+                limited license to process them for the purpose of providing our automated response service.
+            </p>
+        </section>
+
+        <section>
+            <h2>7. Disclaimer of Warranties</h2>
+            <div class="warning-box">
+                <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND.</p>
+                <p>We do not guarantee that:</p>
+                <ul>
+                    <li>The service will be uninterrupted or error-free</li>
+                    <li>AI-generated responses will be accurate or appropriate</li>
+                    <li>The service will meet your specific requirements</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>8. Limitation of Liability</h2>
+            <p>
+                To the maximum extent permitted by law, {{ config('app.name', 'Gravoni') }} shall not be liable 
+                for any indirect, incidental, special, consequential, or punitive damages resulting from:
+            </p>
+            <ul>
+                <li>Your use or inability to use the service</li>
+                <li>Any errors or inaccuracies in AI-generated responses</li>
+                <li>Unauthorized access to your data</li>
+                <li>Any third-party conduct or content</li>
             </ul>
         </section>
 
         <section>
-            <h2>4. المحتوى</h2>
-            <h3>4.1 محتوى المستخدم</h3>
-            <p>
-                أنت تحتفظ بحقوق الملكية للمحتوى الذي تنشره. من خلال نشر المحتوى، 
-                تمنحنا ترخيصاً غير حصري لاستخدامه وتوزيعه وعرضه.
-            </p>
-
-            <h3>4.2 محتوى الخدمة</h3>
-            <p>
-                جميع حقوق الملكية الفكرية في الخدمة ومحتواها مملوكة لنا أو لمرخصينا. 
-                لا يجوز لك نسخ أو تعديل أو توزيع محتوى الخدمة دون إذن كتابي.
-            </p>
-        </section>
-
-        <section>
-            <h2>5. إخلاء المسؤولية</h2>
-            <p>
-                نقدم الخدمة "كما هي" و"كما هو متاح". لا نضمن أن الخدمة ستكون:
-            </p>
+            <h2>9. Termination</h2>
+            <p>We reserve the right to:</p>
             <ul>
-                <li>غير متقطعة أو خالية من الأخطاء</li>
-                <li>آمنة من الفيروسات أو المكونات الضارة</li>
-                <li>تلبي احتياجاتك الخاصة</li>
+                <li>Suspend or terminate your access to the service at any time</li>
+                <li>Modify or discontinue the service without notice</li>
+                <li>Block users who violate these terms</li>
             </ul>
+        </section>
+
+        <section>
+            <h2>10. Changes to Terms</h2>
             <p>
-                لن نكون مسؤولين عن أي أضرار مباشرة أو غير مباشرة ناتجة عن استخدام أو عدم القدرة 
-                على استخدام الخدمة.
+                We may update these Terms of Service at any time. Changes will be effective immediately 
+                upon posting to this page. Your continued use of the service after changes constitutes 
+                acceptance of the new terms.
             </p>
         </section>
 
         <section>
-            <h2>6. الحد من المسؤولية</h2>
+            <h2>11. Governing Law</h2>
             <p>
-                في أقصى حد يسمح به القانون، لن تكون مسؤوليتنا الإجمالية تجاهك تتجاوز المبلغ 
-                الذي دفعته لنا في الـ 12 شهراً السابقة.
+                These Terms shall be governed by and construed in accordance with applicable laws, 
+                without regard to conflict of law principles.
             </p>
         </section>
 
         <section>
-            <h2>7. الإنهاء</h2>
-            <p>نحتفظ بالحق في:</p>
-            <ul>
-                <li>إيقاف أو تعليق حسابك في أي وقت</li>
-                <li>إنهاء أو تعليق وصولك إلى الخدمة</li>
-                <li>حذف أي محتوى ينتهك هذه الشروط</li>
-            </ul>
-            <p>
-                يمكنك أيضاً إنهاء استخدامك للخدمة في أي وقت عن طريق إلغاء حسابك.
-            </p>
-        </section>
-
-        <section>
-            <h2>8. التعديلات</h2>
-            <p>
-                نحتفظ بالحق في تعديل هذه الشروط في أي وقت. سنقوم بإشعارك بأي تغييرات جوهرية 
-                من خلال نشر الشروط المحدثة على هذه الصفحة.
-            </p>
-        </section>
-
-        <section>
-            <h2>9. القانون الحاكم</h2>
-            <p>
-                تخضع هذه الشروط وتفسر وفقاً لقوانين [البلد/المنطقة]. أي نزاعات تنشأ من هذه الشروط 
-                ستخضع للولاية القضائية الحصرية للمحاكم في [المدينة/المنطقة].
-            </p>
-        </section>
-
-        <section>
-            <h2>10. الاتصال بنا</h2>
+            <h2>12. Contact Information</h2>
             <div class="contact-info">
-                <p>إذا كان لديك أي أسئلة حول شروط الخدمة هذه، يرجى الاتصال بنا:</p>
+                <p>If you have any questions about these Terms of Service, please contact us:</p>
                 <p>
-                    <strong>البريد الإلكتروني:</strong> legal@gravoni.com<br>
-                    <strong>الموقع:</strong> {{ config('app.url', 'https://gravoni.com') }}
+                    <strong>Email:</strong> legal@gravoni.com<br>
+                    <strong>Website:</strong> {{ config('app.url', 'https://gravoni.com') }}<br>
+                    <strong>Privacy Inquiries:</strong> privacy@gravoni.com
                 </p>
             </div>
         </section>
 
-        <a href="{{ url('/') }}" class="back-link">← العودة إلى الصفحة الرئيسية</a>
+        <section>
+            <h2>Summary</h2>
+            <div class="highlight-box">
+                <p><strong>Key Points:</strong></p>
+                <ul>
+                    <li>✅ This is an AI-powered automated messaging service</li>
+                    <li>✅ Your messages are processed by OpenAI and Google Gemini</li>
+                    <li>✅ Data is retained for maximum 30 days</li>
+                    <li>✅ You can request data deletion at any time</li>
+                    <li>✅ AI responses may not always be accurate</li>
+                    <li>✅ Use the service responsibly and lawfully</li>
+                </ul>
+            </div>
+        </section>
+
+        <a href="{{ url('/') }}" class="back-link">← Back to Home</a>
     </div>
 </body>
 </html>
-
