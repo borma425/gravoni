@@ -12,8 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // استثناء مسارات API من middleware الـ web (sessions, cookies, etc.)
-        $middleware->statelessApi();
+        //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
