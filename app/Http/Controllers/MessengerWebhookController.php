@@ -275,7 +275,13 @@ class MessengerWebhookController extends Controller
             $reply = "شكراً لتعليقك! 📩\nتم استلام تعليقك وسيتم الرد عليك في أقرب وقت.\n\nللاستفسارات العاجلة، يرجى التواصل معنا عبر Messenger.";
         }
 
+        // الرد على التعليق
         $this->replyToComment($commentId, $reply);
+
+        // إرسال رسالة خاصة للمستخدم عبر Messenger (إذا كان مفعلاً)
+        if (config('services.messenger.send_private_message_on_comment', true) && !empty($senderId)) {
+            $this->sendPrivateMessageToCommenter($senderId, $reply, $senderName);
+        }
     }
 
     /**
@@ -308,6 +314,64 @@ class MessengerWebhookController extends Controller
             Log::info('Comment reply sent successfully', [
                 'comment_id' => $commentId,
                 'reply_id' => $response->json()['id'] ?? null,
+            ]);
+        }
+
+        return $response;
+    }
+
+    /**
+     * إرسال رسالة خاصة للمستخدم عبر Messenger بعد التعليق
+     */
+    protected function sendPrivateMessageToCommenter(string $senderId, string $messageText, ?string $senderName)
+    {
+        $accessToken = config('services.messenger.page_access_token');
+
+        if (empty($accessToken)) {
+            Log::error('Page access token is missing for private message');
+            return null;
+        }
+
+        // محاولة إرسال رسالة خاصة عبر Messenger
+        // ملاحظة: قد لا يعمل إذا لم يبدأ المستخدم محادثة مع الصفحة من قبل
+        $response = \Illuminate\Support\Facades\Http::post(
+            'https://graph.facebook.com/v18.0/me/messages',
+            [
+                'recipient' => ['id' => $senderId],
+                'message' => [
+                    'text' => "مرحباً " . ($senderName ? $senderName : '') . "! 👋\n\n" . $messageText . "\n\n💬 يمكنك التواصل معنا مباشرة عبر Messenger في أي وقت."
+                ],
+                'access_token' => $accessToken,
+            ]
+        );
+
+        if ($response->failed()) {
+            $errorData = $response->json();
+            $errorCode = $errorData['error']['code'] ?? null;
+            $errorMessage = $errorData['error']['message'] ?? 'Unknown error';
+
+            // Facebook قد يرفض إرسال الرسالة إذا لم يبدأ المستخدم محادثة من قبل
+            // هذا ليس خطأ بالضرورة، فقط سجل المعلومة
+            if ($errorCode == 10 || str_contains($errorMessage, 'not allowed') || str_contains($errorMessage, 'messaging')) {
+                Log::info('Private message not sent - user may not have started conversation', [
+                    'sender_id' => $senderId,
+                    'sender_name' => $senderName,
+                    'error_code' => $errorCode,
+                    'error_message' => $errorMessage,
+                ]);
+            } else {
+                Log::error('Failed to send private message to commenter', [
+                    'sender_id' => $senderId,
+                    'sender_name' => $senderName,
+                    'response' => $errorData,
+                    'status' => $response->status(),
+                ]);
+            }
+        } else {
+            Log::info('Private message sent successfully to commenter', [
+                'sender_id' => $senderId,
+                'sender_name' => $senderName,
+                'message_id' => $response->json()['message_id'] ?? null,
             ]);
         }
 
