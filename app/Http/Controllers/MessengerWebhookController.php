@@ -304,15 +304,16 @@ class MessengerWebhookController extends Controller
             $reply = "شكراً لتعليقك! 📩\nتم استلام تعليقك وسيتم الرد عليك في أقرب وقت.\n\nللاستفسارات العاجلة، يرجى التواصل معنا عبر Messenger.";
         }
 
-        // الرد على التعليق
+        // الرد على التعليق (علني)
         $this->replyToComment($commentId, $reply);
 
-        // إرسال رسالة خاصة للمستخدم عبر Messenger (إذا كان مفعلاً)
+        // إرسال رسالة خاصة للمستخدم عبر Messenger (Private Reply)
         // فقط إذا كان المستخدم ليس الصفحة نفسها
+        // Private Reply يعمل حتى لو لم يبدأ المستخدم محادثة من قبل
         if (config('services.messenger.send_private_message_on_comment', true) 
-            && !empty($senderId) 
+            && !empty($commentId) 
             && (empty($pageId) || $senderId !== $pageId)) {
-            $this->sendPrivateMessageToCommenter($senderId, $reply, $senderName);
+            $this->sendPrivateMessageToCommenter($commentId, $reply, $senderName);
         }
     }
 
@@ -353,26 +354,29 @@ class MessengerWebhookController extends Controller
     }
 
     /**
-     * إرسال رسالة خاصة للمستخدم عبر Messenger بعد التعليق
+     * إرسال رسالة خاصة للمستخدم عبر Messenger بعد التعليق (Private Reply)
+     * 
+     * ملاحظة: Private Replies تسمح بإرسال رسالة خاصة كرد على تعليق
+     * يمكن استخدامها حتى لو لم يبدأ المستخدم محادثة من قبل
+     * لكن يجب أن يكون التعليق حديث (خلال 7 أيام)
      */
-    protected function sendPrivateMessageToCommenter(string $senderId, string $messageText, ?string $senderName)
+    protected function sendPrivateMessageToCommenter(string $commentId, string $messageText, ?string $senderName)
     {
         $accessToken = config('services.messenger.page_access_token');
 
         if (empty($accessToken)) {
-            Log::error('Page access token is missing for private message');
+            Log::error('Page access token is missing for private reply');
             return null;
         }
 
-        // محاولة إرسال رسالة خاصة عبر Messenger
-        // ملاحظة: قد لا يعمل إذا لم يبدأ المستخدم محادثة مع الصفحة من قبل
+        // استخدام Private Replies API - يسمح بإرسال رسالة خاصة كرد على تعليق
+        // هذا يعمل حتى لو لم يبدأ المستخدم محادثة من قبل
+        $privateMessage = "مرحباً " . ($senderName ? $senderName : '') . "! 👋\n\n" . $messageText . "\n\n💬 يمكنك التواصل معنا مباشرة عبر Messenger في أي وقت.";
+
         $response = \Illuminate\Support\Facades\Http::post(
-            'https://graph.facebook.com/v18.0/me/messages',
+            "https://graph.facebook.com/v18.0/{$commentId}/private_replies",
             [
-                'recipient' => ['id' => $senderId],
-                'message' => [
-                    'text' => "مرحباً " . ($senderName ? $senderName : '') . "! 👋\n\n" . $messageText . "\n\n💬 يمكنك التواصل معنا مباشرة عبر Messenger في أي وقت."
-                ],
+                'message' => $privateMessage,
                 'access_token' => $accessToken,
             ]
         );
@@ -383,19 +387,20 @@ class MessengerWebhookController extends Controller
             $errorSubcode = $errorData['error']['error_subcode'] ?? null;
             $errorMessage = $errorData['error']['message'] ?? 'Unknown error';
 
-            // Facebook قد يرفض إرسال الرسالة لعدة أسباب:
-            // 1. المستخدم لم يبدأ محادثة (error code 10)
-            // 2. المستخدم غير موجود (error code 100, subcode 2018001)
-            // 3. خارج الإطار الزمني المسموح به (error code 10)
+            // Facebook قد يرفض Private Reply لعدة أسباب:
+            // 1. التعليق قديم جداً (أكثر من 7 أيام)
+            // 2. الصفحة لا تملك صلاحية private_replies
+            // 3. المستخدم حظر الصفحة
             
             if ($errorCode == 10 || $errorCode == 100 || 
                 str_contains($errorMessage, 'not allowed') || 
-                str_contains($errorMessage, 'messaging') ||
+                str_contains($errorMessage, 'permission') ||
                 str_contains($errorMessage, 'لم يتم العثور على مستخدم') ||
+                str_contains($errorMessage, 'time') ||
                 $errorSubcode == 2018001) {
-                // هذه أخطاء متوقعة وليست مشاكل حقيقية
-                Log::info('Private message not sent - expected limitation', [
-                    'sender_id' => $senderId,
+                // هذه أخطاء متوقعة
+                Log::info('Private reply not sent - expected limitation', [
+                    'comment_id' => $commentId,
                     'sender_name' => $senderName,
                     'error_code' => $errorCode,
                     'error_subcode' => $errorSubcode,
@@ -403,18 +408,18 @@ class MessengerWebhookController extends Controller
                 ]);
             } else {
                 // أخطاء غير متوقعة
-                Log::error('Failed to send private message to commenter', [
-                    'sender_id' => $senderId,
+                Log::error('Failed to send private reply to commenter', [
+                    'comment_id' => $commentId,
                     'sender_name' => $senderName,
                     'response' => $errorData,
                     'status' => $response->status(),
                 ]);
             }
         } else {
-            Log::info('Private message sent successfully to commenter', [
-                'sender_id' => $senderId,
+            Log::info('Private reply sent successfully to commenter', [
+                'comment_id' => $commentId,
                 'sender_name' => $senderName,
-                'message_id' => $response->json()['message_id'] ?? null,
+                'message_id' => $response->json()['id'] ?? null,
             ]);
         }
 
