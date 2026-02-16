@@ -46,7 +46,6 @@ return [
         'app_secret' => env('MESSENGER_APP_SECRET'),
         'auto_reply_enabled' => env('MESSENGER_AUTO_REPLY_ENABLED', true),
         'auto_reply_comments_enabled' => env('MESSENGER_AUTO_REPLY_COMMENTS_ENABLED', false),
-        'send_private_message_on_comment' => env('MESSENGER_SEND_PRIVATE_MESSAGE_ON_COMMENT', true),
     ],
 
 ];
