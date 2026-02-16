@@ -77,10 +77,19 @@ class MessengerWebhookController extends Controller
         // التحقق من أن الطلب من صفحة
         if (isset($payload['object']) && $payload['object'] === 'page') {
             foreach ($payload['entry'] as $entry) {
-                // معالجة كل حدث
+                // معالجة رسائل Messenger
                 if (isset($entry['messaging'])) {
                     foreach ($entry['messaging'] as $event) {
                         $this->processEvent($event);
+                    }
+                }
+                
+                // معالجة التعليقات على المنشورات
+                if (isset($entry['changes'])) {
+                    foreach ($entry['changes'] as $change) {
+                        if ($change['field'] === 'feed' && isset($change['value'])) {
+                            $this->processCommentEvent($change['value']);
+                        }
                     }
                 }
             }
@@ -196,6 +205,109 @@ class MessengerWebhookController extends Controller
             Log::error('Failed to send message', [
                 'recipient' => $recipientId,
                 'response' => $response->json(),
+            ]);
+        }
+
+        return $response;
+    }
+
+    /**
+     * معالجة أحداث التعليقات
+     */
+    protected function processCommentEvent(array $value)
+    {
+        // Facebook يرسل أحداث التعليقات ببنيات مختلفة
+        // البنية 1: عندما يكون item = 'comment'
+        if (isset($value['item']) && $value['item'] === 'comment') {
+            $commentId = $value['comment_id'] ?? null;
+            $postId = $value['post_id'] ?? null;
+            $message = $value['message'] ?? '';
+            $verb = $value['verb'] ?? 'add'; // 'add' للتعليق الجديد
+            
+            // التحقق من أن الحدث هو تعليق جديد وليس حذف أو تعديل
+            if ($verb !== 'add') {
+                Log::info('Comment event is not a new comment', [
+                    'verb' => $verb,
+                    'comment_id' => $commentId,
+                ]);
+                return;
+            }
+            
+            $from = $value['from'] ?? null;
+            $senderId = $from['id'] ?? null;
+            $senderName = $from['name'] ?? null;
+
+            Log::info('New comment received', [
+                'comment_id' => $commentId,
+                'post_id' => $postId,
+                'sender_id' => $senderId,
+                'sender_name' => $senderName,
+                'message' => $message,
+                'verb' => $verb,
+            ]);
+
+            // التحقق من تفعيل الرد التلقائي على التعليقات
+            if (config('services.messenger.auto_reply_comments_enabled', false)) {
+                $this->handleCommentAutoReply($commentId, $message, $senderId, $senderName);
+            }
+        }
+    }
+
+    /**
+     * معالجة الرد التلقائي على التعليقات
+     */
+    protected function handleCommentAutoReply(string $commentId, string $commentText, ?string $senderId, ?string $senderName)
+    {
+        // تحويل النص إلى حروف صغيرة للمقارنة
+        $lowerText = mb_strtolower($commentText);
+
+        // ردود تلقائية بناءً على الكلمات المفتاحية
+        if (str_contains($lowerText, 'مرحبا') || str_contains($lowerText, 'هلا') || str_contains($lowerText, 'السلام')) {
+            $reply = "مرحباً بك! 👋\nكيف يمكنني مساعدتك اليوم؟";
+        } elseif (str_contains($lowerText, 'سعر') || str_contains($lowerText, 'اسعار') || str_contains($lowerText, 'كم')) {
+            $reply = "للاستفسار عن الأسعار، يرجى زيارة موقعنا أو التواصل مع فريق المبيعات.\n📞 سنتواصل معك قريباً!";
+        } elseif (str_contains($lowerText, 'شكر')) {
+            $reply = "شكراً لتواصلك معنا! 🙏\nنحن سعداء بخدمتك.";
+        } elseif (str_contains($lowerText, 'مساعد') || str_contains($lowerText, 'help')) {
+            $reply = "بالتأكيد! 😊\nيمكنك:\n• الاستفسار عن الخدمات\n• طلب معلومات\n• التحدث مع فريق الدعم\n\nكيف يمكنني مساعدتك؟";
+        } else {
+            // رد افتراضي
+            $reply = "شكراً لتعليقك! 📩\nتم استلام تعليقك وسيتم الرد عليك في أقرب وقت.\n\nللاستفسارات العاجلة، يرجى التواصل معنا عبر Messenger.";
+        }
+
+        $this->replyToComment($commentId, $reply);
+    }
+
+    /**
+     * الرد على تعليق في Facebook
+     */
+    protected function replyToComment(string $commentId, string $messageText)
+    {
+        $accessToken = config('services.messenger.page_access_token');
+
+        if (empty($accessToken)) {
+            Log::error('Page access token is missing for comment reply');
+            return null;
+        }
+
+        $response = \Illuminate\Support\Facades\Http::post(
+            "https://graph.facebook.com/v18.0/{$commentId}/comments",
+            [
+                'message' => $messageText,
+                'access_token' => $accessToken,
+            ]
+        );
+
+        if ($response->failed()) {
+            Log::error('Failed to reply to comment', [
+                'comment_id' => $commentId,
+                'response' => $response->json(),
+                'status' => $response->status(),
+            ]);
+        } else {
+            Log::info('Comment reply sent successfully', [
+                'comment_id' => $commentId,
+                'reply_id' => $response->json()['id'] ?? null,
             ]);
         }
 
