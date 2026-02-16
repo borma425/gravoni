@@ -86,9 +86,10 @@ class MessengerWebhookController extends Controller
                 
                 // معالجة التعليقات على المنشورات
                 if (isset($entry['changes'])) {
+                    $pageId = $entry['id'] ?? null; // Page ID من entry
                     foreach ($entry['changes'] as $change) {
                         if ($change['field'] === 'feed' && isset($change['value'])) {
-                            $this->processCommentEvent($change['value']);
+                            $this->processCommentEvent($change['value'], $pageId);
                         }
                     }
                 }
@@ -214,7 +215,7 @@ class MessengerWebhookController extends Controller
     /**
      * معالجة أحداث التعليقات
      */
-    protected function processCommentEvent(array $value)
+    protected function processCommentEvent(array $value, ?string $pageId = null)
     {
         // Facebook يرسل أحداث التعليقات ببنيات مختلفة
         // البنية 1: عندما يكون item = 'comment'
@@ -237,6 +238,25 @@ class MessengerWebhookController extends Controller
             $senderId = $from['id'] ?? null;
             $senderName = $from['name'] ?? null;
 
+            // تجاهل التعليقات التي يرسلها النظام نفسه (من الصفحة)
+            if (!empty($pageId) && $senderId === $pageId) {
+                Log::info('Ignoring comment from page itself', [
+                    'comment_id' => $commentId,
+                    'sender_id' => $senderId,
+                    'page_id' => $pageId,
+                ]);
+                return;
+            }
+
+            // تجاهل التعليقات الفارغة
+            if (empty($message)) {
+                Log::info('Ignoring empty comment', [
+                    'comment_id' => $commentId,
+                    'sender_id' => $senderId,
+                ]);
+                return;
+            }
+
             Log::info('New comment received', [
                 'comment_id' => $commentId,
                 'post_id' => $postId,
@@ -248,7 +268,7 @@ class MessengerWebhookController extends Controller
 
             // التحقق من تفعيل الرد التلقائي على التعليقات
             if (config('services.messenger.auto_reply_comments_enabled', false)) {
-                $this->handleCommentAutoReply($commentId, $message, $senderId, $senderName);
+                $this->handleCommentAutoReply($commentId, $message, $senderId, $senderName, $pageId);
             }
         }
     }
@@ -256,8 +276,17 @@ class MessengerWebhookController extends Controller
     /**
      * معالجة الرد التلقائي على التعليقات
      */
-    protected function handleCommentAutoReply(string $commentId, string $commentText, ?string $senderId, ?string $senderName)
+    protected function handleCommentAutoReply(string $commentId, string $commentText, ?string $senderId, ?string $senderName, ?string $pageId = null)
     {
+        // تجاهل إذا كان المرسل هو الصفحة نفسها
+        if (!empty($pageId) && $senderId === $pageId) {
+            Log::info('Skipping auto-reply - comment from page itself', [
+                'comment_id' => $commentId,
+                'sender_id' => $senderId,
+            ]);
+            return;
+        }
+
         // تحويل النص إلى حروف صغيرة للمقارنة
         $lowerText = mb_strtolower($commentText);
 
@@ -279,7 +308,10 @@ class MessengerWebhookController extends Controller
         $this->replyToComment($commentId, $reply);
 
         // إرسال رسالة خاصة للمستخدم عبر Messenger (إذا كان مفعلاً)
-        if (config('services.messenger.send_private_message_on_comment', true) && !empty($senderId)) {
+        // فقط إذا كان المستخدم ليس الصفحة نفسها
+        if (config('services.messenger.send_private_message_on_comment', true) 
+            && !empty($senderId) 
+            && (empty($pageId) || $senderId !== $pageId)) {
             $this->sendPrivateMessageToCommenter($senderId, $reply, $senderName);
         }
     }
@@ -348,18 +380,29 @@ class MessengerWebhookController extends Controller
         if ($response->failed()) {
             $errorData = $response->json();
             $errorCode = $errorData['error']['code'] ?? null;
+            $errorSubcode = $errorData['error']['error_subcode'] ?? null;
             $errorMessage = $errorData['error']['message'] ?? 'Unknown error';
 
-            // Facebook قد يرفض إرسال الرسالة إذا لم يبدأ المستخدم محادثة من قبل
-            // هذا ليس خطأ بالضرورة، فقط سجل المعلومة
-            if ($errorCode == 10 || str_contains($errorMessage, 'not allowed') || str_contains($errorMessage, 'messaging')) {
-                Log::info('Private message not sent - user may not have started conversation', [
+            // Facebook قد يرفض إرسال الرسالة لعدة أسباب:
+            // 1. المستخدم لم يبدأ محادثة (error code 10)
+            // 2. المستخدم غير موجود (error code 100, subcode 2018001)
+            // 3. خارج الإطار الزمني المسموح به (error code 10)
+            
+            if ($errorCode == 10 || $errorCode == 100 || 
+                str_contains($errorMessage, 'not allowed') || 
+                str_contains($errorMessage, 'messaging') ||
+                str_contains($errorMessage, 'لم يتم العثور على مستخدم') ||
+                $errorSubcode == 2018001) {
+                // هذه أخطاء متوقعة وليست مشاكل حقيقية
+                Log::info('Private message not sent - expected limitation', [
                     'sender_id' => $senderId,
                     'sender_name' => $senderName,
                     'error_code' => $errorCode,
+                    'error_subcode' => $errorSubcode,
                     'error_message' => $errorMessage,
                 ]);
             } else {
+                // أخطاء غير متوقعة
                 Log::error('Failed to send private message to commenter', [
                     'sender_id' => $senderId,
                     'sender_name' => $senderName,
