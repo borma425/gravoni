@@ -20,7 +20,7 @@
 
 <div class="bg-white shadow rounded-lg">
     <div class="px-4 py-5 sm:p-6">
-        <form action="{{ route('products.update', $product) }}" method="POST" class="space-y-6">
+        <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
             <div>
@@ -42,10 +42,21 @@
             </div>
 
             <div>
-                <label for="selling_price" class="block text-sm font-medium text-gray-700">سعر البيع</label>
+                <label for="selling_price" class="block text-sm font-medium text-gray-700">السعر الأساسي</label>
                 <input type="number" step="0.01" name="selling_price" id="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required min="0"
                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('selling_price') border-red-300 @enderror">
+                <p class="mt-1 text-xs text-gray-500">السعر الأصلي للمنتج قبل التخفيض</p>
                 @error('selling_price')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="discounted_price" class="block text-sm font-medium text-gray-700">سعر بعد التخفيض</label>
+                <input type="number" step="0.01" name="discounted_price" id="discounted_price" value="{{ old('discounted_price', $product->discounted_price) }}" min="0"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('discounted_price') border-red-300 @enderror">
+                <p class="mt-1 text-xs text-gray-500">السعر بعد تطبيق التخفيض (اختياري)</p>
+                @error('discounted_price')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -60,10 +71,75 @@
             </div>
 
             <div>
+                <label for="available_sizes" class="block text-sm font-medium text-gray-700">الأحجام المتاحة</label>
+                <input type="text" name="available_sizes_input" id="available_sizes" value="{{ old('available_sizes_input', is_array(old('available_sizes', $product->available_sizes)) ? implode(',', old('available_sizes', $product->available_sizes ?? [])) : '') }}"
+                       placeholder="مثال: S, M, L, XL (مفصولة بفواصل)"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('available_sizes') border-red-300 @enderror">
+                <p class="mt-1 text-xs text-gray-500">أدخل الأحجام مفصولة بفواصل</p>
+                @error('available_sizes')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">الألوان المتاحة</label>
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="color-input" placeholder="أدخل لون جديد"
+                           class="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                    <button type="button" id="add-color-btn" class="px-4 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                        إضافة
+                    </button>
+                </div>
+                <div id="colors-container" class="flex flex-wrap gap-2 mt-2 min-h-[40px] p-2 border border-gray-200 rounded-md">
+                    @php
+                        $colors = old('available_colors', $product->available_colors ?? []);
+                        if (is_string($colors)) {
+                            $colors = json_decode($colors, true) ?? [];
+                        }
+                    @endphp
+                    @foreach($colors as $color)
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            {{ $color }}
+                            <input type="hidden" name="available_colors[]" value="{{ $color }}">
+                            <button type="button" class="mr-2 text-blue-600 hover:text-blue-800" onclick="removeColor(this)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </span>
+                    @endforeach
+                </div>
+                <p class="mt-1 text-xs text-gray-500">أدخل كل لون واضغط إضافة</p>
+                @error('available_colors')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
                 <label for="description" class="block text-sm font-medium text-gray-700">الوصف</label>
                 <textarea name="description" id="description" rows="4"
                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('description') border-red-300 @enderror">{{ old('description', $product->description) }}</textarea>
                 @error('description')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div>
+                <label for="sample" class="block text-sm font-medium text-gray-700">عينة (صورة)</label>
+                @if($product->sample)
+                    <div class="mb-2">
+                        <p class="text-sm text-gray-600 mb-1">الصورة الحالية:</p>
+                        <img src="{{ Storage::url($product->sample) }}" alt="عينة المنتج" class="max-w-xs rounded-md border border-gray-300">
+                    </div>
+                @endif
+                <input type="file" name="sample" id="sample" accept="image/*"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('sample') border-red-300 @enderror">
+                <p class="mt-1 text-xs text-gray-500">الصيغ المدعومة: JPEG, PNG, JPG, GIF, WebP (حد أقصى 2MB)</p>
+                <div id="sample-preview" class="mt-2 hidden">
+                    <p class="text-sm text-gray-600 mb-1">معاينة الصورة الجديدة:</p>
+                    <img id="preview-image" src="" alt="معاينة الصورة" class="max-w-xs rounded-md border border-gray-300">
+                </div>
+                @error('sample')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -79,4 +155,62 @@
         </form>
     </div>
 </div>
+
+<script>
+    // Handle color addition
+    document.getElementById('add-color-btn').addEventListener('click', function() {
+        const input = document.getElementById('color-input');
+        const color = input.value.trim();
+        
+        if (color) {
+            addColorBadge(color);
+            input.value = '';
+        }
+    });
+    
+    // Allow Enter key to add color
+    document.getElementById('color-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('add-color-btn').click();
+        }
+    });
+    
+    function addColorBadge(color) {
+        const container = document.getElementById('colors-container');
+        const badge = document.createElement('span');
+        badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800';
+        badge.innerHTML = `
+            ${color}
+            <input type="hidden" name="available_colors[]" value="${color}">
+            <button type="button" class="mr-2 text-blue-600 hover:text-blue-800" onclick="removeColor(this)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        `;
+        container.appendChild(badge);
+    }
+    
+    function removeColor(button) {
+        button.closest('span').remove();
+    }
+    
+    // Handle image preview
+    document.getElementById('sample').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('sample-preview');
+                const img = document.getElementById('preview-image');
+                img.src = e.target.result;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            document.getElementById('sample-preview').classList.add('hidden');
+        }
+    });
+</script>
 @endsection

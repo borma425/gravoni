@@ -11,13 +11,20 @@ class Product extends Model
         'name',
         'sku',
         'selling_price',
+        'discounted_price',
         'quantity',
         'description',
+        'available_sizes',
+        'available_colors',
+        'sample',
     ];
 
     protected $casts = [
         'selling_price' => 'decimal:2',
+        'discounted_price' => 'decimal:2',
         'quantity' => 'integer',
+        'available_sizes' => 'array',
+        'available_colors' => 'array',
     ];
 
     /**

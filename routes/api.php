@@ -1,32 +1,24 @@
 <?php
 
+use App\Http\Controllers\Api\ProductApiController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\MessengerWebhookController;
 
 /*
 |--------------------------------------------------------------------------
-| Messenger Webhook Routes
+| API Routes
 |--------------------------------------------------------------------------
 |
-| هذه المسارات مخصصة لـ Facebook Messenger Webhook
-| URL: https://yourdomain.com/api/webhook/messenger
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
 |
 */
 
-Route::prefix('webhook')->group(function () {
-    // التحقق من الـ Webhook (Facebook يرسل GET request)
-    Route::get('/messenger', [MessengerWebhookController::class, 'verify']);
+// Products API
+Route::get('/products', [ProductApiController::class, 'index']);
+Route::get('/products/{id}', [ProductApiController::class, 'show']);
 
-    // استقبال الرسائل (Facebook يرسل POST request)
-    Route::post('/messenger', [MessengerWebhookController::class, 'handle']);
-});
-
-// مسار اختبار للتحقق من الإعدادات (يمكن حذفه لاحقاً)
-Route::get('/webhook/test-config', function () {
-    return response()->json([
-        'verify_token' => config('services.messenger.verify_token'),
-        'has_token' => !empty(config('services.messenger.verify_token')),
-        'token_length' => strlen(config('services.messenger.verify_token') ?? ''),
-    ]);
-});
+// Orders API
+Route::get('/orders/{id}', [\App\Http\Controllers\Api\OrderApiController::class, 'show']);
+Route::post('/orders', [\App\Http\Controllers\Api\OrderApiController::class, 'store']);
 

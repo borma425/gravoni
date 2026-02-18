@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -46,7 +47,14 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        Product::create($request->validated());
+        $data = $request->validated();
+        
+        // Handle sample image upload
+        if ($request->hasFile('sample')) {
+            $data['sample'] = $request->file('sample')->store('products/samples', 'public');
+        }
+        
+        Product::create($data);
 
         return redirect()->route('products.index')
             ->with('success', 'تم إضافة المنتج بنجاح');
@@ -86,6 +94,15 @@ class ProductController extends Controller
             if ($validator->fails()) {
                 return back()->withErrors($validator)->withInput();
             }
+        }
+        
+        // Handle sample image upload
+        if ($request->hasFile('sample')) {
+            // Delete old image if exists
+            if ($product->sample && Storage::disk('public')->exists($product->sample)) {
+                Storage::disk('public')->delete($product->sample);
+            }
+            $data['sample'] = $request->file('sample')->store('products/samples', 'public');
         }
 
         $product->update($data);

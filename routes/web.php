@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ReportController;
@@ -33,6 +34,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Sales
     Route::resource('sales', SaleController::class)->except(['edit', 'update']);
+
+    // Orders
+    Route::resource('orders', OrderController::class);
 
     // Losses
     Route::resource('losses', \App\Http\Controllers\LossController::class)->only(['index', 'show', 'destroy']);

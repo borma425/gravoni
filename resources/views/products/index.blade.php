@@ -23,9 +23,12 @@
                 <tr>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم المنتج</th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">سعر البيع</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">السعر الأساسي</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">سعر بعد التخفيض</th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الكمية المتاحة</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الأحجام/الألوان</th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الوصف</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العينة</th>
                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                 </tr>
             </thead>
@@ -42,12 +45,42 @@
                         <div class="text-sm text-gray-900">{{ number_format($product->selling_price, 2) }} ج.م</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm {{ $product->discounted_price ? 'text-green-600 font-medium' : 'text-gray-500' }}">
+                            {{ $product->discounted_price ? number_format($product->discounted_price, 2) . ' ج.م' : '-' }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->quantity > 10 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
                             {{ $product->quantity }}
                         </span>
                     </td>
                     <td class="px-6 py-4">
+                        <div class="text-sm text-gray-500">
+                            @if($product->available_sizes || $product->available_colors)
+                                @if($product->available_sizes)
+                                    <div class="mb-1">
+                                        <span class="font-medium">أحجام:</span> {{ implode(', ', $product->available_sizes) }}
+                                    </div>
+                                @endif
+                                @if($product->available_colors)
+                                    <div>
+                                        <span class="font-medium">ألوان:</span> {{ implode(', ', $product->available_colors) }}
+                                    </div>
+                                @endif
+                            @else
+                                -
+                            @endif
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
                         <div class="text-sm text-gray-500 max-w-xs truncate">{{ $product->description ?? '-' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        @if($product->sample)
+                            <img src="{{ Storage::url($product->sample) }}" alt="عينة" class="h-12 w-12 object-cover rounded-md border border-gray-300">
+                        @else
+                            <span class="text-sm text-gray-400">-</span>
+                        @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-reverse space-x-2">
@@ -76,7 +109,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center">
+                    <td colspan="9" class="px-6 py-12 text-center">
                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>

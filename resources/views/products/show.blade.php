@@ -33,9 +33,15 @@
                     <dd class="mt-1 text-sm text-gray-900">{{ $product->sku }}</dd>
                 </div>
                 <div>
-                    <dt class="text-sm font-medium text-gray-500">سعر البيع</dt>
+                    <dt class="text-sm font-medium text-gray-500">السعر الأساسي</dt>
                     <dd class="mt-1 text-sm text-gray-900">{{ number_format($product->selling_price, 2) }} ج.م</dd>
                 </div>
+                @if($product->discounted_price)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">سعر بعد التخفيض</dt>
+                    <dd class="mt-1 text-sm text-green-600 font-medium">{{ number_format($product->discounted_price, 2) }} ج.م</dd>
+                </div>
+                @endif
                 <div>
                     <dt class="text-sm font-medium text-gray-500">الكمية المتاحة</dt>
                     <dd class="mt-1">
@@ -44,6 +50,18 @@
                         </span>
                     </dd>
                 </div>
+                @if($product->available_sizes && count($product->available_sizes) > 0)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">الأحجام المتاحة</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ implode(', ', $product->available_sizes) }}</dd>
+                </div>
+                @endif
+                @if($product->available_colors && count($product->available_colors) > 0)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">الألوان المتاحة</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ implode(', ', $product->available_colors) }}</dd>
+                </div>
+                @endif
                 <div>
                     <dt class="text-sm font-medium text-gray-500">متوسط التكلفة</dt>
                     <dd class="mt-1 text-sm text-gray-900">{{ number_format($product->average_cost, 2) }} ج.م</dd>
@@ -52,6 +70,14 @@
                 <div>
                     <dt class="text-sm font-medium text-gray-500">الوصف</dt>
                     <dd class="mt-1 text-sm text-gray-900">{{ $product->description }}</dd>
+                </div>
+                @endif
+                @if($product->sample)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">عينة</dt>
+                    <dd class="mt-1">
+                        <img src="{{ Storage::url($product->sample) }}" alt="عينة المنتج" class="max-w-md rounded-md border border-gray-300">
+                    </dd>
                 </div>
                 @endif
             </dl>
