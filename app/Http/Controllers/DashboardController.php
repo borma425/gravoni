@@ -6,8 +6,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Services\StockService;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\DashboardStatsExport;
+use Illuminate\Support\Facades\Response;
 
 class DashboardController extends Controller
 {
@@ -79,9 +78,8 @@ class DashboardController extends Controller
         // Get all losses
         $losses = \App\Models\Loss::with('product')->latest()->get();
 
-        $filename = 'إحصائيات_المخزون_' . date('Y-m-d_His') . '.xlsx';
-        
-        return Excel::download(new DashboardStatsExport(
+        // Generate CSV content
+        $csvContent = $this->generateCsvContent(
             $totalProducts,
             $totalSales,
             $totalPurchases,
@@ -94,6 +92,119 @@ class DashboardController extends Controller
             $sales,
             $purchases,
             $losses
-        ), $filename);
+        );
+        
+        $filename = 'إحصائيات_المخزون_' . date('Y-m-d_His') . '.csv';
+        
+        return Response::make($csvContent, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Generate CSV content for export
+     */
+    private function generateCsvContent(
+        $totalProducts,
+        $totalSales,
+        $totalPurchases,
+        $totalProfit,
+        $totalRevenue,
+        $totalDamaged,
+        $totalLosses,
+        $lowStockProducts,
+        $products,
+        $sales,
+        $purchases,
+        $losses
+    ): string {
+        $output = fopen('php://temp', 'r+');
+        
+        // Add BOM for UTF-8
+        fputs($output, "\xEF\xBB\xBF");
+        
+        // Summary Sheet
+        fputcsv($output, ['ملخص الإحصائيات'], ',');
+        fputcsv($output, ['المؤشر', 'القيمة'], ',');
+        fputcsv($output, ['إجمالي المنتجات', $totalProducts], ',');
+        fputcsv($output, ['إجمالي المبيعات', $totalSales], ',');
+        fputcsv($output, ['إجمالي المشتريات', $totalPurchases], ',');
+        fputcsv($output, ['إجمالي الإيرادات', number_format($totalRevenue, 2) . ' ج.م'], ',');
+        fputcsv($output, ['إجمالي الأرباح', number_format($totalProfit, 2) . ' ج.م'], ',');
+        fputcsv($output, ['إجمالي التلف', $totalDamaged . ' وحدة'], ',');
+        fputcsv($output, ['إجمالي الخسائر', number_format($totalLosses, 2) . ' ج.م'], ',');
+        fputcsv($output, ['منتجات مخزون منخفض', $lowStockProducts], ',');
+        fputcsv($output, ['تاريخ التقرير', date('Y-m-d H:i:s')], ',');
+        fputcsv($output, [], ','); // Empty row
+        
+        // Products Sheet
+        fputcsv($output, ['المنتجات'], ',');
+        fputcsv($output, ['ID', 'الاسم', 'SKU', 'الكمية', 'سعر البيع', 'الوصف', 'تاريخ الإنشاء'], ',');
+        foreach ($products as $product) {
+            fputcsv($output, [
+                $product->id,
+                $product->name,
+                $product->sku,
+                $product->quantity,
+                number_format($product->selling_price, 2) . ' ج.م',
+                $product->description ?? '-',
+                $product->created_at->format('Y-m-d'),
+            ], ',');
+        }
+        fputcsv($output, [], ','); // Empty row
+        
+        // Sales Sheet
+        fputcsv($output, ['المبيعات'], ',');
+        fputcsv($output, ['ID', 'المنتج', 'الكمية', 'سعر البيع', 'سعر الشراء', 'الربح', 'المحافظة', 'التاريخ'], ',');
+        foreach ($sales as $sale) {
+            fputcsv($output, [
+                $sale->id,
+                $sale->product->name,
+                $sale->quantity,
+                number_format($sale->selling_price, 2) . ' ج.م',
+                number_format($sale->cost_price_at_sale, 2) . ' ج.م',
+                number_format($sale->profit, 2) . ' ج.م',
+                $sale->governorate ?? '-',
+                $sale->created_at->format('Y-m-d H:i'),
+            ], ',');
+        }
+        fputcsv($output, [], ','); // Empty row
+        
+        // Purchases Sheet
+        fputcsv($output, ['المشتريات'], ',');
+        fputcsv($output, ['ID', 'المنتج', 'الكمية', 'سعر التكلفة', 'الإجمالي', 'التاريخ'], ',');
+        foreach ($purchases as $purchase) {
+            fputcsv($output, [
+                $purchase->id,
+                $purchase->product->name,
+                $purchase->quantity,
+                number_format($purchase->cost_price, 2) . ' ج.م',
+                number_format($purchase->quantity * $purchase->cost_price, 2) . ' ج.م',
+                $purchase->created_at->format('Y-m-d H:i'),
+            ], ',');
+        }
+        fputcsv($output, [], ','); // Empty row
+        
+        // Losses Sheet
+        fputcsv($output, ['الخسائر'], ',');
+        fputcsv($output, ['ID', 'المنتج', 'الكمية', 'سعر التكلفة', 'إجمالي الخسارة', 'ملاحظة', 'التاريخ'], ',');
+        foreach ($losses as $loss) {
+            fputcsv($output, [
+                $loss->id,
+                $loss->product->name,
+                $loss->quantity,
+                number_format($loss->cost_price_at_loss, 2) . ' ج.م',
+                number_format($loss->total_loss, 2) . ' ج.م',
+                $loss->note ?? '-',
+                $loss->created_at->format('Y-m-d H:i'),
+            ], ',');
+        }
+        
+        rewind($output);
+        $csvContent = stream_get_contents($output);
+        fclose($output);
+        
+        return $csvContent;
     }
 }
