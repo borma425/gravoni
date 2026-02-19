@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GovernorateController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseController;
@@ -37,6 +38,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Orders
     Route::resource('orders', OrderController::class);
+
+    // Governorates
+    Route::resource('governorates', GovernorateController::class);
 
     // Losses
     Route::resource('losses', \App\Http\Controllers\LossController::class)->only(['index', 'show', 'destroy']);
