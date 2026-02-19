@@ -87,7 +87,7 @@ class StockService
      */
     public function recordSale(Product $product, int $quantity, float $sellingPrice, string $governorate = null): Sale
     {
-        return DB::transaction(function () use ($product, $quantity, $sellingPrice) {
+        return DB::transaction(function () use ($product, $quantity, $sellingPrice, $governorate) {
             // Check if stock is sufficient
             $currentStock = $this->getCurrentStock($product);
             if ($currentStock < $quantity) {

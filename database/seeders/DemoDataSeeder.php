@@ -16,6 +16,10 @@ class DemoDataSeeder extends Seeder
     public function run(): void
     {
         $stockService = app(StockService::class);
+        
+        // حذف البيانات القديمة إن وجدت
+        Product::whereIn('sku', ['LAP-DELL-001', 'PHONE-SAM-001', 'AUD-APP-001'])->delete();
+        
         // إنشاء 3 منتجات
         $product1 = Product::create([
             'name' => 'لابتوب Dell Inspiron 15',
