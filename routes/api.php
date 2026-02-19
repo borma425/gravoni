@@ -21,6 +21,7 @@ Route::get('/products/{id}', [ProductApiController::class, 'show']);
 // Orders API
 Route::get('/orders/{id}', [\App\Http\Controllers\Api\OrderApiController::class, 'show']);
 Route::post('/orders', [\App\Http\Controllers\Api\OrderApiController::class, 'store']);
+Route::put('/orders/{id}', [\App\Http\Controllers\Api\OrderApiController::class, 'update']);
 
 // Governorates API
 Route::get('/governorates', [\App\Http\Controllers\Api\GovernorateApiController::class, 'index']);
