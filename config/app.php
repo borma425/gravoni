@@ -123,4 +123,17 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | API Secret Key
+    |--------------------------------------------------------------------------
+    |
+    | This key is used to authenticate API requests. Set this in your ".env" file
+    | as API_SECRET_KEY. Clients must include this key in the X-API-Key header
+    | or Authorization header (with Bearer prefix) to access protected endpoints.
+    |
+    */
+
+    'api_secret_key' => env('API_SECRET_KEY', ''),
+
 ];
