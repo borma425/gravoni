@@ -6,66 +6,65 @@ use App\Models\Product;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Pinecone integration - matches Store-agent pattern.
+ * Stores minimal data: id + name only. Full product details fetched from API when needed.
+ *
+ * @see /opt/lampp/htdocs/Store-agent/src/scripts/sync-db.ts
+ * @see /opt/lampp/htdocs/Store-agent/src/infrastructure/services/StoreInventoryService.ts
+ */
 class PineconeService
 {
-    protected $apiKey;
-    protected $indexName;
-    protected $indexHost;
-    protected $embeddingDimension;
+    protected string $apiKey;
+    protected string $indexHost;
+    protected int $embeddingDimension;
+    protected string $namespace;
 
     public function __construct()
     {
         $this->apiKey = config('services.pinecone.api_key');
-        $this->indexName = config('services.pinecone.index_name');
         $this->indexHost = config('services.pinecone.index_host');
         $this->embeddingDimension = config('services.pinecone.embedding_dimension', 1024);
+        $this->namespace = config('services.pinecone.namespace', '');
     }
 
     /**
-     * Upsert (create or update) a product in Pinecone
+     * Upsert (create or update) a product in Pinecone.
+     * Sends only: id (vector id) + name (metadata) - same as Store-agent.
      */
-    public function upsertProduct(Product $product)
+    public function upsertProduct(Product $product): bool
     {
         try {
-            // Generate embedding vector from product data
             $vector = $this->generateEmbedding($product);
-            
-            // Prepare metadata (Pinecone doesn't accept null - only string, number, boolean, or list of strings)
-            $metadata = array_filter([
-                'id' => $product->id,
-                'name' => $product->name,
-                'sku' => $product->sku,
-                'selling_price' => (float) $product->selling_price,
-                'discounted_price' => $product->discounted_price ? (float) $product->discounted_price : null,
-                'quantity' => (int) $product->quantity,
-                'description' => (string) ($product->description ?? ''),
-                'available_sizes' => $product->available_sizes ?? [],
-                'available_colors' => $product->available_colors ?? [],
-                'sample' => (string) ($product->sample ?? ''),
-            ], fn ($v) => $v !== null);
 
-            // Upsert to Pinecone
+            $payload = [
+                'vectors' => [
+                    [
+                        'id' => (string) $product->id,
+                        'values' => $vector,
+                        'metadata' => [
+                            'name' => $product->name,
+                        ],
+                    ],
+                ],
+            ];
+
+            if ($this->namespace !== '') {
+                $payload['namespace'] = $this->namespace;
+            }
+
             $response = Http::withHeaders([
                 'Api-Key' => $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->post("{$this->indexHost}/vectors/upsert", [
-                'vectors' => [
-                    [
-                        'id' => "product_{$product->id}",
-                        'values' => $vector,
-                        'metadata' => $metadata,
-                    ]
-                ],
-                'namespace' => 'products',
-            ]);
+            ])->post("{$this->indexHost}/vectors/upsert", $payload);
 
             if ($response->successful()) {
                 Log::info("Product {$product->id} synced to Pinecone successfully");
                 return true;
-            } else {
-                Log::error("Failed to sync product {$product->id} to Pinecone: " . $response->body());
-                return false;
             }
+
+            Log::error("Failed to sync product {$product->id} to Pinecone: " . $response->body());
+            return false;
         } catch (\Exception $e) {
             Log::error("Error syncing product {$product->id} to Pinecone: " . $e->getMessage());
             return false;
@@ -73,34 +72,40 @@ class PineconeService
     }
 
     /**
-     * Delete a product from Pinecone
+     * Delete a product from Pinecone.
+     * Deletes both id formats for migration compatibility (legacy "product_{id}" and new "{id}").
      */
-    public function deleteProduct($productId)
+    public function deleteProduct(int $productId): bool
     {
         try {
+            $ids = [(string) $productId, "product_{$productId}"];
+            $payload = [
+                'ids' => $ids,
+            ];
+
+            if ($this->namespace !== '') {
+                $payload['namespace'] = $this->namespace;
+            }
+
             $response = Http::withHeaders([
                 'Api-Key' => $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->post("{$this->indexHost}/vectors/delete", [
-                'ids' => ["product_{$productId}"],
-                'namespace' => 'products',
-            ]);
+            ])->post("{$this->indexHost}/vectors/delete", $payload);
 
             if ($response->successful()) {
                 Log::info("Product {$productId} deleted from Pinecone successfully");
                 return true;
-            } else {
-                $responseBody = $response->json();
-                
-                // If namespace doesn't exist, consider it a success (product is not in Pinecone anyway)
-                if (isset($responseBody['code']) && $responseBody['code'] === 5) {
-                    Log::debug("Product {$productId} - Namespace not found in Pinecone (product was not synced yet)");
-                    return true;
-                }
-                
-                Log::error("Failed to delete product {$productId} from Pinecone: " . $response->body());
-                return false;
             }
+
+            $responseBody = $response->json();
+
+            if (isset($responseBody['code']) && $responseBody['code'] === 5) {
+                Log::debug("Product {$productId} - Namespace not found in Pinecone (product was not synced yet)");
+                return true;
+            }
+
+            Log::error("Failed to delete product {$productId} from Pinecone: " . $response->body());
+            return false;
         } catch (\Exception $e) {
             Log::error("Error deleting product {$productId} from Pinecone: " . $e->getMessage());
             return false;
@@ -108,42 +113,45 @@ class PineconeService
     }
 
     /**
-     * Generate embedding vector from product data
-     * This creates a simple vector based on product attributes
-     * For production, consider using OpenAI embeddings or similar
+     * Build embedding text - same structure as Store-agent sync-db.ts
+     * "Product: {name}. Category: Clothing. Description: {description}. Available Sizes: {sizes}"
      */
-    protected function generateEmbedding(Product $product)
+    protected function buildEmbeddingText(Product $product): string
     {
-        // Create a text representation of the product
-        $text = implode(' ', array_filter([
-            $product->name,
-            $product->sku,
-            $product->description,
-            implode(' ', $product->available_sizes ?? []),
-            implode(' ', $product->available_colors ?? []),
-        ]));
+        $sizes = is_array($product->available_sizes)
+            ? implode(', ', $product->available_sizes)
+            : ($product->available_sizes ?? '');
 
-        // For now, we'll use OpenAI-compatible embedding
-        // If you have OpenAI API key, this will generate proper embeddings
+        return sprintf(
+            'Product: %s. Category: Clothing. Description: %s. Available Sizes: %s',
+            $product->name,
+            $product->description ?? '',
+            $sizes
+        );
+    }
+
+    /**
+     * Generate embedding vector from product data.
+     */
+    protected function generateEmbedding(Product $product): array
+    {
+        $text = $this->buildEmbeddingText($product);
+
         if (config('services.openai.api_key')) {
             return $this->generateOpenAIEmbedding($text);
         }
 
-        // Fallback: Generate a simple hash-based vector (1536 dimensions for OpenAI compatibility)
         return $this->generateSimpleVector($text);
     }
 
-    /**
-     * Generate embedding using OpenAI API
-     */
-    protected function generateOpenAIEmbedding($text)
+    protected function generateOpenAIEmbedding(string $text): array
     {
         try {
             $payload = [
                 'input' => $text,
                 'model' => 'text-embedding-3-small',
             ];
-            // Match Pinecone index dimension (default 1024)
+
             if ($this->embeddingDimension !== 1536) {
                 $payload['dimensions'] = $this->embeddingDimension;
             }
@@ -160,32 +168,26 @@ class PineconeService
             Log::warning("Failed to generate OpenAI embedding: " . $e->getMessage());
         }
 
-        // Fallback to simple vector
         return $this->generateSimpleVector($text);
     }
 
-    /**
-     * Generate a simple vector based on text hash
-     * This is a fallback method - for production use proper embeddings
-     */
-    protected function generateSimpleVector($text, $dimensions = null)
+    protected function generateSimpleVector(string $text): array
     {
-        $dimensions = $dimensions ?? $this->embeddingDimension;
         $hash = md5($text);
         $vector = [];
-        
-        for ($i = 0; $i < $dimensions; $i++) {
+
+        for ($i = 0; $i < $this->embeddingDimension; $i++) {
             $seed = hexdec(substr($hash, $i % 32, 2)) + $i;
-            $vector[] = (sin($seed) + 1) / 2; // Normalize to 0-1 range
+            $vector[] = (sin($seed) + 1) / 2;
         }
-        
+
         return $vector;
     }
 
     /**
-     * Sync all products to Pinecone
+     * Sync all products to Pinecone.
      */
-    public function syncAllProducts()
+    public function syncAllProducts(): array
     {
         $products = Product::all();
         $synced = 0;
