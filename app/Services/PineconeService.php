@@ -11,12 +11,14 @@ class PineconeService
     protected $apiKey;
     protected $indexName;
     protected $indexHost;
+    protected $embeddingDimension;
 
     public function __construct()
     {
         $this->apiKey = config('services.pinecone.api_key');
         $this->indexName = config('services.pinecone.index_name');
         $this->indexHost = config('services.pinecone.index_host');
+        $this->embeddingDimension = config('services.pinecone.embedding_dimension', 1024);
     }
 
     /**
@@ -28,19 +30,19 @@ class PineconeService
             // Generate embedding vector from product data
             $vector = $this->generateEmbedding($product);
             
-            // Prepare metadata
-            $metadata = [
+            // Prepare metadata (Pinecone doesn't accept null - only string, number, boolean, or list of strings)
+            $metadata = array_filter([
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
                 'selling_price' => (float) $product->selling_price,
                 'discounted_price' => $product->discounted_price ? (float) $product->discounted_price : null,
-                'quantity' => $product->quantity,
-                'description' => $product->description ?? '',
+                'quantity' => (int) $product->quantity,
+                'description' => (string) ($product->description ?? ''),
                 'available_sizes' => $product->available_sizes ?? [],
                 'available_colors' => $product->available_colors ?? [],
-                'sample' => $product->sample ?? '',
-            ];
+                'sample' => (string) ($product->sample ?? ''),
+            ], fn ($v) => $v !== null);
 
             // Upsert to Pinecone
             $response = Http::withHeaders([
@@ -92,7 +94,7 @@ class PineconeService
                 
                 // If namespace doesn't exist, consider it a success (product is not in Pinecone anyway)
                 if (isset($responseBody['code']) && $responseBody['code'] === 5) {
-                    Log::info("Product {$productId} - Namespace not found in Pinecone (product was not synced yet)");
+                    Log::debug("Product {$productId} - Namespace not found in Pinecone (product was not synced yet)");
                     return true;
                 }
                 
@@ -137,13 +139,19 @@ class PineconeService
     protected function generateOpenAIEmbedding($text)
     {
         try {
+            $payload = [
+                'input' => $text,
+                'model' => 'text-embedding-3-small',
+            ];
+            // Match Pinecone index dimension (default 1024)
+            if ($this->embeddingDimension !== 1536) {
+                $payload['dimensions'] = $this->embeddingDimension;
+            }
+
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . config('services.openai.api_key'),
                 'Content-Type' => 'application/json',
-            ])->post('https://api.openai.com/v1/embeddings', [
-                'input' => $text,
-                'model' => 'text-embedding-3-small',
-            ]);
+            ])->post('https://api.openai.com/v1/embeddings', $payload);
 
             if ($response->successful()) {
                 return $response->json()['data'][0]['embedding'];
@@ -160,8 +168,9 @@ class PineconeService
      * Generate a simple vector based on text hash
      * This is a fallback method - for production use proper embeddings
      */
-    protected function generateSimpleVector($text, $dimensions = 1536)
+    protected function generateSimpleVector($text, $dimensions = null)
     {
+        $dimensions = $dimensions ?? $this->embeddingDimension;
         $hash = md5($text);
         $vector = [];
         

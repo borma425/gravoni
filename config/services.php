@@ -39,6 +39,7 @@ return [
         'api_key' => env('PINECONE_API_KEY'),
         'index_name' => env('PINECONE_INDEX_NAME'),
         'index_host' => env('PINECONE_INDEX_HOST'),
+        'embedding_dimension' => (int) env('PINECONE_EMBEDDING_DIMENSION', 1024),
     ],
 
     'openai' => [
