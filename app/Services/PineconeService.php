@@ -88,6 +88,14 @@ class PineconeService
                 Log::info("Product {$productId} deleted from Pinecone successfully");
                 return true;
             } else {
+                $responseBody = $response->json();
+                
+                // If namespace doesn't exist, consider it a success (product is not in Pinecone anyway)
+                if (isset($responseBody['code']) && $responseBody['code'] === 5) {
+                    Log::info("Product {$productId} - Namespace not found in Pinecone (product was not synced yet)");
+                    return true;
+                }
+                
                 Log::error("Failed to delete product {$productId} from Pinecone: " . $response->body());
                 return false;
             }
