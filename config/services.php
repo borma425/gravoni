@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'pinecone' => [
+        'api_key' => env('PINECONE_API_KEY'),
+        'index_name' => env('PINECONE_INDEX_NAME'),
+        'index_host' => env('PINECONE_INDEX_HOST'),
+    ],
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
 ];

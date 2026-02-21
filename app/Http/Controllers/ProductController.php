@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
 use App\Services\StockService;
+use App\Services\PineconeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -12,10 +13,12 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     protected $stockService;
+    protected $pineconeService;
 
-    public function __construct(StockService $stockService)
+    public function __construct(StockService $stockService, PineconeService $pineconeService)
     {
         $this->stockService = $stockService;
+        $this->pineconeService = $pineconeService;
     }
 
     /**
@@ -54,7 +57,10 @@ class ProductController extends Controller
             $data['sample'] = $request->file('sample')->store('products/samples', 'public');
         }
         
-        Product::create($data);
+        $product = Product::create($data);
+
+        // Sync to Pinecone
+        $this->pineconeService->upsertProduct($product);
 
         return redirect()->route('products.index')
             ->with('success', 'تم إضافة المنتج بنجاح');
@@ -107,6 +113,9 @@ class ProductController extends Controller
 
         $product->update($data);
 
+        // Sync to Pinecone
+        $this->pineconeService->upsertProduct($product);
+
         return redirect()->route('products.index')
             ->with('success', 'تم تحديث المنتج بنجاح');
     }
@@ -116,7 +125,12 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        $productId = $product->id;
+        
         $product->delete();
+
+        // Delete from Pinecone
+        $this->pineconeService->deleteProduct($productId);
 
         return redirect()->route('products.index')
             ->with('success', 'تم حذف المنتج بنجاح');
