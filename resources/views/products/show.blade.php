@@ -53,13 +53,21 @@
                 @if($product->available_sizes && count($product->available_sizes) > 0)
                 <div>
                     <dt class="text-sm font-medium text-gray-500">الأحجام المتاحة</dt>
-                    <dd class="mt-1 text-sm text-gray-900">{{ implode(', ', $product->available_sizes) }}</dd>
+                    <dd class="mt-1.5 flex flex-wrap gap-2">
+                        @foreach($product->available_sizes as $s)
+                            <span class="inline-flex px-3 py-1 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">{{ $s }}</span>
+                        @endforeach
+                    </dd>
                 </div>
                 @endif
                 @if($product->available_colors && count($product->available_colors) > 0)
                 <div>
                     <dt class="text-sm font-medium text-gray-500">الألوان المتاحة</dt>
-                    <dd class="mt-1 text-sm text-gray-900">{{ implode(', ', $product->available_colors) }}</dd>
+                    <dd class="mt-1.5 flex flex-wrap gap-2">
+                        @foreach($product->available_colors as $c)
+                            <span class="inline-flex px-3 py-1 rounded-lg text-sm font-medium bg-violet-100 text-violet-800 border border-violet-200">{{ $c }}</span>
+                        @endforeach
+                    </dd>
                 </div>
                 @endif
                 <div>
@@ -72,11 +80,19 @@
                     <dd class="mt-1 text-sm text-gray-900">{{ $product->description }}</dd>
                 </div>
                 @endif
-                @if($product->sample)
+                @php $samples = $product->samples ?? []; @endphp
+                @if(!empty($samples))
                 <div>
-                    <dt class="text-sm font-medium text-gray-500">عينة</dt>
-                    <dd class="mt-1">
-                        <img src="{{ Storage::url($product->sample) }}" alt="عينة المنتج" class="max-w-md rounded-md border border-gray-300">
+                    <dt class="text-sm font-medium text-gray-500">صور العينة</dt>
+                    <dd class="mt-3">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            @foreach($samples as $idx => $path)
+                                <a href="{{ Storage::url($path) }}" target="_blank" class="block group rounded-xl overflow-hidden border-2 border-gray-200 hover:border-slate-400 shadow-sm hover:shadow-md transition-all">
+                                    <img src="{{ Storage::url($path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-200">
+                                    <span class="block py-1.5 text-center text-xs text-gray-500 bg-gray-50">صورة {{ $idx + 1 }}</span>
+                                </a>
+                            @endforeach
+                        </div>
                     </dd>
                 </div>
                 @endif

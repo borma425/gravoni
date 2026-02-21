@@ -24,13 +24,15 @@ class ProductApiController extends Controller
             'description',
             'available_sizes',
             'available_colors',
-            'sample',
+            'samples',
             'created_at',
             'updated_at'
         ])->get();
 
         // Format products data
         $formattedProducts = $products->map(function ($product) {
+            $samples = $product->samples ?? [];
+            $sampleUrls = array_map(fn ($p) => asset('storage/' . $p), $samples);
             return [
                 'id' => (string) $product->id,
                 'name' => $product->name,
@@ -40,7 +42,8 @@ class ProductApiController extends Controller
                 'availableColors' => $product->available_colors ?? [],
                 'stockCount' => (int) $product->quantity,
                 'description' => $product->description ?? '',
-                'sample' => $product->sample ? asset('storage/' . $product->sample) : null,
+                'samples' => $sampleUrls,
+                'sample' => !empty($sampleUrls) ? $sampleUrls[0] : null,
                 'sku' => $product->sku,
                 'created_at' => $product->created_at->toISOString(),
                 'updated_at' => $product->updated_at->toISOString(),
@@ -69,7 +72,7 @@ class ProductApiController extends Controller
             'description',
             'available_sizes',
             'available_colors',
-            'sample',
+            'samples',
             'created_at',
             'updated_at'
         ])->find($id);
@@ -81,6 +84,9 @@ class ProductApiController extends Controller
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
 
+        $samples = $product->samples ?? [];
+        $sampleUrls = array_map(fn ($p) => asset('storage/' . $p), $samples);
+
         $formattedProduct = [
             'id' => (string) $product->id,
             'name' => $product->name,
@@ -90,7 +96,8 @@ class ProductApiController extends Controller
             'availableColors' => $product->available_colors ?? [],
             'stockCount' => (int) $product->quantity,
             'description' => $product->description ?? '',
-            'sample' => $product->sample ? asset('storage/' . $product->sample) : null,
+            'samples' => $sampleUrls,
+            'sample' => !empty($sampleUrls) ? $sampleUrls[0] : null,
             'sku' => $product->sku,
             'created_at' => $product->created_at->toISOString(),
             'updated_at' => $product->updated_at->toISOString(),

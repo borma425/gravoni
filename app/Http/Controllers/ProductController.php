@@ -51,12 +51,16 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $data = $request->validated();
-        
-        // Handle sample image upload
-        if ($request->hasFile('sample')) {
-            $data['sample'] = $request->file('sample')->store('products/samples', 'public');
+        unset($data['samples'], $data['samples_remove'], $data['available_colors_input']);
+
+        // Handle multiple sample images
+        $data['samples'] = [];
+        if ($request->hasFile('samples')) {
+            foreach ($request->file('samples') as $file) {
+                $data['samples'][] = $file->store('products/samples', 'public');
+            }
         }
-        
+
         $product = Product::create($data);
 
         // Sync to Pinecone
@@ -90,26 +94,35 @@ class ProductController extends Controller
     public function update(StoreProductRequest $request, Product $product)
     {
         $data = $request->validated();
-        
+        unset($data['samples'], $data['samples_remove'], $data['available_colors_input']);
+
         // Handle SKU uniqueness check for update
         if ($product->sku !== $data['sku']) {
             $validator = Validator::make($data, [
                 'sku' => 'unique:products,sku,' . $product->id,
             ]);
-            
             if ($validator->fails()) {
                 return back()->withErrors($validator)->withInput();
             }
         }
-        
-        // Handle sample image upload
-        if ($request->hasFile('sample')) {
-            // Delete old image if exists
-            if ($product->sample && Storage::disk('public')->exists($product->sample)) {
-                Storage::disk('public')->delete($product->sample);
+
+        // Handle samples: keep existing minus removed, add new
+        $samples = $product->samples ?? [];
+        $removeIndices = $request->input('samples_remove', []);
+        foreach ($removeIndices as $idx) {
+            if (isset($samples[$idx]) && Storage::disk('public')->exists($samples[$idx])) {
+                Storage::disk('public')->delete($samples[$idx]);
+                unset($samples[$idx]);
             }
-            $data['sample'] = $request->file('sample')->store('products/samples', 'public');
         }
+        $samples = array_values($samples);
+
+        if ($request->hasFile('samples')) {
+            foreach ($request->file('samples') as $file) {
+                $samples[] = $file->store('products/samples', 'public');
+            }
+        }
+        $data['samples'] = $samples;
 
         $product->update($data);
 
@@ -126,8 +139,16 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $productId = $product->id;
-        
+        $samples = $product->samples ?? [];
+
         $product->delete();
+
+        // Delete sample images from storage
+        foreach ($samples as $path) {
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
 
         // Delete from Pinecone
         $this->pineconeService->deleteProduct($productId);

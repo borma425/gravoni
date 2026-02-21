@@ -16,7 +16,7 @@ class Product extends Model
         'description',
         'available_sizes',
         'available_colors',
-        'sample',
+        'samples',
     ];
 
     protected $casts = [
@@ -25,7 +25,17 @@ class Product extends Model
         'quantity' => 'integer',
         'available_sizes' => 'array',
         'available_colors' => 'array',
+        'samples' => 'array',
     ];
+
+    /**
+     * Get first sample image URL (backward compatibility).
+     */
+    public function getSampleAttribute(): ?string
+    {
+        $samples = $this->samples ?? [];
+        return !empty($samples) ? $samples[0] : null;
+    }
 
     /**
      * Get all purchases for this product

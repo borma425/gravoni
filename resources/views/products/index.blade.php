@@ -55,20 +55,15 @@
                         </span>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm text-gray-500">
-                            @if($product->available_sizes || $product->available_colors)
-                                @if($product->available_sizes)
-                                    <div class="mb-1">
-                                        <span class="font-medium">أحجام:</span> {{ implode(', ', $product->available_sizes) }}
-                                    </div>
-                                @endif
-                                @if($product->available_colors)
-                                    <div>
-                                        <span class="font-medium">ألوان:</span> {{ implode(', ', $product->available_colors) }}
-                                    </div>
-                                @endif
-                            @else
-                                -
+                        <div class="flex flex-wrap gap-1.5">
+                            @foreach($product->available_sizes ?? [] as $s)
+                                <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">{{ $s }}</span>
+                            @endforeach
+                            @foreach($product->available_colors ?? [] as $c)
+                                <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-violet-100 text-violet-800">{{ $c }}</span>
+                            @endforeach
+                            @if(empty($product->available_sizes ?? []) && empty($product->available_colors ?? []))
+                                <span class="text-gray-400 text-sm">-</span>
                             @endif
                         </div>
                     </td>
@@ -76,8 +71,16 @@
                         <div class="text-sm text-gray-500 max-w-xs truncate">{{ $product->description ?? '-' }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        @if($product->sample)
-                            <img src="{{ Storage::url($product->sample) }}" alt="عينة" class="h-12 w-12 object-cover rounded-md border border-gray-300">
+                        @php $samples = $product->samples ?? []; @endphp
+                        @if(!empty($samples))
+                            <div class="flex -space-x-2">
+                                @foreach(array_slice($samples, 0, 3) as $path)
+                                    <img src="{{ Storage::url($path) }}" alt="عينة" class="h-10 w-10 rounded-lg object-cover border-2 border-white shadow-sm" title="صورة عينة">
+                                @endforeach
+                                @if(count($samples) > 3)
+                                    <span class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 border-2 border-white">+{{ count($samples) - 3 }}</span>
+                                @endif
+                            </div>
                         @else
                             <span class="text-sm text-gray-400">-</span>
                         @endif
