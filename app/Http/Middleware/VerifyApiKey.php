@@ -27,7 +27,7 @@ class VerifyApiKey
         if (!$apiKey || $apiKey !== $validApiKey) {
             return response()->json([
                 'success' => false,
-                'message' => 'غير مصرح - API Key غير صحيح أو مفقود'
+                'message' => 'Unauthorized - Invalid or missing API Key'
             ], 401, [], JSON_UNESCAPED_UNICODE);
         }
         

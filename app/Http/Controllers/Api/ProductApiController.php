@@ -80,7 +80,7 @@ class ProductApiController extends Controller
         if (!$product) {
             return response()->json([
                 'success' => false,
-                'message' => 'المنتج غير موجود'
+                'message' => 'Product not found'
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
 
