@@ -199,20 +199,58 @@
     }
     function removeColor(btn) { btn.closest('span').remove(); }
 
-    // Multiple images preview
+    // Multiple images preview and management
+    let selectedFiles = new DataTransfer();
+
     document.getElementById('samples').addEventListener('change', function(e) {
         const container = document.getElementById('samples-preview');
+        
+        // Add new files to our DataTransfer object
+        Array.from(this.files || []).forEach(file => {
+            selectedFiles.items.add(file);
+        });
+        
+        // Update the actual input files
+        this.files = selectedFiles.files;
+        
+        renderPreviews();
+    });
+
+    function renderPreviews() {
+        const container = document.getElementById('samples-preview');
         container.innerHTML = '';
-        Array.from(this.files || []).forEach((file, i) => {
+        
+        Array.from(selectedFiles.files).forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const div = document.createElement('div');
                 div.className = 'relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm';
-                div.innerHTML = `<img src="${ev.target.result}" alt="معاينة" class="w-full h-24 object-cover"><span class="absolute bottom-1 left-1 text-xs bg-black/60 text-white px-1.5 py-0.5 rounded">${file.name}</span>`;
+                div.innerHTML = `
+                    <img src="${ev.target.result}" alt="معاينة" class="w-full h-24 object-cover">
+                    <button type="button" class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" onclick="removeNewImage(${index})" title="حذف هذه الصورة">
+                        <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <span class="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded truncate max-w-[90%]">${file.name}</span>
+                `;
                 container.appendChild(div);
             };
             reader.readAsDataURL(file);
         });
-    });
+    }
+
+    function removeNewImage(indexToRemove) {
+        const dt = new DataTransfer();
+        const files = selectedFiles.files;
+        
+        for (let i = 0; i < files.length; i++) {
+            if (i !== indexToRemove) {
+                dt.items.add(files[i]);
+            }
+        }
+        
+        selectedFiles = dt;
+        document.getElementById('samples').files = selectedFiles.files; // Update the actual input
+        renderPreviews(); // Re-render previews
+    }
 </script>
 @endsection

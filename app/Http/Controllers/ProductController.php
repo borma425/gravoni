@@ -108,7 +108,7 @@ class ProductController extends Controller
 
         // Handle samples: keep existing minus removed, add new
         $samples = $product->samples ?? [];
-        $removeIndices = $request->input('samples_remove', []);
+        $removeIndices = array_map('intval', (array) $request->input('samples_remove', []));
         foreach ($removeIndices as $idx) {
             if (isset($samples[$idx]) && Storage::disk('public')->exists($samples[$idx])) {
                 Storage::disk('public')->delete($samples[$idx]);

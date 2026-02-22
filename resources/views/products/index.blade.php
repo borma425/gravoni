@@ -75,7 +75,7 @@
                         @if(!empty($samples))
                             <div class="flex -space-x-2">
                                 @foreach(array_slice($samples, 0, 3) as $path)
-                                    <img src="{{ Storage::url($path) }}" alt="عينة" class="h-10 w-10 rounded-lg object-cover border-2 border-white shadow-sm" title="صورة عينة">
+                                    <img src="{{ asset('storage/' . $path) }}" alt="عينة" class="h-10 w-10 rounded-lg object-cover border-2 border-white shadow-sm" title="صورة عينة">
                                 @endforeach
                                 @if(count($samples) > 3)
                                     <span class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 border-2 border-white">+{{ count($samples) - 3 }}</span>

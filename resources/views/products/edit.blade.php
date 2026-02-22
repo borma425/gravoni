@@ -140,22 +140,22 @@
                 @php $existingSamples = $product->samples ?? []; @endphp
                 <div id="samples-remove-inputs" class="hidden"></div>
                 @if(count($existingSamples) > 0)
-                    <p class="text-sm text-gray-600 mb-2">الصور الحالية (اضغط ✕ لحذف عند الحفظ):</p>
-                    <div id="existing-samples" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-3">
+                    <p class="text-sm text-gray-600 mb-2">الصور الحالية — اضغط على ✕ لحذف الصورة عند حفظ التعديلات</p>
+                    <div id="existing-samples" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
                         @foreach($existingSamples as $idx => $path)
-                            <div class="relative group rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm" data-idx="{{ $idx }}">
-                                <img src="{{ Storage::url($path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-28 object-cover">
-                                <button type="button" class="samples-remove absolute top-1 right-1 w-7 h-7 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full opacity-90 hover:opacity-100 shadow transition-all" data-idx="{{ $idx }}" title="حذف عند الحفظ">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <div class="sample-card relative rounded-xl overflow-hidden border-2 border-gray-200 bg-white shadow-sm hover:shadow-md transition-all group" data-idx="{{ $idx }}">
+                                <img src="{{ asset('storage/' . $path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-32 object-cover">
+                                <button type="button" class="sample-remove-btn absolute top-1 right-1 z-20 w-6 h-6 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-all cursor-pointer opacity-0 group-hover:opacity-100" data-idx="{{ $idx }}" title="حذف الصورة">
+                                    <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
-                                <span class="absolute bottom-1 left-1 text-xs bg-black/60 text-white px-2 py-0.5 rounded">صورة {{ $idx + 1 }}</span>
+                                <span class="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded">صورة {{ $idx + 1 }}</span>
                             </div>
                         @endforeach
                     </div>
                 @endif
-                <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-slate-400 transition-colors bg-gray-50/50">
+                <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-slate-400 transition-colors bg-gray-50/50 min-h-[140px]">
                     <input type="file" name="samples[]" id="samples" accept="image/*" multiple
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                     <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
@@ -213,22 +213,33 @@
     }
     function removeColor(btn) { btn.closest('span').remove(); }
 
-    // Samples remove - track indices to remove on submit
+    // Samples remove - immediate visual removal
     const toRemove = new Set();
-    document.querySelectorAll('.samples-remove').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const idx = parseInt(this.dataset.idx);
-            toRemove.add(idx);
-            this.closest('[data-idx]').style.opacity = '0.5';
-            this.disabled = true;
-            updateSamplesRemoveInputs();
+    const existingSamplesEl = document.getElementById('existing-samples');
+    if (existingSamplesEl) {
+        existingSamplesEl.addEventListener('click', function(e) {
+            const btn = e.target.closest('.sample-remove-btn');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            const idx = parseInt(btn.getAttribute('data-idx'), 10);
+            if (isNaN(idx)) return;
+            const card = btn.closest('.sample-card');
+            
+            if (!toRemove.has(idx)) {
+                toRemove.add(idx);
+                if (card) {
+                    card.style.display = 'none'; // Visually hide it immediately
+                }
+                updateSamplesRemoveInputs();
+            }
         });
-    });
+    }
     function updateSamplesRemoveInputs() {
         const cont = document.getElementById('samples-remove-inputs');
         if (!cont) return;
         cont.innerHTML = '';
-        toRemove.forEach(idx => {
+        [...toRemove].sort((a,b)=>a-b).forEach(idx => {
             const inp = document.createElement('input');
             inp.type = 'hidden';
             inp.name = 'samples_remove[]';
@@ -236,22 +247,59 @@
             cont.appendChild(inp);
         });
     }
-    updateSamplesRemoveInputs();
 
-    // New images preview
+    // New images preview and management
+    let selectedFiles = new DataTransfer();
+
     document.getElementById('samples').addEventListener('change', function(e) {
         const container = document.getElementById('samples-preview');
+        
+        // Add new files to our DataTransfer object
+        Array.from(this.files || []).forEach(file => {
+            selectedFiles.items.add(file);
+        });
+        
+        // Update the actual input files
+        this.files = selectedFiles.files;
+        
+        renderPreviews();
+    });
+
+    function renderPreviews() {
+        const container = document.getElementById('samples-preview');
         container.innerHTML = '';
-        Array.from(this.files || []).forEach((file) => {
+        
+        Array.from(selectedFiles.files).forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const div = document.createElement('div');
                 div.className = 'relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm';
-                div.innerHTML = `<img src="${ev.target.result}" alt="معاينة" class="w-full h-24 object-cover"><span class="absolute bottom-1 left-1 text-xs bg-black/60 text-white px-1.5 py-0.5 rounded">${file.name}</span>`;
+                div.innerHTML = `
+                    <img src="${ev.target.result}" alt="معاينة" class="w-full h-24 object-cover">
+                    <button type="button" class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" onclick="removeNewImage(${index})" title="حذف هذه الصورة">
+                        <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <span class="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded truncate max-w-[90%]">${file.name}</span>
+                `;
                 container.appendChild(div);
             };
             reader.readAsDataURL(file);
         });
-    });
+    }
+
+    function removeNewImage(indexToRemove) {
+        const dt = new DataTransfer();
+        const files = selectedFiles.files;
+        
+        for (let i = 0; i < files.length; i++) {
+            if (i !== indexToRemove) {
+                dt.items.add(files[i]);
+            }
+        }
+        
+        selectedFiles = dt;
+        document.getElementById('samples').files = selectedFiles.files; // Update the actual input
+        renderPreviews(); // Re-render previews
+    }
 </script>
 @endsection

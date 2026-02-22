@@ -87,8 +87,8 @@
                     <dd class="mt-3">
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                             @foreach($samples as $idx => $path)
-                                <a href="{{ Storage::url($path) }}" target="_blank" class="block group rounded-xl overflow-hidden border-2 border-gray-200 hover:border-slate-400 shadow-sm hover:shadow-md transition-all">
-                                    <img src="{{ Storage::url($path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-200">
+                                <a href="{{ asset('storage/' . $path) }}" target="_blank" class="block group rounded-xl overflow-hidden border-2 border-gray-200 hover:border-slate-400 shadow-sm hover:shadow-md transition-all">
+                                    <img src="{{ asset('storage/' . $path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-200">
                                     <span class="block py-1.5 text-center text-xs text-gray-500 bg-gray-50">صورة {{ $idx + 1 }}</span>
                                 </a>
                             @endforeach
