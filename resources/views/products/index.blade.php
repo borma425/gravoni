@@ -57,7 +57,7 @@
                     <td class="px-6 py-4">
                         <div class="flex flex-wrap gap-1.5">
                             @foreach($product->available_sizes ?? [] as $s)
-                                <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">{{ $s }}</span>
+                                <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">{{ is_array($s) ? ($s['size'] ?? '?') : $s }}</span>
                             @endforeach
                             @foreach($product->available_colors ?? [] as $c)
                                 <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-violet-100 text-violet-800">{{ $c }}</span>

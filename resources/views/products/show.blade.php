@@ -51,12 +51,38 @@
                     </dd>
                 </div>
                 @if($product->available_sizes && count($product->available_sizes) > 0)
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">الأحجام المتاحة</dt>
-                    <dd class="mt-1.5 flex flex-wrap gap-2">
-                        @foreach($product->available_sizes as $s)
-                            <span class="inline-flex px-3 py-1 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">{{ $s }}</span>
-                        @endforeach
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500 mb-2">مخطط المقاسات المتاح</dt>
+                    <dd class="mt-1 flex flex-col">
+                        <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-2.5 text-right font-semibold text-gray-900">المقاس</th>
+                                        <th scope="col" class="px-4 py-2.5 text-right font-semibold text-gray-900">الصدر (سم)</th>
+                                        <th scope="col" class="px-4 py-2.5 text-right font-semibold text-gray-900">الوزن (كجم)</th>
+                                        <th scope="col" class="px-4 py-2.5 text-right font-semibold text-gray-900">الطول (سم)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white">
+                                    @foreach($product->available_sizes as $s)
+                                        @if(is_array($s))
+                                        <tr class="hover:bg-gray-50/50">
+                                            <td class="whitespace-nowrap px-4 py-2 font-bold text-emerald-700 bg-emerald-50/30">{{ $s['size'] ?? '-' }}</td>
+                                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ $s['chest_width_cm'] ?? '-' }}</td>
+                                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ $s['weight_kg']['min'] ?? '-' }} - {{ $s['weight_kg']['max'] ?? '-' }}</td>
+                                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ $s['height_cm']['min'] ?? '-' }} - {{ $s['height_cm']['max'] ?? '-' }}</td>
+                                        </tr>
+                                        @else
+                                        <tr class="hover:bg-gray-50/50">
+                                            <td class="whitespace-nowrap px-4 py-2 font-bold text-gray-700 bg-gray-50">{{ $s }}</td>
+                                            <td colspan="3" class="whitespace-nowrap px-4 py-2 text-gray-400 text-center">لا يوجد تفاصيل إضافية لهذا المقاس</td>
+                                        </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </dd>
                 </div>
                 @endif

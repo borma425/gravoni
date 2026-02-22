@@ -70,29 +70,82 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">الأحجام المتاحة</label>
-                <div class="flex gap-2 mb-2">
-                    <input type="text" id="size-input" placeholder="أدخل حجم جديد (مثل: S, M, L, XL)"
-                           class="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
-                    <button type="button" id="add-size-btn" class="px-4 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors text-sm font-medium">
-                        إضافة
-                    </button>
+                <label class="block text-sm font-medium text-gray-700 mb-2">الأحجام المتاحة ومخطط المقاسات</label>
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-3">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">المقاس (مثال: M)</label>
+                            <input type="text" id="size-name" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">عرض الصدر (سم)</label>
+                            <input type="number" id="size-chest" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                        </div>
+                        <div class="sm:col-span-2 md:col-span-1">
+                            <label class="block text-xs text-gray-500 mb-1">الوزن (كجم)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="size-w-min" placeholder="أدنى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                                <span class="text-gray-400">-</span>
+                                <input type="number" id="size-w-max" placeholder="أقصى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                            </div>
+                        </div>
+                        <div class="sm:col-span-2 md:col-span-1 border-t sm:border-t-0 pt-3 sm:pt-0">
+                            <label class="block text-xs text-gray-500 mb-1">الطول (سم)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="size-h-min" placeholder="أدنى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                                <span class="text-gray-400">-</span>
+                                <input type="number" id="size-h-max" placeholder="أقصى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" id="add-size-btn" class="px-4 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors text-sm font-medium">
+                            إضافة المقاس
+                        </button>
+                    </div>
                 </div>
-                <div id="sizes-container" class="flex flex-wrap gap-2 min-h-[44px] p-3 border border-gray-200 rounded-lg bg-gray-50/50">
+
+                <div id="sizes-container" class="flex flex-col gap-3 min-h-[44px]">
                     @if(is_array(old('available_sizes')))
-                        @foreach(old('available_sizes') as $size)
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-sm">
-                                {{ $size }}
-                                <input type="hidden" name="available_sizes[]" value="{{ $size }}">
-                                <button type="button" class="p-0.5 rounded hover:bg-emerald-200/80 transition-colors" onclick="removeSize(this)" aria-label="حذف">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                            </span>
+                        @foreach(old('available_sizes') as $index => $sizeObj)
+                            @if(is_array($sizeObj) && isset($sizeObj['size']))
+                                <div class="relative bg-white border border-emerald-200 shadow-sm rounded-lg p-3 flex flex-wrap md:flex-nowrap items-center gap-4">
+                                    <div class="flex-shrink-0 w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center font-bold text-lg">
+                                        {{ $sizeObj['size'] }}
+                                    </div>
+                                    <div class="flex-1 grid grid-cols-3 gap-2 text-sm text-gray-600">
+                                        <div><span class="font-medium text-gray-900">الصدر:</span> {{ $sizeObj['chest_width_cm'] ?? '-' }} سم</div>
+                                        <div><span class="font-medium text-gray-900">الوزن:</span> {{ $sizeObj['weight_kg']['min'] ?? '-' }} - {{ $sizeObj['weight_kg']['max'] ?? '-' }} كجم</div>
+                                        <div><span class="font-medium text-gray-900">الطول:</span> {{ $sizeObj['height_cm']['min'] ?? '-' }} - {{ $sizeObj['height_cm']['max'] ?? '-' }} سم</div>
+                                    </div>
+                                    <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj['size'] }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][chest_width_cm]" value="{{ $sizeObj['chest_width_cm'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][min]" value="{{ $sizeObj['weight_kg']['min'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][max]" value="{{ $sizeObj['weight_kg']['max'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
+                                    <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)" title="حذف المقاس">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                            @elseif(is_string($sizeObj))
+                                <!-- Fallback for old simple string sizes if validation fails over old data -->
+                                <div class="relative bg-white border border-gray-200 shadow-sm rounded-lg p-3 flex items-center gap-4">
+                                    <div class="flex-shrink-0 bg-gray-100 text-gray-800 px-3 py-1 rounded font-bold">{{ $sizeObj }}</div>
+                                    <div class="flex-1 text-sm text-gray-500">بيانات غير مكتملة</div>
+                                    <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj }}">
+                                    <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                            @endif
                         @endforeach
                     @endif
                 </div>
-                <p class="mt-1.5 text-xs text-gray-500">أدخل كل حجم واضغط إضافة</p>
                 @error('available_sizes')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                @error('available_sizes.*')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
             </div>
@@ -167,21 +220,64 @@
 </div>
 
 <script>
-    // Sizes - same UX as colors
-    document.getElementById('add-size-btn').addEventListener('click', () => addSizeFromInput());
-    document.getElementById('size-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addSizeFromInput(); } });
-    function addSizeFromInput() {
-        const v = document.getElementById('size-input').value.trim();
-        if (v) { addSizeBadge(v); document.getElementById('size-input').value = ''; }
+    // Sizes detailed logic
+    let sizeIndexCounter = document.querySelectorAll('#sizes-container > div').length || 0;
+    
+    document.getElementById('add-size-btn').addEventListener('click', () => addSizeFromInputs());
+    const sizeInputs = ['size-name', 'size-chest', 'size-w-min', 'size-w-max', 'size-h-min', 'size-h-max'];
+    sizeInputs.forEach(id => {
+        document.getElementById(id).addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); addSizeFromInputs(); }
+        });
+    });
+
+    function addSizeFromInputs() {
+        const sizeName = document.getElementById('size-name').value.trim();
+        const chest = document.getElementById('size-chest').value.trim();
+        const wMin = document.getElementById('size-w-min').value.trim();
+        const wMax = document.getElementById('size-w-max').value.trim();
+        const hMin = document.getElementById('size-h-min').value.trim();
+        const hMax = document.getElementById('size-h-max').value.trim();
+
+        if (!sizeName) {
+            alert('يرجى إدخال اسم المقاس على الأقل (مثال: M أو L)');
+            return;
+        }
+
+        addSizeCard({ size: sizeName, chest, wMin, wMax, hMin, hMax }, sizeIndexCounter++);
+        
+        // Clear inputs
+        sizeInputs.forEach(id => document.getElementById(id).value = '');
+        document.getElementById('size-name').focus();
     }
-    function addSizeBadge(size) {
+
+    function addSizeCard(data, index) {
         const c = document.getElementById('sizes-container');
-        const b = document.createElement('span');
-        b.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-100 text-emerald-800 border border-emerald-200 shadow-sm';
-        b.innerHTML = `${size}<input type="hidden" name="available_sizes[]" value="${size}"><button type="button" class="p-0.5 rounded hover:bg-emerald-200/80" onclick="removeSize(this)"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>`;
-        c.appendChild(b);
+        const d = document.createElement('div');
+        d.className = 'relative bg-white border border-emerald-200 shadow-sm rounded-lg p-3 flex flex-wrap md:flex-nowrap items-center gap-4 animate-fade-in-up';
+        
+        d.innerHTML = `
+            <div class="flex-shrink-0 w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center font-bold text-lg">
+                ${data.size}
+            </div>
+            <div class="flex-1 grid grid-cols-3 gap-2 text-sm text-gray-600">
+                <div><span class="font-medium text-gray-900">الصدر:</span> ${data.chest || '-'} سم</div>
+                <div><span class="font-medium text-gray-900">الوزن:</span> ${data.wMin || '-'} - ${data.wMax || '-'} كجم</div>
+                <div><span class="font-medium text-gray-900">الطول:</span> ${data.hMin || '-'} - ${data.hMax || '-'} سم</div>
+            </div>
+            <input type="hidden" name="available_sizes[${index}][size]" value="${data.size}">
+            <input type="hidden" name="available_sizes[${index}][chest_width_cm]" value="${data.chest}">
+            <input type="hidden" name="available_sizes[${index}][weight_kg][min]" value="${data.wMin}">
+            <input type="hidden" name="available_sizes[${index}][weight_kg][max]" value="${data.wMax}">
+            <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
+            <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
+            <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)" title="حذف المقاس">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        `;
+        c.appendChild(d);
     }
-    function removeSize(btn) { btn.closest('span').remove(); }
+    function removeSize(btn) { btn.closest('div.relative.bg-white').remove(); }
 
     // Colors
     document.getElementById('add-color-btn').addEventListener('click', () => addColorFromInput());
