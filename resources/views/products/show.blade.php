@@ -42,6 +42,44 @@
                     <dd class="mt-1 text-sm text-green-600 font-medium">{{ number_format($product->discounted_price, 2) }} ج.م</dd>
                 </div>
                 @endif
+                @if($product->available_colors && count($product->available_colors) > 0)
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500 mb-2">الألوان المتاحة</dt>
+                    <dd class="mt-1">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            @foreach($product->available_colors as $color)
+                                @if(is_array($color))
+                                <div class="bg-fuchsia-50/50 rounded-lg p-3 border border-fuchsia-100">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-sm font-bold bg-fuchsia-100 text-fuchsia-800 border border-fuchsia-200 mb-2">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-fuchsia-500"></span>
+                                        {{ $color['color'] ?? 'بدون اسم' }}
+                                    </span>
+                                    @if(isset($color['images']) && is_array($color['images']) && count($color['images']) > 0)
+                                        <div class="flex flex-wrap gap-1.5 mt-2">
+                                            @foreach($color['images'] as $imgPath)
+                                                <a href="{{ asset('storage/' . $imgPath) }}" target="_blank">
+                                                    <img src="{{ asset('storage/' . $imgPath) }}" class="w-12 h-12 rounded-md object-cover border border-slate-200 hover:opacity-80 transition-opacity shadow-sm">
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    @if(isset($color['videos']) && is_array($color['videos']) && count($color['videos']) > 0)
+                                        <div class="flex flex-wrap gap-1 mt-1.5">
+                                            @foreach($color['videos'] as $vidPath)
+                                                <a href="{{ asset('storage/' . $vidPath) }}" target="_blank" class="inline-flex items-center gap-1 bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded hover:bg-slate-700 transition-colors">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                    فيديو
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </dd>
+                </div>
+                @endif
                 @if($product->available_sizes && count($product->available_sizes) > 0)
                 <div class="sm:col-span-2">
                     <dt class="text-sm font-medium text-gray-500 mb-2">مخطط المقاسات المتاح</dt>
@@ -67,43 +105,17 @@
                                             <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ $s['height_cm']['min'] ?? '-' }} - {{ $s['height_cm']['max'] ?? '-' }}</td>
                                             <td class="px-4 py-2">
                                                 @if(isset($s['colors']) && is_array($s['colors']) && count($s['colors']) > 0)
-                                                    <div class="space-y-2">
+                                                    <div class="flex flex-wrap gap-1.5">
                                                         @foreach($s['colors'] as $cObj)
-                                                            <div class="bg-violet-50/50 rounded-lg p-2 border border-violet-100">
-                                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200 mb-1">
-                                                                    {{ $cObj['color'] ?? 'بدون اسم' }} (كمية: {{ $cObj['stock'] ?? 0 }})
-                                                                </span>
-                                                                @if(isset($cObj['images']) && is_array($cObj['images']) && count($cObj['images']) > 0)
-                                                                    <div class="flex flex-wrap gap-1 mt-1">
-                                                                        @foreach($cObj['images'] as $imgPath)
-                                                                            <a href="{{ asset('storage/' . $imgPath) }}" target="_blank">
-                                                                                <img src="{{ asset('storage/' . $imgPath) }}" class="w-10 h-10 rounded object-cover border border-slate-200 hover:opacity-80 transition-opacity">
-                                                                            </a>
-                                                                        @endforeach
-                                                                    </div>
-                                                                @endif
-                                                                @if(isset($cObj['videos']) && is_array($cObj['videos']) && count($cObj['videos']) > 0)
-                                                                    <div class="flex flex-wrap gap-1 mt-1">
-                                                                        @foreach($cObj['videos'] as $vidPath)
-                                                                            <a href="{{ asset('storage/' . $vidPath) }}" target="_blank" class="inline-flex items-center gap-1 bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded hover:bg-slate-700 transition-colors">
-                                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                                                                فيديو
-                                                                            </a>
-                                                                        @endforeach
-                                                                    </div>
-                                                                @endif
-                                                            </div>
+                                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200">
+                                                                {{ $cObj['color'] ?? '' }} ({{ $cObj['stock'] ?? 0 }})
+                                                            </span>
                                                         @endforeach
                                                     </div>
                                                 @else
                                                     <span class="text-xs text-gray-400">لا توجد ألوان</span>
                                                 @endif
                                             </td>
-                                        </tr>
-                                        @else
-                                        <tr class="hover:bg-gray-50/50">
-                                            <td class="whitespace-nowrap px-4 py-2 font-bold text-gray-700 bg-gray-50">{{ $s }}</td>
-                                            <td colspan="4" class="whitespace-nowrap px-4 py-2 text-gray-400 text-center">لا يوجد تفاصيل إضافية لهذا المقاس</td>
                                         </tr>
                                         @endif
                                     @endforeach

@@ -18,25 +18,16 @@ class ProductController extends Controller
         $this->stockService = $stockService;
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $products = Product::paginate(20);
-        
-        // Calculate average cost for each product
         $products->getCollection()->transform(function ($product) {
             $product->average_cost = $this->stockService->calculateAverageCost($product);
             return $product;
         });
-
         return view('products.index', compact('products'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('products.create');
@@ -44,7 +35,6 @@ class ProductController extends Controller
 
     /**
      * Handle AJAX media upload (images or videos per color).
-     * Returns the stored path so the frontend can embed it in hidden inputs.
      */
     public function uploadMedia(Request $request)
     {
@@ -62,7 +52,6 @@ class ProductController extends Controller
             return response()->json(['message' => 'Invalid file.'], 400);
         }
 
-        // Validate mime type based on type param
         $type = $request->input('type');
         if ($type === 'image') {
             $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
@@ -97,22 +86,13 @@ class ProductController extends Controller
         $data = $request->validated();
         $data['quantity'] = 0;
 
-        // Normalize available_sizes to sequential array (fix non-sequential keys from JS)
-        if (isset($data['available_sizes']) && is_array($data['available_sizes'])) {
-            $data['available_sizes'] = array_values($data['available_sizes']);
-            foreach ($data['available_sizes'] as &$size) {
-                if (isset($size['colors']) && is_array($size['colors'])) {
-                    $size['colors'] = array_values($size['colors']);
-                }
-            }
-            unset($size);
-        }
+        // Normalize arrays to sequential
+        $data['available_sizes'] = $this->normalizeSizes($data['available_sizes'] ?? null);
+        $data['available_colors'] = $this->normalizeColors($data['available_colors'] ?? null);
 
-        // Media is already stored via AJAX and paths are embedded in available_sizes JSON
+        // Clear legacy standalone columns
         $data['samples'] = [];
         $data['videos'] = [];
-
-        \Log::info('Store Final Data', ['available_sizes' => $data['available_sizes'] ?? null]);
 
         $product = Product::create($data);
 
@@ -120,21 +100,12 @@ class ProductController extends Controller
             ->with('success', 'تم إضافة المنتج بنجاح');
     }
 
-
-
-    /**
-     * Display the specified resource.
-     */
     public function show(Product $product)
     {
         $product->average_cost = $this->stockService->calculateAverageCost($product);
-
         return view('products.show', compact('product'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Product $product)
     {
         return view('products.edit', compact('product'));
@@ -147,16 +118,9 @@ class ProductController extends Controller
     {
         $data = $request->validated();
 
-        // Normalize available_sizes to sequential array
-        if (isset($data['available_sizes']) && is_array($data['available_sizes'])) {
-            $data['available_sizes'] = array_values($data['available_sizes']);
-            foreach ($data['available_sizes'] as &$size) {
-                if (isset($size['colors']) && is_array($size['colors'])) {
-                    $size['colors'] = array_values($size['colors']);
-                }
-            }
-            unset($size);
-        }
+        // Normalize arrays
+        $data['available_sizes'] = $this->normalizeSizes($data['available_sizes'] ?? null);
+        $data['available_colors'] = $this->normalizeColors($data['available_colors'] ?? null);
 
         // Handle SKU uniqueness check for update
         if ($product->sku !== $data['sku']) {
@@ -168,14 +132,12 @@ class ProductController extends Controller
             }
         }
 
-        // Delete old media files that are no longer referenced
-        $this->cleanupOrphanedMedia($product, $data['available_sizes'] ?? []);
+        // Delete orphaned media files (media that was in old available_colors but not in new)
+        $this->cleanupOrphanedMedia($product, $data['available_colors'] ?? []);
 
-        // Media paths are already in available_sizes JSON (pre-uploaded via AJAX)
+        // Clear legacy standalone columns
         $data['samples'] = [];
         $data['videos'] = [];
-
-        \Log::info('Update Final Data', ['available_sizes' => $data['available_sizes'] ?? null]);
 
         $product->update($data);
 
@@ -183,24 +145,16 @@ class ProductController extends Controller
             ->with('success', 'تم تحديث المنتج بنجاح');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Product $product)
     {
-        // Delete all color media from storage
         $this->deleteAllProductMedia($product);
 
-        // Also delete any legacy standalone media
+        // Delete any legacy standalone media
         foreach (($product->samples ?? []) as $path) {
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
+            if (Storage::disk('public')->exists($path)) Storage::disk('public')->delete($path);
         }
         foreach (($product->videos ?? []) as $path) {
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
+            if (Storage::disk('public')->exists($path)) Storage::disk('public')->delete($path);
         }
 
         $product->delete();
@@ -209,60 +163,76 @@ class ProductController extends Controller
             ->with('success', 'تم حذف المنتج بنجاح');
     }
 
+    // ================================================================
+    // Helpers
+    // ================================================================
+
+    private function normalizeSizes(?array $sizes): ?array
+    {
+        if (!$sizes) return null;
+        $sizes = array_values($sizes);
+        foreach ($sizes as &$size) {
+            if (isset($size['colors']) && is_array($size['colors'])) {
+                $size['colors'] = array_values($size['colors']);
+            }
+        }
+        unset($size);
+        return $sizes;
+    }
+
+    private function normalizeColors(?array $colors): ?array
+    {
+        if (!$colors) return null;
+        return array_values($colors);
+    }
+
     /**
-     * Delete all media files from all colors in a product's available_sizes.
+     * Delete all media files from available_colors.
      */
     private function deleteAllProductMedia(Product $product): void
     {
-        $sizes = $product->available_sizes ?? [];
-        foreach ($sizes as $size) {
-            foreach (($size['colors'] ?? []) as $color) {
-                foreach (($color['images'] ?? []) as $path) {
-                    if (is_string($path) && Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
-                    }
+        $colors = $product->available_colors ?? [];
+        foreach ($colors as $color) {
+            foreach (($color['images'] ?? []) as $path) {
+                if (is_string($path) && Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
                 }
-                foreach (($color['videos'] ?? []) as $path) {
-                    if (is_string($path) && Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
-                    }
+            }
+            foreach (($color['videos'] ?? []) as $path) {
+                if (is_string($path) && Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
                 }
             }
         }
     }
 
     /**
-     * Delete media files that existed in the old product data but are no longer
-     * present in the updated available_sizes.
+     * Delete media files from old available_colors that are not in the new data.
      */
-    private function cleanupOrphanedMedia(Product $product, array $newSizes): void
+    private function cleanupOrphanedMedia(Product $product, array $newColors): void
     {
-        // Collect all media paths from the NEW data
+        // Collect all media paths from NEW data
         $newPaths = [];
-        foreach ($newSizes as $size) {
-            foreach (($size['colors'] ?? []) as $color) {
-                foreach (($color['images'] ?? []) as $p) {
-                    if (is_string($p)) $newPaths[$p] = true;
-                }
-                foreach (($color['videos'] ?? []) as $p) {
-                    if (is_string($p)) $newPaths[$p] = true;
-                }
+        foreach ($newColors as $color) {
+            foreach (($color['images'] ?? []) as $p) {
+                if (is_string($p)) $newPaths[$p] = true;
+            }
+            foreach (($color['videos'] ?? []) as $p) {
+                if (is_string($p)) $newPaths[$p] = true;
             }
         }
 
-        // Walk the OLD data and delete anything not in the new set
-        $oldSizes = $product->available_sizes ?? [];
-        foreach ($oldSizes as $size) {
-            foreach (($size['colors'] ?? []) as $color) {
-                foreach (($color['images'] ?? []) as $path) {
-                    if (is_string($path) && !isset($newPaths[$path]) && Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
-                    }
+        // Walk OLD data and delete anything missing from new set
+        $oldColors = $product->available_colors ?? [];
+        foreach ($oldColors as $color) {
+            foreach (($color['images'] ?? []) as $path) {
+                if (is_string($path) && !isset($newPaths[$path]) && Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
                 }
-                foreach (($color['videos'] ?? []) as $path) {
-                    if (is_string($path) && !isset($newPaths[$path]) && Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
-                    }
+            }
+            foreach (($color['videos'] ?? []) as $path) {
+                if (is_string($path) && !isset($newPaths[$path]) && Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
                 }
             }
         }
