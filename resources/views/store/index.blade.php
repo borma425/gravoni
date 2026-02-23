@@ -4,14 +4,14 @@
 
 @section('content')
 <!-- Hero Section - Fashion Style with Model Image -->
-<section class="relative overflow-hidden bg-gradient-to-bl from-slate-900 via-slate-800 to-zinc-900">
+<section id="hero-section" class="relative overflow-hidden bg-gradient-to-bl from-slate-900 via-slate-800 to-zinc-900">
     <!-- Background Pattern -->
     <div class="absolute inset-0 opacity-10">
         <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
     </div>
     
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="flex flex-col lg:flex-row items-center min-h-[400px] lg:min-h-[450px] py-8 lg:py-0">
+        <div class="flex flex-col lg:flex-row items-center min-h-[400px] lg:min-h-[450px] pt-8 lg:pt-12 pb-0">
             <!-- Content -->
             <div class="flex-1 text-center lg:text-right z-10 py-8 lg:py-12">
                 <div class="inline-flex items-center gap-2 px-4 py-2 bg-amber-500/20 backdrop-blur-sm rounded-full text-amber-400 text-sm font-medium mb-6 border border-amber-500/30">
@@ -20,15 +20,14 @@
                 </div>
                 
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mb-6">
-                    <span class="block">اكتشف</span>
-                    <span class="text-transparent bg-clip-text bg-gradient-to-l from-amber-400 to-orange-500">أناقتك</span>
+                    اكتشف <span class="text-transparent bg-clip-text bg-gradient-to-l from-amber-400 to-orange-500">أناقتك</span>
                 </h1>
                 
-                <p class="text-slate-300 text-lg md:text-xl leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0 lg:mr-0">
-                    تصاميم عصرية تناسب ذوقك، جودة استثنائية بأسعار منافسة
-                </p>
+                <p class="text-slate-300 text-lg md:text-xl leading-relaxed mb-10 max-w-lg mx-auto lg:mx-0 lg:mr-0">
+استمتع بخانات بريميوم تمنحك إطلالة تخطف الأنظار
+            </p>
                 
-                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-4">
                     <a href="#products" class="inline-flex items-center justify-center gap-3 bg-gradient-to-l from-amber-500 to-orange-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/30 hover:-translate-y-1">
                         <span>تسوق الآن</span>
                         <svg class="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,33 +48,23 @@
                 </div>
             </div>
             
-            <!-- Model Image Container -->
-            <div class="flex-1 relative flex items-end justify-center lg:justify-end h-full">
+            <!-- Model Image Container - flush with section bottom, contained within hero -->
+            <div id="hero-model-container" class="flex-1 relative min-h-[280px] lg:min-h-[320px] max-h-[70vh] self-end flex items-end overflow-hidden">
                 <!-- Glow Effect Behind Model -->
-                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-gradient-to-t from-amber-500/20 to-transparent rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-gradient-to-t from-amber-500/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
                 
-                <!-- Model Image Placeholder - Add your image here -->
-                <div class="relative z-10 w-full max-w-sm lg:max-w-md">
-                    <!-- Replace this with your actual model image -->
-                    <!-- <img src="{{ asset('images/hero-model.png') }}" alt="Fashion Model" class="w-full h-auto object-contain drop-shadow-2xl"> -->
-                    
-                    <!-- Placeholder SVG - Remove when you add real image -->
-                    <div class="aspect-[3/4] flex items-center justify-center">
-                        <div class="text-center text-white/30">
-                            <svg class="w-32 h-32 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                            <p class="text-sm">ضع صورة الموديل هنا</p>
-                            <p class="text-xs mt-1 text-white/20">hero-model.png</p>
-                        </div>
-                    </div>
+                <div id="hero-model-wrapper" class="relative z-10 w-full max-w-sm lg:max-w-md flex-shrink-0">
+                    <img src="{{ asset('images/hero-model.png') }}" 
+                         alt="Fashion Model" 
+                         class="w-full h-auto object-contain object-bottom drop-shadow-2xl"
+                         onerror="this.style.display='none'">
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Bottom Wave -->
-    <div class="absolute bottom-0 left-0 right-0">
+    <!-- Bottom Wave - z-20 to overlay model feet and stay inside hero boundary -->
+    <div id="hero-wave" class="absolute bottom-0 left-0 right-0 z-20">
         <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full">
             <path d="M0 60V20C240 0 480 0 720 20C960 40 1200 40 1440 20V60H0Z" fill="#f9fafb"/>
         </svg>
@@ -351,4 +340,27 @@
         </div>
     </div>
 </section>
+@endsection
+
+@section('scripts')
+<script>
+(function() {
+    function alignHeroModel() {
+        var wave = document.getElementById('hero-wave');
+        var container = document.getElementById('hero-model-container');
+        if (!wave || !container) return;
+        var waveHeight = wave.getBoundingClientRect().height;
+        var basePadding = 63.392;
+        var ratio = basePadding / 96.392;
+        var padding = Math.round(waveHeight * ratio * 10) / 10;
+        container.style.paddingBottom = padding + 'px';
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', alignHeroModel);
+    } else {
+        alignHeroModel();
+    }
+    window.addEventListener('resize', alignHeroModel);
+})();
+</script>
 @endsection
