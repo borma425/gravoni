@@ -49,8 +49,7 @@
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-                
-                <!-- Description moved here -->
+
                 <div>
                     <label for="description" class="block text-sm font-semibold text-gray-700">الوصف</label>
                     <textarea name="description" id="description" rows="4"
@@ -61,7 +60,6 @@
                 </div>
             </div>
         </div>
-
 
         <!-- Availability (Sizes & Colors) Card -->
         <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6">
@@ -95,20 +93,52 @@
                             <input type="number" id="size-h-max" placeholder="إلى" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
                         </div>
                     </div>
-                    <div class="sm:col-span-2 lg:col-span-3 border-t sm:border-t-0 pt-4 sm:pt-0 mt-2 md:mt-0 bg-white/60 p-4 rounded-xl border border-slate-200">
+                    <!-- Color + Stock + Media Input -->
+                    <div class="sm:col-span-2 lg:col-span-3 border-t pt-4 mt-2 md:mt-0 bg-white/60 p-4 rounded-xl border border-slate-200">
                         <label class="block text-xs font-bold text-slate-800 mb-2">أضف ألوان المتوفرة لهذا المقاس</label>
-                        <div class="flex flex-wrap sm:flex-nowrap gap-2 items-center">
+                        <div class="flex flex-wrap sm:flex-nowrap gap-2 items-center mb-3">
                             <input type="text" id="temp-color-name" placeholder="اللون (مثال: أحمر)" class="flex-1 min-w-[150px] border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors shadow-sm bg-white">
                             <div class="relative w-32">
                                 <input type="number" id="temp-color-stock" placeholder="الكمية" min="0" class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors shadow-sm bg-white pr-8">
                                 <span class="absolute right-3 top-2.5 text-slate-400 text-xs font-medium pointer-events-none">ق</span>
                             </div>
-                            <button type="button" onclick="addTempColor()" class="whitespace-nowrap flex items-center gap-1.5 px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-violet-500">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                إضافة لون
-                            </button>
                         </div>
-                        <div id="temp-colors-list" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
+                        <!-- Per-Color Media Upload Area -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1">صور هذا اللون</label>
+                                <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-violet-400 hover:bg-violet-50/30 transition-colors bg-slate-50 cursor-pointer">
+                                    <input type="file" id="color-images-input" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <svg class="mx-auto h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    <p class="text-[11px] text-gray-500 mt-1">اختر صور <span class="text-violet-600">أو اسحب هنا</span></p>
+                                </div>
+                                <div id="color-images-preview" class="mt-2 flex flex-wrap gap-2"></div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1">فيديوهات هذا اللون</label>
+                                <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-3 text-center hover:border-violet-400 hover:bg-violet-50/30 transition-colors bg-slate-50 cursor-pointer">
+                                    <input type="file" id="color-videos-input" accept="video/mp4,video/quicktime,video/ogg" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <svg class="mx-auto h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                    <p class="text-[11px] text-gray-500 mt-1">اختر فيديوهات <span class="text-violet-600">أو اسحب هنا</span></p>
+                                </div>
+                                <div id="color-videos-preview" class="mt-2 flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+                        <!-- Upload Progress -->
+                        <div id="color-upload-progress" class="hidden mb-3 bg-slate-100 p-3 rounded-lg border border-slate-200">
+                            <div class="flex justify-between text-xs font-bold text-slate-700 mb-1">
+                                <span id="color-upload-label">جاري الرفع...</span>
+                                <span id="color-upload-text" class="text-violet-600">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                                <div id="color-upload-bar" class="bg-gradient-to-r from-violet-500 to-fuchsia-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="addTempColor()" class="w-full flex items-center justify-center gap-1.5 px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-violet-500">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                            إضافة لون مع الوسائط
+                        </button>
+                        <div id="temp-colors-list" class="mt-3 space-y-2 empty:hidden"></div>
                     </div>
                 </div>
                 <div class="flex justify-end mt-2 pt-4 border-t border-slate-200/60">
@@ -119,169 +149,16 @@
                 </div>
             </div>
 
-            <div id="sizes-container" class="flex flex-col gap-4 min-h-[44px]">
-                @php $existingSizes = $product->available_sizes ?? []; @endphp
-                @if(is_array($existingSizes))
-                    @foreach($existingSizes as $index => $sizeObj)
-                        @if(is_array($sizeObj) && isset($sizeObj['size']))
-                            <div class="bg-white border-l-4 border-violet-500 border-y border-r border-slate-200 shadow-sm hover:shadow-md transition-shadow rounded-xl p-4 flex flex-col gap-3">
-                                <div class="flex items-start gap-4 w-full">
-                                    <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-violet-100 to-purple-100 text-violet-800 rounded-full flex items-center justify-center font-black text-lg sm:text-xl shadow-inner border border-violet-200">
-                                        {{ $sizeObj['size'] }}
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex flex-wrap gap-2 text-sm text-gray-700">
-                                            <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الصدر:</span> {{ $sizeObj['chest_width_cm'] ?? '-' }} سم</div>
-                                            <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الوزن:</span> {{ $sizeObj['weight_kg']['min'] ?? '-' }} - {{ $sizeObj['weight_kg']['max'] ?? '-' }} كجم</div>
-                                            <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الطول:</span> {{ $sizeObj['height_cm']['min'] ?? '-' }} - {{ $sizeObj['height_cm']['max'] ?? '-' }} سم</div>
-                                        </div>
-                                    </div>
-                                    <div class="flex-shrink-0 flex items-center gap-1 bg-slate-50 rounded-lg p-1 border border-slate-200">
-                                        <button type="button" class="text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 rounded-md p-1.5" onclick="editSize(this)" title="تعديل المقاس">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                        </button>
-                                        <button type="button" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 rounded-md p-1.5" onclick="removeSize(this)" title="حذف المقاس">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        </button>
-                                    </div>
-                                    <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj['size'] }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][chest_width_cm]" value="{{ $sizeObj['chest_width_cm'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][min]" value="{{ $sizeObj['weight_kg']['min'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][max]" value="{{ $sizeObj['weight_kg']['max'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
-                                </div>
-                                @if(isset($sizeObj['colors']) && is_array($sizeObj['colors']) && count($sizeObj['colors']) > 0)
-                                    <div class="pt-3 mt-2 border-t border-slate-100">
-                                        <div class="flex flex-wrap gap-2">
-                                            @foreach($sizeObj['colors'] as $cIdx => $cObj)
-                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-sm">
-                                                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
-                                                    {{ $cObj['color'] }} <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] mr-1">{{ $cObj['stock'] }} ق</span>
-                                                    <input type="hidden" name="available_sizes[{{$index}}][colors][{{$cIdx}}][color]" value="{{ $cObj['color'] }}">
-                                                    <input type="hidden" name="available_sizes[{{$index}}][colors][{{$cIdx}}][stock]" value="{{ $cObj['stock'] }}">
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                        @elseif(is_string($sizeObj))
-                            <div class="relative bg-white border border-gray-200 shadow-sm rounded-xl p-3 flex items-center gap-4">
-                                <div class="flex-shrink-0 bg-gray-100 text-gray-800 px-3 py-1 rounded-lg font-bold">{{ $sizeObj }}</div>
-                                <div class="flex-1 text-sm text-gray-500">بيانات غير مكتملة</div>
-                                <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj }}">
-                                <div class="absolute top-3 right-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg p-1 shadow-sm border border-slate-100">
-                                    <button type="button" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 rounded-md p-1.5" onclick="removeSize(this)">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        @endif
-                    @endforeach
-                @endif
-            </div>
+            <div id="sizes-container" class="flex flex-col gap-4 min-h-[44px]"></div>
             @error('available_sizes')
                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
             @enderror
-            @error('available_sizes.*')
-                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-            @enderror
         </div>
 
-        <!-- Media Card -->
-        <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6">
-            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                الصور والفيديوهات
-            </h2>
-
-            <div class="space-y-6">
-                <!-- Images Upload -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">صور العينة</label>
-                    @php $existingSamples = $product->samples ?? []; @endphp
-                    <div id="samples-remove-inputs" class="hidden"></div>
-                    @if(count($existingSamples) > 0)
-                        <p class="text-xs text-gray-500 mb-3">الصور الحالية — اضغط على ✕ لحذف الصورة عند حفظ التعديلات</p>
-                        <div id="existing-samples" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
-                            @foreach($existingSamples as $idx => $path)
-                                <div class="sample-card relative rounded-xl overflow-hidden border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-all group" data-idx="{{ $idx }}">
-                                    <img src="{{ asset('storage/' . $path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-28 object-cover">
-                                    <button type="button" class="sample-remove-btn absolute top-1.5 right-1.5 z-20 w-6 h-6 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-all cursor-pointer opacity-0 group-hover:opacity-100" data-idx="{{ $idx }}" title="حذف الصورة">
-                                        <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
-                                    <span class="absolute bottom-1 left-1 text-[10px] bg-slate-900/70 text-white px-1.5 py-0.5 rounded backdrop-blur-sm">صورة {{ $idx + 1 }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                    <div class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-violet-400 transition-colors bg-slate-50 min-h-[140px] flex flex-col items-center justify-center group">
-                        <input type="file" name="samples[]" id="samples" accept="image/*" multiple
-                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                        <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <svg class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        </div>
-                        <p class="text-sm font-medium text-slate-700">اسحب الصور هنا أو انقر للاختيار</p>
-                        <p class="mt-1 text-xs text-slate-500">JPEG, PNG, JPG, WebP (حد أقصى 2MB)</p>
-                    </div>
-                    <div id="samples-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
-                    @error('samples')
-                        <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <hr class="border-slate-100">
-
-                <!-- Videos Upload -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">فيديوهات المنتج (اختياري)</label>
-                    @php $existingVideos = $product->videos ?? []; @endphp
-                    <div id="videos-remove-inputs" class="hidden"></div>
-                    @if(count($existingVideos) > 0)
-                        <p class="text-xs text-gray-500 mb-3">الفيديوهات الحالية — اضغط على ✕ لحذف الفيديو عند حفظ التعديلات</p>
-                        <div id="existing-videos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                            @foreach($existingVideos as $idx => $path)
-                                <div class="video-card relative rounded-xl overflow-hidden border-2 border-slate-200 bg-slate-900 shadow-sm group" data-idx="{{ $idx }}">
-                                    <video src="{{ asset('storage/' . $path) }}" class="w-full h-32 object-cover opacity-90 group-hover:opacity-100 transition-opacity" muted controls></video>
-                                    <button type="button" class="video-remove-btn absolute top-1.5 right-1.5 z-20 w-7 h-7 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-all cursor-pointer opacity-0 group-hover:opacity-100" data-idx="{{ $idx }}" title="حذف الفيديو">
-                                        <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
-                                    <span class="absolute bottom-1.5 left-1.5 text-[10px] font-medium bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded shadow">فيديو {{ $idx + 1 }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                    <div class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-violet-400 transition-colors bg-slate-50 flex flex-col items-center justify-center group min-h-[140px]">
-                        <!-- Note: Removed name="videos[]" so the actual large file isn't submitted with the main form. -->
-                        <input type="file" id="videos" accept="video/mp4,video/quicktime,video/ogg" multiple
-                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                        <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <svg class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <p class="text-sm font-medium text-slate-700">اسحب الفيديوهات هنا أو انقر للاختيار</p>
-                        <p class="mt-1 text-xs text-slate-500">MP4, MOV (حد أقصى 20MB للفيديو)</p>
-                    </div>
-                    <!-- Container for pre-uploaded videos hidden inputs -->
-                    <div id="hidden-videos-container"></div>
-                    <div id="videos-preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-                    @error('videos')
-                        <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p>
-                    @enderror
-                    @error('videos.*')
-                        <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Sidebar Column (Right Side on Desktop) -->
-    <div class="space-y-6">
+    <!-- Sidebar Column -->
+    <div class="lg:col-span-1 space-y-6">
         
         <!-- Pricing Card -->
         <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6">
@@ -294,77 +171,204 @@
                     <label for="selling_price" class="block text-sm font-semibold text-gray-700">السعر الأساسي</label>
                     <div class="mt-1.5 relative rounded-lg shadow-sm">
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 sm:text-sm font-medium">DA</span>
+                            <span class="text-gray-500 sm:text-sm">EGP</span>
                         </div>
-                        <input type="number" step="0.01" name="selling_price" id="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required min="0"
-                               class="block w-full pr-10 border border-gray-300 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-sm transition-colors text-left @error('selling_price') border-red-300 ring-red-100 @enderror" dir="ltr">
+                        <input type="number" step="0.01" name="selling_price" id="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required min="0" dir="ltr"
+                               class="block w-full border border-gray-300 rounded-lg py-2.5 pl-3 pr-12 focus:ring-violet-500 focus:border-violet-500 sm:text-sm transition-colors text-right @error('selling_price') border-red-300 ring-red-100 @enderror">
                     </div>
-                    @error('selling_price')
-                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <div>
-                    <label for="discounted_price" class="block text-sm font-semibold text-gray-700">السعر بعد التخفيض <span class="text-xs font-normal text-slate-400">(اختياري)</span></label>
+                    <label for="discounted_price" class="block text-sm font-semibold text-gray-700">سعر التخفيض <span class="text-xs text-gray-400 font-normal">(اختياري)</span></label>
                     <div class="mt-1.5 relative rounded-lg shadow-sm">
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 sm:text-sm font-medium">DA</span>
+                            <span class="text-gray-500 sm:text-sm">EGP</span>
                         </div>
-                        <input type="number" step="0.01" name="discounted_price" id="discounted_price" value="{{ old('discounted_price', $product->discounted_price) }}" min="0"
-                               class="block w-full pr-10 border border-gray-300 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors text-left @error('discounted_price') border-red-300 ring-red-100 @enderror" dir="ltr">
+                        <input type="number" step="0.01" name="discounted_price" id="discounted_price" value="{{ old('discounted_price', $product->discounted_price) }}" min="0" dir="ltr"
+                               class="block w-full border border-gray-300 rounded-lg py-2.5 pl-3 pr-12 focus:ring-violet-500 focus:border-violet-500 sm:text-sm transition-colors text-right @error('discounted_price') border-red-300 ring-red-100 @enderror">
                     </div>
-                    @error('discounted_price')
-                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
                 </div>
             </div>
         </div>
 
-        <!-- Publish Actions Card (Sticky) -->
+        <!-- Publish / Actions Card (Sticky) -->
         <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6 sticky top-6">
             <h2 class="text-lg font-bold text-gray-900 mb-4">تحديث المنتج</h2>
-            <p class="text-xs text-slate-500 mb-6">تأكد من مراجعة كافة البيانات والأسعار قبل حفظ التعديلات.</p>
+            <p class="text-sm text-gray-500 mb-6">تأكد من مراجعة التعديلات قبل الحفظ.</p>
             
-            <!-- Upload Progress UI Wrapper inside Sidebar -->
-            <div id="upload-progress-container" class="hidden mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <div class="flex justify-between text-xs font-bold text-slate-700 mb-2">
-                    <span id="upload-progress-label">جاري رفع الفيديوهات...</span>
-                    <span id="upload-progress-text" class="text-violet-600">0%</span>
-                </div>
-                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                    <div id="upload-progress-bar" class="bg-gradient-to-r from-violet-500 to-fuchsia-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-            </div>
-
             <div class="flex flex-col gap-3">
-                <button type="submit" id="submit-btn" class="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-all">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <button type="submit" id="submit-btn" class="w-full inline-flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-all">
+                    <svg class="w-5 h-5 ml-2 -mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                     حفظ التعديلات
                 </button>
-                <a href="{{ route('products.index') }}" class="w-full flex justify-center items-center py-2.5 px-4 rounded-lg text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-                    إلغاء
+                <a href="{{ route('products.index') }}" class="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all">
+                    إلغاء والعودة
                 </a>
             </div>
         </div>
+
     </div>
+
 </form>
 
 <script>
-    // Temporary colors logic
+    const UPLOAD_URL = '{{ route("products.upload-media") }}';
+    const CSRF_TOKEN = '{{ csrf_token() }}';
+
+    // ================================================================
+    // Per-Color Temp Media State
+    // ================================================================
     let tempColors = [];
-    
+    let tempColorImages = []; // [{path, url}]
+    let tempColorVideos = []; // [{path, url}]
+
+    // ================================================================
+    // AJAX Media Upload Helper
+    // ================================================================
+    function uploadFile(file, type) {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('type', type);
+            formData.append('_token', CSRF_TOKEN);
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', UPLOAD_URL);
+            xhr.setRequestHeader('Accept', 'application/json');
+
+            const progressContainer = document.getElementById('color-upload-progress');
+            const progressBar = document.getElementById('color-upload-bar');
+            const progressText = document.getElementById('color-upload-text');
+            const progressLabel = document.getElementById('color-upload-label');
+            progressContainer.classList.remove('hidden');
+
+            xhr.upload.onprogress = function(event) {
+                if (event.lengthComputable) {
+                    const pct = Math.round((event.loaded / event.total) * 100);
+                    progressBar.style.width = pct + '%';
+                    progressText.innerText = pct + '%';
+                    if (pct === 100) progressLabel.innerText = 'المعالجة...';
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const res = JSON.parse(xhr.responseText);
+                        if (res.success) {
+                            resolve({ path: res.path, url: res.url });
+                        } else { reject('Upload failed'); }
+                    } catch (e) { reject('Parse error'); }
+                } else {
+                    let msg = 'فشل الرفع';
+                    try { msg = JSON.parse(xhr.responseText).message || msg; } catch(e){}
+                    reject(msg);
+                }
+            };
+            xhr.onerror = () => reject('Network error');
+            xhr.send(formData);
+        });
+    }
+
+    async function uploadFilesSequentially(files, type) {
+        const results = [];
+        const progressContainer = document.getElementById('color-upload-progress');
+        const progressLabel = document.getElementById('color-upload-label');
+
+        for (let i = 0; i < files.length; i++) {
+            progressLabel.innerText = `رفع ${type === 'image' ? 'صورة' : 'فيديو'} ${i + 1} من ${files.length}...`;
+            try {
+                const result = await uploadFile(files[i], type);
+                results.push(result);
+            } catch (err) {
+                alert(`فشل رفع الملف: ${files[i].name}\n${err}`);
+            }
+        }
+        progressContainer.classList.add('hidden');
+        return results;
+    }
+
+    // ================================================================
+    // Image/Video Upload Handlers
+    // ================================================================
+    document.getElementById('color-images-input').addEventListener('change', async function() {
+        const files = Array.from(this.files || []);
+        if (files.length === 0) return;
+        this.value = '';
+        const uploaded = await uploadFilesSequentially(files, 'image');
+        tempColorImages.push(...uploaded);
+        renderTempColorMedia();
+    });
+
+    document.getElementById('color-videos-input').addEventListener('change', async function() {
+        const files = Array.from(this.files || []);
+        if (files.length === 0) return;
+        this.value = '';
+        const uploaded = await uploadFilesSequentially(files, 'video');
+        tempColorVideos.push(...uploaded);
+        renderTempColorMedia();
+    });
+
+    // ================================================================
+    // Render Temp Media Previews
+    // ================================================================
+    function renderTempColorMedia() {
+        const imgContainer = document.getElementById('color-images-preview');
+        imgContainer.innerHTML = '';
+        tempColorImages.forEach((img, idx) => {
+            const el = document.createElement('div');
+            el.className = 'relative group w-14 h-14 rounded-lg overflow-hidden border border-slate-200 shadow-sm';
+            el.innerHTML = `
+                <img src="${img.url}" class="w-full h-full object-cover">
+                <button type="button" onclick="removeTempImage(${idx})" class="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white rounded-bl-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            `;
+            imgContainer.appendChild(el);
+        });
+
+        const vidContainer = document.getElementById('color-videos-preview');
+        vidContainer.innerHTML = '';
+        tempColorVideos.forEach((vid, idx) => {
+            const el = document.createElement('div');
+            el.className = 'relative group flex items-center gap-2 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs';
+            el.innerHTML = `
+                <svg class="w-4 h-4 text-violet-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                <span class="truncate max-w-[100px] text-slate-700 font-medium">${vid.path.split('/').pop()}</span>
+                <button type="button" onclick="removeTempVideo(${idx})" class="text-red-400 hover:text-red-600 flex-shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            `;
+            vidContainer.appendChild(el);
+        });
+    }
+
+    function removeTempImage(idx) { tempColorImages.splice(idx, 1); renderTempColorMedia(); }
+    function removeTempVideo(idx) { tempColorVideos.splice(idx, 1); renderTempColorMedia(); }
+
+    // ================================================================
+    // Add Color to Temp List
+    // ================================================================
     function addTempColor() {
         const cName = document.getElementById('temp-color-name').value.trim();
         const cStock = document.getElementById('temp-color-stock').value.trim();
         
-        if(!cName) { alert('يرجى إدخال اسم اللون'); return; }
-        if(!cStock || isNaN(cStock) || cStock < 0) { alert('يرجى إدخال كمية صحيحة'); return; }
+        if (!cName) { alert('يرجى إدخال اسم اللون'); return; }
+        if (!cStock || isNaN(cStock) || cStock < 0) { alert('يرجى إدخال كمية صحيحة'); return; }
         
-        tempColors.push({ color: cName, stock: cStock });
-        renderTempColors();
+        tempColors.push({
+            color: cName,
+            stock: cStock,
+            images: [...tempColorImages],
+            videos: [...tempColorVideos]
+        });
         
         document.getElementById('temp-color-name').value = '';
         document.getElementById('temp-color-stock').value = '';
+        tempColorImages = [];
+        tempColorVideos = [];
+        renderTempColorMedia();
+        renderTempColors();
         document.getElementById('temp-color-name').focus();
     }
     
@@ -377,20 +381,50 @@
         const container = document.getElementById('temp-colors-list');
         container.innerHTML = '';
         tempColors.forEach((tc, idx) => {
-            const badge = document.createElement('span');
-            badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-sm animate-fade-in-up';
-            badge.innerHTML = `
-                <span class="w-2 h-2 rounded-full bg-violet-500"></span>
-                ${tc.color} <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] mr-1">${tc.stock} ق</span>
-                <button type="button" class="text-slate-400 hover:text-red-500 transition-colors ml-1 border-r border-slate-200 pr-2" onclick="removeTempColor(${idx})">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+            const div = document.createElement('div');
+            div.className = 'bg-white border border-slate-200 rounded-lg p-3 shadow-sm';
+            
+            let mediaHtml = '';
+            if (tc.images.length > 0) {
+                mediaHtml += '<div class="flex flex-wrap gap-1 mt-2">';
+                tc.images.forEach(img => {
+                    mediaHtml += `<img src="${img.url}" class="w-10 h-10 rounded object-cover border border-slate-200">`;
+                });
+                mediaHtml += '</div>';
+            }
+            if (tc.videos.length > 0) {
+                mediaHtml += '<div class="flex flex-wrap gap-1 mt-1">';
+                tc.videos.forEach(vid => {
+                    mediaHtml += `<span class="inline-flex items-center gap-1 bg-violet-50 text-violet-700 text-[10px] px-2 py-0.5 rounded border border-violet-200">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        ${vid.path.split('/').pop()}
+                    </span>`;
+                });
+                mediaHtml += '</div>';
+            }
+            
+            div.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
+                        <span class="text-sm font-bold text-slate-800">${tc.color}</span>
+                        <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[11px] font-medium">${tc.stock} قطعة</span>
+                        <span class="text-[10px] text-slate-400">${tc.images.length} صور · ${tc.videos.length} فيديو</span>
+                    </div>
+                    <button type="button" class="text-red-400 hover:text-red-600 transition-colors" onclick="removeTempColor(${idx})">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                ${mediaHtml}
             `;
-            container.appendChild(badge);
+            container.appendChild(div);
         });
     }
 
-    let sizeIndexCounter = document.querySelectorAll('#sizes-container > div').length || 0;
+    // ================================================================
+    // Size Management
+    // ================================================================
+    let sizeIndexCounter = 0;
     
     document.getElementById('add-size-btn').addEventListener('click', () => addSizeFromInputs());
     const sizeInputs = ['size-name', 'size-chest', 'size-w-min', 'size-w-max', 'size-h-min', 'size-h-max'];
@@ -402,27 +436,22 @@
 
     function addSizeFromInputs() {
         const sizeName = document.getElementById('size-name').value.trim();
+        if (!sizeName) { alert('يرجى إدخال اسم المقاس'); return; }
+
         const chest = document.getElementById('size-chest').value.trim();
         const wMin = document.getElementById('size-w-min').value.trim();
         const wMax = document.getElementById('size-w-max').value.trim();
         const hMin = document.getElementById('size-h-min').value.trim();
         const hMax = document.getElementById('size-h-max').value.trim();
 
-        if (!sizeName) {
-            alert('يرجى إدخال اسم المقاس على الأقل (مثال: M أو L)');
-            return;
-        }
-
-        // Pass a copy of tempColors
         addSizeCard({ size: sizeName, chest, wMin, wMax, hMin, hMax, colors: [...tempColors] }, sizeIndexCounter++);
         
-        // Clear inputs
         sizeInputs.forEach(id => document.getElementById(id).value = '');
-        
-        // Clear temp colors
         tempColors = [];
+        tempColorImages = [];
+        tempColorVideos = [];
         renderTempColors();
-        
+        renderTempColorMedia();
         document.getElementById('size-name').focus();
     }
 
@@ -432,23 +461,54 @@
         d.className = 'bg-white border-l-4 border-violet-500 border-y border-r border-slate-200 shadow-md hover:shadow-lg transition-shadow rounded-xl p-4 flex flex-col gap-3 animate-fade-in-up';
         
         let colorsHtml = '';
-        let colorsHiddenInputs = '';
+        let hiddenInputs = '';
         
         if (data.colors && data.colors.length > 0) {
-            colorsHtml += '<div class="pt-3 mt-2 border-t border-slate-100"><div class="flex flex-wrap gap-2">';
+            colorsHtml += '<div class="pt-3 mt-2 border-t border-slate-100 space-y-3">';
             data.colors.forEach((col, cIdx) => {
-                colorsHtml += `
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-sm">
-                        <span class="w-2 h-2 rounded-full bg-violet-500"></span>
-                        ${col.color} <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] mr-1">${col.stock} ق</span>
-                    </span>
-                `;
-                colorsHiddenInputs += `
+                hiddenInputs += `
                     <input type="hidden" name="available_sizes[${index}][colors][${cIdx}][color]" value="${col.color}">
                     <input type="hidden" name="available_sizes[${index}][colors][${cIdx}][stock]" value="${col.stock}">
                 `;
+                if (col.images) {
+                    col.images.forEach((img, iIdx) => {
+                        hiddenInputs += `<input type="hidden" name="available_sizes[${index}][colors][${cIdx}][images][${iIdx}]" value="${img.path}">`;
+                    });
+                }
+                if (col.videos) {
+                    col.videos.forEach((vid, vIdx) => {
+                        hiddenInputs += `<input type="hidden" name="available_sizes[${index}][colors][${cIdx}][videos][${vIdx}]" value="${vid.path}">`;
+                    });
+                }
+
+                colorsHtml += `<div class="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-violet-500"></span>
+                        <span class="text-sm font-bold text-slate-800">${col.color}</span>
+                        <span class="bg-white text-slate-600 px-2 py-0.5 rounded text-[11px] font-medium border border-slate-200">${col.stock} ق</span>
+                    </div>`;
+                
+                if (col.images && col.images.length > 0) {
+                    colorsHtml += '<div class="flex flex-wrap gap-1.5">';
+                    col.images.forEach(img => {
+                        colorsHtml += `<img src="${img.url}" class="w-12 h-12 rounded-md object-cover border border-slate-200 shadow-sm">`;
+                    });
+                    colorsHtml += '</div>';
+                }
+                if (col.videos && col.videos.length > 0) {
+                    colorsHtml += '<div class="flex flex-wrap gap-1 mt-1">';
+                    col.videos.forEach(vid => {
+                        colorsHtml += `<span class="inline-flex items-center gap-1 bg-violet-50 text-violet-700 text-[10px] px-2 py-0.5 rounded border border-violet-200">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            فيديو
+                        </span>`;
+                    });
+                    colorsHtml += '</div>';
+                }
+                
+                colorsHtml += '</div>';
             });
-            colorsHtml += '</div></div>';
+            colorsHtml += '</div>';
         }
 
         d.innerHTML = `
@@ -477,7 +537,7 @@
                 <input type="hidden" name="available_sizes[${index}][weight_kg][max]" value="${data.wMax}">
                 <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
                 <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
-                ${colorsHiddenInputs}
+                ${hiddenInputs}
             </div>
             ${colorsHtml}
         `;
@@ -487,356 +547,94 @@
     function editSize(btn) {
         const card = btn.closest('.border-l-4');
         
-        // Extract basic data (allow empty fallback for missing inputs in legacy cards)
-        const sizeInp = card.querySelector('input[name$="[size]"]');
-        const chestInp = card.querySelector('input[name$="[chest_width_cm]"]');
-        const wMinInp = card.querySelector('input[name$="[weight_kg][min]"]');
-        const wMaxInp = card.querySelector('input[name$="[weight_kg][max]"]');
-        const hMinInp = card.querySelector('input[name$="[height_cm][min]"]');
-        const hMaxInp = card.querySelector('input[name$="[height_cm][max]"]');
+        document.getElementById('size-name').value = card.querySelector('input[name$="[size]"]').value;
+        document.getElementById('size-chest').value = card.querySelector('input[name$="[chest_width_cm]"]')?.value || '';
+        document.getElementById('size-w-min').value = card.querySelector('input[name$="[weight_kg][min]"]')?.value || '';
+        document.getElementById('size-w-max').value = card.querySelector('input[name$="[weight_kg][max]"]')?.value || '';
+        document.getElementById('size-h-min').value = card.querySelector('input[name$="[height_cm][min]"]')?.value || '';
+        document.getElementById('size-h-max').value = card.querySelector('input[name$="[height_cm][max]"]')?.value || '';
         
-        document.getElementById('size-name').value = sizeInp ? sizeInp.value : '';
-        document.getElementById('size-chest').value = chestInp ? chestInp.value : '';
-        document.getElementById('size-w-min').value = wMinInp ? wMinInp.value : '';
-        document.getElementById('size-w-max').value = wMaxInp ? wMaxInp.value : '';
-        document.getElementById('size-h-min').value = hMinInp ? hMinInp.value : '';
-        document.getElementById('size-h-max').value = hMaxInp ? hMaxInp.value : '';
-        
-        // Extract colors
+        // Extract colors with their media
         tempColors = [];
         const colorInputs = card.querySelectorAll('input[name*="[colors]"][name$="[color]"]');
         const stockInputs = card.querySelectorAll('input[name*="[colors]"][name$="[stock]"]');
         
-        for(let i = 0; i < colorInputs.length; i++) {
-            tempColors.push({
-                color: colorInputs[i].value,
-                stock: stockInputs[i].value
+        for (let i = 0; i < colorInputs.length; i++) {
+            const colorObj = { color: colorInputs[i].value, stock: stockInputs[i].value, images: [], videos: [] };
+            
+            const imgInputs = card.querySelectorAll(`input[name*="[colors][${i}][images]"]`);
+            imgInputs.forEach(inp => {
+                colorObj.images.push({ path: inp.value, url: '/storage/' + inp.value });
             });
+            
+            const vidInputs = card.querySelectorAll(`input[name*="[colors][${i}][videos]"]`);
+            vidInputs.forEach(inp => {
+                colorObj.videos.push({ path: inp.value, url: '/storage/' + inp.value });
+            });
+            
+            tempColors.push(colorObj);
         }
         
-        // Re-render
         renderTempColors();
-        
-        // Remove card
         card.remove();
-        
-        // Focus
         document.getElementById('size-name').focus();
     }
     
     function removeSize(btn) { btn.closest('.border-l-4').remove(); }
 
-    // Samples remove - immediate visual removal
-    const toRemove = new Set();
-    const existingSamplesEl = document.getElementById('existing-samples');
-    if (existingSamplesEl) {
-        existingSamplesEl.addEventListener('click', function(e) {
-            const btn = e.target.closest('.sample-remove-btn');
-            if (!btn) return;
-            e.preventDefault();
-            e.stopPropagation();
-            const idx = parseInt(btn.getAttribute('data-idx'), 10);
-            if (isNaN(idx)) return;
-            const card = btn.closest('.sample-card');
+    // ================================================================
+    // Load Existing Product Sizes on Page Load
+    // ================================================================
+    (function loadExistingSizes() {
+        const existingSizes = @json($product->available_sizes ?? []);
+        if (!Array.isArray(existingSizes)) return;
+        
+        existingSizes.forEach((sizeObj, idx) => {
+            if (!sizeObj || !sizeObj.size) return;
             
-            if (!toRemove.has(idx)) {
-                toRemove.add(idx);
-                if (card) {
-                    card.style.display = 'none'; // Visually hide it immediately
-                }
-                updateSamplesRemoveInputs();
-            }
-        });
-    }
-    function updateSamplesRemoveInputs() {
-        const cont = document.getElementById('samples-remove-inputs');
-        if (!cont) return;
-        cont.innerHTML = '';
-        [...toRemove].sort((a,b)=>a-b).forEach(idx => {
-            const inp = document.createElement('input');
-            inp.type = 'hidden';
-            inp.name = 'samples_remove[]';
-            inp.value = idx;
-            cont.appendChild(inp);
-        });
-    }
-
-    // New images preview and management
-    let selectedFiles = new DataTransfer();
-
-    document.getElementById('samples').addEventListener('change', function(e) {
-        const container = document.getElementById('samples-preview');
-        
-        // Add new files to our DataTransfer object
-        Array.from(this.files || []).forEach(file => {
-            selectedFiles.items.add(file);
-        });
-        
-        // Update the actual input files
-        this.files = selectedFiles.files;
-        
-        renderPreviews();
-    });
-
-    function renderPreviews() {
-        const container = document.getElementById('samples-preview');
-        container.innerHTML = '';
-        
-        Array.from(selectedFiles.files).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const div = document.createElement('div');
-                div.className = 'relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm';
-                div.innerHTML = `
-                    <img src="${ev.target.result}" alt="معاينة" class="w-full h-24 object-cover">
-                    <button type="button" class="absolute top-1 right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" onclick="removeNewImage(${index})" title="حذف هذه الصورة">
-                        <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                    <span class="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded truncate max-w-[90%]">${file.name}</span>
-                `;
-                container.appendChild(div);
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function removeNewImage(indexToRemove) {
-        const dt = new DataTransfer();
-        const files = selectedFiles.files;
-        
-        for (let i = 0; i < files.length; i++) {
-            if (i !== indexToRemove) {
-                dt.items.add(files[i]);
-            }
-        }
-        
-        selectedFiles = dt;
-        document.getElementById('samples').files = selectedFiles.files; // Update the actual input
-        renderPreviews(); // Re-render previews
-    }
-
-    // Videos remove - immediate visual removal
-    const videosToRemove = new Set();
-    const existingVideosEl = document.getElementById('existing-videos');
-    if (existingVideosEl) {
-        existingVideosEl.addEventListener('click', function(e) {
-            const btn = e.target.closest('.video-remove-btn');
-            if (!btn) return;
-            e.preventDefault();
-            e.stopPropagation();
-            const idx = parseInt(btn.getAttribute('data-idx'), 10);
-            if (isNaN(idx)) return;
-            const card = btn.closest('.video-card');
+            const colors = (sizeObj.colors || []).map(c => ({
+                color: c.color || '',
+                stock: c.stock || 0,
+                images: (c.images || []).map(p => ({ path: p, url: '/storage/' + p })),
+                videos: (c.videos || []).map(p => ({ path: p, url: '/storage/' + p }))
+            }));
             
-            if (!videosToRemove.has(idx)) {
-                videosToRemove.add(idx);
-                if (card) {
-                    card.style.display = 'none'; // Visually hide it immediately
-                }
-                updateVideosRemoveInputs();
-            }
+            addSizeCard({
+                size: sizeObj.size,
+                chest: sizeObj.chest_width_cm || '',
+                wMin: sizeObj.weight_kg?.min || '',
+                wMax: sizeObj.weight_kg?.max || '',
+                hMin: sizeObj.height_cm?.min || '',
+                hMax: sizeObj.height_cm?.max || '',
+                colors: colors
+            }, sizeIndexCounter++);
         });
-    }
-    function updateVideosRemoveInputs() {
-        const cont = document.getElementById('videos-remove-inputs');
-        if (!cont) return;
-        cont.innerHTML = '';
-        [...videosToRemove].sort((a,b)=>a-b).forEach(idx => {
-            const inp = document.createElement('input');
-            inp.type = 'hidden';
-            inp.name = 'videos_remove[]';
-            inp.value = idx;
-            cont.appendChild(inp);
-        });
-    }
+    })();
 
-    // Standalone asynchronous video uploads
-    let autoUploadVidIndex = 0;
-
-    document.getElementById('videos').addEventListener('change', function(e) {
-        const files = Array.from(this.files || []);
-        if (files.length === 0) return;
-
-        const container = document.getElementById('videos-preview');
-        const hiddenInputsContainer = document.getElementById('hidden-videos-container');
-        const URL = window.URL || window.webkitURL;
-
-        files.forEach(file => {
-            const currentIndex = autoUploadVidIndex++;
-            const videoUrl = URL.createObjectURL(file);
-            const domId = 'auto-vid-' + currentIndex;
-
-            // 1. Create Preview Thumbnail & Progress UI
-            const div = document.createElement('div');
-            div.className = 'relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-black object-cover';
-            div.id = domId;
-            div.innerHTML = `
-                <video src="${videoUrl}" class="w-full h-32 object-cover opacity-50" muted></video>
-                <div class="absolute inset-0 bg-black/60 pointer-events-none transition-colors" id="${domId}-overlay"></div>
-                
-                <!-- Progress Center UI -->
-                <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
-                    <span class="text-white text-xs font-medium mb-2 drop-shadow-md" id="${domId}-status">جاري الرفع...</span>
-                    <div class="w-full bg-gray-700/50 rounded-full h-2 overflow-hidden shadow-inner">
-                        <div id="${domId}-progress" class="bg-violet-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-                    </div>
-                    <span class="text-white text-[10px] font-bold mt-1 shadow-sm" id="${domId}-text">0%</span>
-                </div>
-
-                <button type="button" class="hidden absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10" id="${domId}-remove-btn" title="حذف هذا الفيديو">
-                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-                <span class="absolute bottom-1 left-1 right-1 text-[11px] bg-black/60 text-white px-1.5 py-0.5 rounded truncate text-center z-10">${file.name}</span>
-            `;
-            container.appendChild(div);
-
-            // 2. Prepare XHR Payload
-            const formData = new FormData();
-            formData.append('video', file);
-            formData.append('_token', '{{ csrf_token() }}');
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '{{ route('products.upload-video') }}');
-            xhr.setRequestHeader('Accept', 'application/json');
-
-            // 3. Track Progress
-            xhr.upload.onprogress = function(event) {
-                if (event.lengthComputable) {
-                    const percentComplete = Math.round((event.loaded / event.total) * 100);
-                    document.getElementById(domId + '-progress').style.width = percentComplete + '%';
-                    document.getElementById(domId + '-text').innerText = percentComplete + '%';
-                    if(percentComplete === 100) {
-                         document.getElementById(domId + '-status').innerText = 'المعالجة...';
-                    }
-                }
-            };
-
-            // 4. Handle Response
-            xhr.onload = function() {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        const res = JSON.parse(xhr.responseText);
-                        if (res.success) {
-                            // Success UI
-                            document.getElementById(domId + '-progress').classList.replace('bg-violet-500', 'bg-emerald-500');
-                            document.getElementById(domId + '-status').innerText = 'تم الرفع بنجاح';
-                            setTimeout(() => {
-                                // Fade out overlay
-                                document.getElementById(domId + '-overlay').style.opacity = '0';
-                                div.querySelector('.flex-col').style.display = 'none'; // hide progress center UI
-                                div.querySelector('video').classList.remove('opacity-50');
-                                
-                                // Show remove button
-                                const removeBtn = document.getElementById(domId + '-remove-btn');
-                                removeBtn.classList.remove('hidden');
-                                removeBtn.classList.add('flex');
-                                
-                                // Inject hidden input so it gets submitted with the main form
-                                const hiddenInput = document.createElement('input');
-                                hiddenInput.type = 'hidden';
-                                hiddenInput.name = 'videos[]';
-                                hiddenInput.value = res.path;
-                                hiddenInput.id = domId + '-hidden-input';
-                                hiddenInputsContainer.appendChild(hiddenInput);
-
-                                // Setup removal logic
-                                removeBtn.onclick = function() {
-                                    div.remove();
-                                    hiddenInput.remove();
-                                };
-                            }, 1000);
-                        }
-                    } catch(e) {
-                        displayError('خطأ داخلي أثناء المعالجة.');
-                    }
-                } else {
-                    let errorMessage = 'فشل الرفع.';
-                    if (xhr.status === 422) {
-                        try {
-                            const res = JSON.parse(xhr.responseText);
-                            errorMessage = res.errors.video[0] || 'تنسيق غير مدعوم أو حجم كبير.';
-                        } catch(e) {}
-                    }
-                    displayError(errorMessage);
-                }
-                
-                function displayError(msg) {
-                    document.getElementById(domId + '-progress').classList.replace('bg-violet-500', 'bg-red-500');
-                    document.getElementById(domId + '-status').innerText = msg;
-                    document.getElementById(domId + '-status').classList.replace('text-white', 'text-red-300');
-                    
-                    const removeBtn = document.getElementById(domId + '-remove-btn');
-                    removeBtn.classList.remove('hidden');
-                    removeBtn.classList.add('flex');
-                    removeBtn.onclick = function() { div.remove(); };
-                }
-            };
-            
-            xhr.onerror = function() {
-                 document.getElementById(domId + '-status').innerText = 'انقطع الاتصال.';
-                 document.getElementById(domId + '-progress').classList.replace('bg-violet-500', 'bg-red-500');
-            }
-
-            // Let's go!
-            xhr.send(formData);
-        });
-
-        // Clear the actual input so selecting the same file again triggers change event
-        this.value = '';
-    });
-
-    // AJAX Form Submit for Upload Progress
+    // ================================================================
+    // Form Submit
+    // ================================================================
     const form = document.querySelector('form');
     form.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        // Clear previous ajax error messages and borders
+
         document.querySelectorAll('.ajax-error').forEach(el => el.remove());
-        document.querySelectorAll('.border-red-300').forEach(el => el.classList.remove('border-red-300', 'text-red-900', 'placeholder-red-300'));
         
         const btn = document.getElementById('submit-btn');
         btn.disabled = true;
         btn.innerHTML = `<svg class="animate-spin ml-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>جاري الحفظ...</span>`;
-        
-        const progressContainer = document.getElementById('upload-progress-container');
-        const progressBar = document.getElementById('upload-progress-bar');
-        const progressText = document.getElementById('upload-progress-text');
-        const progressLabel = document.getElementById('upload-progress-label');
-        const progressHint = document.getElementById('upload-progress-hint');
-        
-        progressContainer.classList.remove('hidden');
-        progressBar.style.width = '0%';
-        progressText.innerText = '0%';
-        progressLabel.innerText = 'جاري الرفع...';
-        progressHint.innerText = 'يرجى عدم إغلاق الصفحة حتى يكتمل الرفع';
         
         const formData = new FormData(form);
         const xhr = new XMLHttpRequest();
         xhr.open(form.method, form.action);
         xhr.setRequestHeader('Accept', 'application/json');
         
-        xhr.upload.onprogress = function(event) {
-            if (event.lengthComputable) {
-                const percentComplete = Math.round((event.loaded / event.total) * 100);
-                progressBar.style.width = percentComplete + '%';
-                progressText.innerText = percentComplete + '%';
-                
-                if (percentComplete === 100) {
-                    progressLabel.innerText = 'جاري معالجة البيانات...';
-                    progressHint.innerText = 'اكتمل الرفع، بانتظار استجابة الخادم';
-                }
-            }
-        };
-        
         xhr.onload = function() {
             if (xhr.status >= 200 && xhr.status < 300) {
-                // Success
                 window.location.href = "{{ route('products.index') }}";
             } else if (xhr.status === 422) {
-                // Validation error
                 btn.disabled = false;
-                btn.innerHTML = '<span>حفظ التغييرات</span>';
-                progressContainer.classList.add('hidden');
+                btn.innerHTML = '<svg class="w-5 h-5 ml-2 -mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> حفظ التعديلات';
                 
                 try {
                     const response = JSON.parse(xhr.responseText);
@@ -844,27 +642,19 @@
                     let firstErrorEl = null;
                     
                     for (const [field, messages] of Object.entries(errors)) {
-                        const inputName = field.replace(/\.(\w+)/g, '[$1]'); // convert videos.0 to videos[0]
-                        const inputEl = form.querySelector(`[name="${inputName}"]`) || form.querySelector(`[name="${inputName}[]"]`) || document.getElementById(field);
+                        const inputName = field.replace(/\.(\w+)/g, '[$1]');
+                        const inputEl = form.querySelector(`[name="${inputName}"]`) || document.getElementById(field);
                         
                         const errorP = document.createElement('p');
                         errorP.className = 'mt-2 text-sm text-red-600 ajax-error font-medium';
                         errorP.innerText = messages[0];
                         
                         if (inputEl) {
-                            inputEl.classList.add('border-red-300', 'text-red-900', 'placeholder-red-300');
+                            inputEl.classList.add('border-red-300');
                             inputEl.parentNode.appendChild(errorP);
                             if (!firstErrorEl) firstErrorEl = inputEl;
                         } else {
-                            if (field.startsWith('samples')) {
-                                document.getElementById('samples-preview').parentNode.appendChild(errorP);
-                                if (!firstErrorEl) firstErrorEl = document.getElementById('samples-preview');
-                            } else if (field.startsWith('videos')) {
-                                document.getElementById('videos-preview').parentNode.appendChild(errorP);
-                                if (!firstErrorEl) firstErrorEl = document.getElementById('videos-preview');
-                            } else {
-                                alert(messages[0]);
-                            }
+                            alert(messages[0]);
                         }
                     }
                     if (firstErrorEl) firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -872,18 +662,16 @@
                     alert('يوجد خطأ في البيانات المدخلة.');
                 }
             } else {
-                alert('حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة مرة أخرى.');
+                alert('حدث خطأ أثناء الاتصال بالخادم.');
                 btn.disabled = false;
-                btn.innerHTML = '<span>حفظ التغييرات</span>';
-                progressContainer.classList.add('hidden');
+                btn.innerHTML = '<svg class="w-5 h-5 ml-2 -mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> حفظ التعديلات';
             }
         };
         
         xhr.onerror = function() {
             alert('حدث خطأ في الاتصال.');
             btn.disabled = false;
-            btn.innerHTML = '<span>حفظ التغييرات</span>';
-            progressContainer.classList.add('hidden');
+            btn.innerHTML = '<svg class="w-5 h-5 ml-2 -mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> حفظ التعديلات';
         };
         
         xhr.send(formData);

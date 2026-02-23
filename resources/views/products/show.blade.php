@@ -67,11 +67,32 @@
                                             <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ $s['height_cm']['min'] ?? '-' }} - {{ $s['height_cm']['max'] ?? '-' }}</td>
                                             <td class="px-4 py-2">
                                                 @if(isset($s['colors']) && is_array($s['colors']) && count($s['colors']) > 0)
-                                                    <div class="flex flex-wrap gap-1">
+                                                    <div class="space-y-2">
                                                         @foreach($s['colors'] as $cObj)
-                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200">
-                                                                {{ $cObj['color'] ?? 'بدون اسم' }} (كمية: {{ $cObj['stock'] ?? 0 }})
-                                                            </span>
+                                                            <div class="bg-violet-50/50 rounded-lg p-2 border border-violet-100">
+                                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200 mb-1">
+                                                                    {{ $cObj['color'] ?? 'بدون اسم' }} (كمية: {{ $cObj['stock'] ?? 0 }})
+                                                                </span>
+                                                                @if(isset($cObj['images']) && is_array($cObj['images']) && count($cObj['images']) > 0)
+                                                                    <div class="flex flex-wrap gap-1 mt-1">
+                                                                        @foreach($cObj['images'] as $imgPath)
+                                                                            <a href="{{ asset('storage/' . $imgPath) }}" target="_blank">
+                                                                                <img src="{{ asset('storage/' . $imgPath) }}" class="w-10 h-10 rounded object-cover border border-slate-200 hover:opacity-80 transition-opacity">
+                                                                            </a>
+                                                                        @endforeach
+                                                                    </div>
+                                                                @endif
+                                                                @if(isset($cObj['videos']) && is_array($cObj['videos']) && count($cObj['videos']) > 0)
+                                                                    <div class="flex flex-wrap gap-1 mt-1">
+                                                                        @foreach($cObj['videos'] as $vidPath)
+                                                                            <a href="{{ asset('storage/' . $vidPath) }}" target="_blank" class="inline-flex items-center gap-1 bg-slate-800 text-white text-[10px] px-2 py-0.5 rounded hover:bg-slate-700 transition-colors">
+                                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                                                فيديو
+                                                                            </a>
+                                                                        @endforeach
+                                                                    </div>
+                                                                @endif
+                                                            </div>
                                                         @endforeach
                                                     </div>
                                                 @else
@@ -101,39 +122,6 @@
                 <div>
                     <dt class="text-sm font-medium text-gray-500">الوصف</dt>
                     <dd class="mt-1 text-sm text-gray-900">{{ $product->description }}</dd>
-                </div>
-                @endif
-                @php $samples = $product->samples ?? []; @endphp
-                @if(!empty($samples))
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">صور العينة</dt>
-                    <dd class="mt-3">
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                            @foreach($samples as $idx => $path)
-                                <a href="{{ asset('storage/' . $path) }}" target="_blank" class="block group rounded-xl overflow-hidden border-2 border-gray-200 hover:border-slate-400 shadow-sm hover:shadow-md transition-all">
-                                    <img src="{{ asset('storage/' . $path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-200">
-                                    <span class="block py-1.5 text-center text-xs text-gray-500 bg-gray-50">صورة {{ $idx + 1 }}</span>
-                                </a>
-                            @endforeach
-                        </div>
-                    </dd>
-                </div>
-                @endif
-                
-                @php $videos = $product->videos ?? []; @endphp
-                @if(!empty($videos))
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">فيديوهات المنتج</dt>
-                    <dd class="mt-3">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            @foreach($videos as $idx => $path)
-                                <div class="block group rounded-xl overflow-hidden border-2 border-gray-200 bg-black shadow-sm transition-all focus-within:ring-2 focus-within:ring-slate-500">
-                                    <video src="{{ asset('storage/' . $path) }}" class="w-full h-40 object-cover" controls preload="metadata"></video>
-                                    <span class="block py-1.5 text-center text-xs text-white bg-gray-900">فيديو {{ $idx + 1 }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </dd>
                 </div>
                 @endif
             </dl>

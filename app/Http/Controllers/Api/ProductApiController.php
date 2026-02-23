@@ -31,33 +31,7 @@ class ProductApiController extends Controller
 
         // Format products data
         $formattedProducts = $products->map(function ($product) {
-            $samples = $product->samples ?? [];
-            $sampleUrls = array_map(fn ($p) => asset('storage/' . $p), $samples);
-            
-            $videos = $product->videos ?? [];
-            $videoUrls = array_map(fn ($v) => asset('storage/' . $v), $videos);
-
-            $availability = array_values($product->available_sizes ?? []);
-            $availability = array_map(function($size) {
-                if (isset($size['colors']) && is_array($size['colors'])) {
-                    $size['colors'] = array_values($size['colors']);
-                }
-                return $size;
-            }, $availability);
-
-            return [
-                'id' => (string) $product->id,
-                'name' => $product->name,
-                'price' => (float) $product->selling_price,
-                'discounted_price' => $product->discounted_price ? (float) $product->discounted_price : null,
-                'availability' => $availability,
-                'description' => $product->description ?? '',
-                'samples' => $sampleUrls,
-                'videos' => $videoUrls,
-                'sku' => $product->sku,
-                'created_at' => $product->created_at->toISOString(),
-                'updated_at' => $product->updated_at->toISOString(),
-            ];
+            return $this->formatProduct($product);
         });
 
         return response()->json([
@@ -93,21 +67,57 @@ class ProductApiController extends Controller
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
 
-        $samples = $product->samples ?? [];
-        $sampleUrls = array_map(fn ($p) => asset('storage/' . $p), $samples);
+        return response()->json([
+            'success' => true,
+            'data' => $this->formatProduct($product)
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
 
-        $videos = $product->videos ?? [];
-        $videoUrls = array_map(fn ($v) => asset('storage/' . $v), $videos);
-
+    /**
+     * Format a product for API response.
+     * Media (images/videos) is nested inside each color.
+     */
+    private function formatProduct(Product $product): array
+    {
+        // Build availability with media URLs inside each color
         $availability = array_values($product->available_sizes ?? []);
-        $availability = array_map(function($size) {
+        $availability = array_map(function ($size) {
             if (isset($size['colors']) && is_array($size['colors'])) {
-                $size['colors'] = array_values($size['colors']);
+                $size['colors'] = array_values(array_map(function ($color) {
+                    // Convert image paths to full URLs
+                    if (isset($color['images']) && is_array($color['images'])) {
+                        $color['images'] = array_values(array_map(
+                            fn($p) => asset('storage/' . $p),
+                            array_filter($color['images'], fn($p) => is_string($p) && !empty($p))
+                        ));
+                    } else {
+                        $color['images'] = [];
+                    }
+
+                    // Convert video paths to full URLs
+                    if (isset($color['videos']) && is_array($color['videos'])) {
+                        $color['videos'] = array_values(array_map(
+                            fn($p) => asset('storage/' . $p),
+                            array_filter($color['videos'], fn($p) => is_string($p) && !empty($p))
+                        ));
+                    } else {
+                        $color['videos'] = [];
+                    }
+
+                    return $color;
+                }, $size['colors']));
             }
             return $size;
         }, $availability);
 
-        $formattedProduct = [
+        // Legacy standalone media (backward compat — will be empty for new products)
+        $samples = $product->samples ?? [];
+        $sampleUrls = array_map(fn($p) => asset('storage/' . $p), $samples);
+
+        $videos = $product->videos ?? [];
+        $videoUrls = array_map(fn($v) => asset('storage/' . $v), $videos);
+
+        return [
             'id' => (string) $product->id,
             'name' => $product->name,
             'price' => (float) $product->selling_price,
@@ -120,10 +130,5 @@ class ProductApiController extends Controller
             'created_at' => $product->created_at->toISOString(),
             'updated_at' => $product->updated_at->toISOString(),
         ];
-
-        return response()->json([
-            'success' => true,
-            'data' => $formattedProduct
-        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

@@ -43,31 +43,50 @@ class ProductController extends Controller
     }
 
     /**
-     * Handle standalone asynchronous video uploads.
+     * Handle AJAX media upload (images or videos per color).
+     * Returns the stored path so the frontend can embed it in hidden inputs.
      */
-    public function uploadVideo(Request $request)
+    public function uploadMedia(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'video' => 'required|mimes:mp4,mov,ogg,qt|max:20480',
+            'file' => 'required|file|max:20480',
+            'type' => 'required|in:image,video',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $file = $request->file('video');
-        if ($file && $file->isValid()) {
-            $path = $file->store('products/videos', 'public');
-            if ($path) {
-                return response()->json([
-                    'success' => true,
-                    'path' => $path,
-                    'url' => asset('storage/' . $path)
-                ]);
-            }
+        $file = $request->file('file');
+        if (!$file || !$file->isValid()) {
+            return response()->json(['message' => 'Invalid file.'], 400);
         }
 
-        return response()->json(['message' => 'Failed to upload video.'], 500);
+        // Validate mime type based on type param
+        $type = $request->input('type');
+        if ($type === 'image') {
+            $allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
+            $folder = 'products/colors/images';
+        } else {
+            $allowedMimes = ['video/mp4', 'video/quicktime', 'video/ogg'];
+            $folder = 'products/colors/videos';
+        }
+
+        if (!in_array($file->getMimeType(), $allowedMimes)) {
+            return response()->json(['message' => 'نوع الملف غير مسموح به.'], 422);
+        }
+
+        $path = $file->store($folder, 'public');
+        if ($path) {
+            return response()->json([
+                'success' => true,
+                'path' => $path,
+                'url' => asset('storage/' . $path),
+                'type' => $type,
+            ]);
+        }
+
+        return response()->json(['message' => 'Failed to upload file.'], 500);
     }
 
     /**
@@ -75,33 +94,13 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        \Log::info('Upload Request Data', ['all' => $request->all(), 'files' => $request->allFiles()]);
         $data = $request->validated();
-        unset($data['samples'], $data['samples_remove'], $data['available_colors_input'], $data['videos'], $data['videos_remove']);
         $data['quantity'] = 0;
 
-        // Handle multiple sample images
+        // Media is already stored via AJAX and paths are embedded in available_sizes JSON
+        // No standalone samples/videos handling needed
         $data['samples'] = [];
-        if ($request->hasFile('samples')) {
-            foreach ($request->file('samples') as $file) {
-                $data['samples'][] = $file->store('products/samples', 'public');
-            }
-        }
-
-        // Handle pre-uploaded videos array
         $data['videos'] = [];
-        if ($request->has('videos') && is_array($request->input('videos'))) {
-            foreach ($request->input('videos') as $videoPath) {
-                if (is_string($videoPath) && !empty($videoPath)) {
-                    $data['videos'][] = $videoPath;
-                }
-            }
-        }
-
-        // Ensure we don't save an empty array if there were no videos
-        if (empty($data['videos'])) {
-            $data['videos'] = null;
-        }
 
         $product = Product::create($data);
 
@@ -132,9 +131,7 @@ class ProductController extends Controller
      */
     public function update(StoreProductRequest $request, Product $product)
     {
-        \Log::info('Update Request Data', ['all' => $request->all(), 'files' => $request->allFiles()]);
         $data = $request->validated();
-        unset($data['samples'], $data['samples_remove'], $data['available_colors_input'], $data['videos'], $data['videos_remove']);
 
         // Handle SKU uniqueness check for update
         if ($product->sku !== $data['sku']) {
@@ -146,51 +143,13 @@ class ProductController extends Controller
             }
         }
 
-        // Handle samples: keep existing minus removed, add new
-        $samples = $product->samples ?? [];
-        $removeIndices = array_map('intval', (array) $request->input('samples_remove', []));
-        foreach ($removeIndices as $idx) {
-            if (isset($samples[$idx]) && Storage::disk('public')->exists($samples[$idx])) {
-                Storage::disk('public')->delete($samples[$idx]);
-                unset($samples[$idx]);
-            }
-        }
-        $samples = array_values($samples);
+        // Delete old media files that are no longer referenced
+        $this->cleanupOrphanedMedia($product, $data['available_sizes'] ?? []);
 
-        if ($request->hasFile('samples')) {
-            foreach ($request->file('samples') as $file) {
-                $samples[] = $file->store('products/samples', 'public');
-            }
-        }
-        $data['samples'] = $samples;
-
-        // Handle videos: keep existing minus removed, add new
-        $videos = $product->videos ?? [];
-        // Ensure $videos is an array of strings, filtering out any previous 'false' DB corruptions
-        if (is_array($videos)) {
-            $videos = array_filter($videos, function($v) { return is_string($v) && !empty($v); });
-        } else {
-            $videos = [];
-        }
-
-        $removeVideoIndices = array_map('intval', (array) $request->input('videos_remove', []));
-        foreach ($removeVideoIndices as $idx) {
-            if (isset($videos[$idx]) && Storage::disk('public')->exists($videos[$idx])) {
-                Storage::disk('public')->delete($videos[$idx]);
-                unset($videos[$idx]);
-            }
-        }
-        $videos = array_values($videos);
-
-        // Handle pre-uploaded new videos
-        if ($request->has('videos') && is_array($request->input('videos'))) {
-            foreach ($request->input('videos') as $videoPath) {
-                if (is_string($videoPath) && !empty($videoPath)) {
-                    $videos[] = $videoPath;
-                }
-            }
-        }
-        $data['videos'] = empty($videos) ? null : $videos;
+        // Media paths are already in available_sizes JSON (pre-uploaded via AJAX)
+        // Clear standalone columns
+        $data['samples'] = [];
+        $data['videos'] = [];
 
         $product->update($data);
 
@@ -203,26 +162,83 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
-        $productId = $product->id;
-        $samples = $product->samples ?? [];
+        // Delete all color media from storage
+        $this->deleteAllProductMedia($product);
+
+        // Also delete any legacy standalone media
+        foreach (($product->samples ?? []) as $path) {
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
+        foreach (($product->videos ?? []) as $path) {
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
 
         $product->delete();
 
-        // Delete sample images from storage
-        foreach ($samples as $path) {
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
-        }
-
-        $videos = $product->videos ?? [];
-        foreach ($videos as $path) {
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
-        }
-
         return redirect()->route('products.index')
             ->with('success', 'تم حذف المنتج بنجاح');
+    }
+
+    /**
+     * Delete all media files from all colors in a product's available_sizes.
+     */
+    private function deleteAllProductMedia(Product $product): void
+    {
+        $sizes = $product->available_sizes ?? [];
+        foreach ($sizes as $size) {
+            foreach (($size['colors'] ?? []) as $color) {
+                foreach (($color['images'] ?? []) as $path) {
+                    if (is_string($path) && Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+                foreach (($color['videos'] ?? []) as $path) {
+                    if (is_string($path) && Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Delete media files that existed in the old product data but are no longer
+     * present in the updated available_sizes.
+     */
+    private function cleanupOrphanedMedia(Product $product, array $newSizes): void
+    {
+        // Collect all media paths from the NEW data
+        $newPaths = [];
+        foreach ($newSizes as $size) {
+            foreach (($size['colors'] ?? []) as $color) {
+                foreach (($color['images'] ?? []) as $p) {
+                    if (is_string($p)) $newPaths[$p] = true;
+                }
+                foreach (($color['videos'] ?? []) as $p) {
+                    if (is_string($p)) $newPaths[$p] = true;
+                }
+            }
+        }
+
+        // Walk the OLD data and delete anything not in the new set
+        $oldSizes = $product->available_sizes ?? [];
+        foreach ($oldSizes as $size) {
+            foreach (($size['colors'] ?? []) as $color) {
+                foreach (($color['images'] ?? []) as $path) {
+                    if (is_string($path) && !isset($newPaths[$path]) && Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+                foreach (($color['videos'] ?? []) as $path) {
+                    if (is_string($path) && !isset($newPaths[$path]) && Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+            }
+        }
     }
 }

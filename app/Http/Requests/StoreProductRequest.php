@@ -49,14 +49,10 @@ class StoreProductRequest extends FormRequest
             'available_sizes.*.colors' => 'nullable|array',
             'available_sizes.*.colors.*.color' => 'required_with:available_sizes.*.colors|string|max:50',
             'available_sizes.*.colors.*.stock' => 'required_with:available_sizes.*.colors|integer|min:0',
-            'samples' => 'nullable|array',
-            'samples.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'samples_remove' => 'nullable|array',
-            'samples_remove.*' => 'integer',
-            'videos' => 'nullable|array',
-            'videos.*' => 'string|max:255',
-            'videos_remove' => 'nullable|array',
-            'videos_remove.*' => 'integer',
+            'available_sizes.*.colors.*.images' => 'nullable|array',
+            'available_sizes.*.colors.*.images.*' => 'string|max:500',
+            'available_sizes.*.colors.*.videos' => 'nullable|array',
+            'available_sizes.*.colors.*.videos.*' => 'string|max:500',
         ];
     }
 }

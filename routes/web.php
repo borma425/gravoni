@@ -28,7 +28,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/dashboard/export', [DashboardController::class, 'exportStats'])->name('dashboard.export');
 
     // Products
-    Route::post('products/upload-video', [ProductController::class, 'uploadVideo'])->name('products.upload-video');
+    Route::post('products/upload-media', [ProductController::class, 'uploadMedia'])->name('products.upload-media');
     Route::resource('products', ProductController::class);
 
     // Purchases
