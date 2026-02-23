@@ -6,6 +6,18 @@
     $colors = $product->available_colors ?? [];
     $sizes = $product->available_sizes ?? [];
     $firstColor = collect($colors)->first();
+    
+    function buildMediaItems($color) {
+        $items = [];
+        foreach ($color['images'] ?? [] as $path) {
+            $items[] = ['type' => 'image', 'path' => $path];
+        }
+        foreach ($color['videos'] ?? [] as $path) {
+            $items[] = ['type' => 'video', 'path' => $path];
+        }
+        return $items;
+    }
+    $firstColorMedia = buildMediaItems($firstColor ?? []);
     $firstColorImages = $firstColor['images'] ?? [];
     $hasDiscount = $product->discounted_price && $product->discounted_price < $product->selling_price;
     $discountPercent = $hasDiscount ? round((($product->selling_price - $product->discounted_price) / $product->selling_price) * 100) : 0;
@@ -38,15 +50,19 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             <!-- Gallery Section -->
             <div class="space-y-4">
-                <!-- Main Image with Zoom -->
-                <div class="relative bg-gray-100 rounded-2xl overflow-hidden aspect-square" id="main-image-container">
-                    <img src="{{ $firstColorImages[0] ?? '' ? asset('storage/' . $firstColorImages[0]) : '' }}" 
+                <!-- Main Media (Image/Video) with Zoom -->
+                <div class="relative bg-gray-100 rounded-2xl overflow-hidden aspect-square" id="main-media-container">
+                    @php $firstMedia = $firstColorMedia[0] ?? null; @endphp
+                    <img src="{{ ($firstMedia && $firstMedia['type'] === 'image') ? asset('storage/' . $firstMedia['path']) : '' }}" 
                          alt="{{ $product->name }}"
-                         class="w-full h-full object-cover cursor-crosshair"
-                         id="main-image"
-                         data-images='@json($firstColorImages)'>
+                         class="w-full h-full object-cover cursor-crosshair {{ ($firstMedia && $firstMedia['type'] === 'video') ? 'hidden' : '' }}"
+                         id="main-image">
+                    <video src="{{ ($firstMedia && $firstMedia['type'] === 'video') ? asset('storage/' . $firstMedia['path']) : '' }}" 
+                           class="w-full h-full object-cover {{ ($firstMedia && $firstMedia['type'] === 'video') ? '' : 'hidden' }}" 
+                           id="main-video" 
+                           controls></video>
                     
-                    @if(empty($firstColorImages))
+                    @if(empty($firstColorMedia))
                     <div class="absolute inset-0 flex items-center justify-center">
                         <svg class="w-24 h-24 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -54,7 +70,7 @@
                     </div>
                     @endif
                     
-                    <!-- Zoom Result -->
+                    <!-- Zoom Result (images only) -->
                     <div class="zoom-result hidden lg:block" id="zoom-result"></div>
                     
                     <!-- Badges -->
@@ -74,13 +90,25 @@
                     </button>
                 </div>
                 
-                <!-- Thumbnails Gallery -->
+                <!-- Thumbnails Gallery - Images & Videos -->
                 <div class="flex gap-2 overflow-x-auto pb-2" id="thumbnails-container">
-                    @foreach($firstColorImages as $index => $image)
+                    @foreach($firstColorMedia as $index => $item)
                     <button class="gallery-thumb flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 {{ $index === 0 ? 'border-blue-500' : 'border-gray-200' }}" 
-                            data-image="{{ asset('storage/' . $image) }}"
+                            data-type="{{ $item['type'] }}"
+                            data-path="{{ $item['path'] }}"
                             data-index="{{ $index }}">
-                        <img src="{{ asset('storage/' . $image) }}" alt="صورة {{ $index + 1 }}" class="w-full h-full object-cover">
+                        @if($item['type'] === 'video')
+                        <div class="relative w-full h-full bg-slate-800 flex items-center justify-center">
+                            <video src="{{ asset('storage/' . $item['path']) }}" class="w-full h-full object-cover opacity-70" muted preload="metadata"></video>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-slate-900 mr-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        @else
+                        <img src="{{ asset('storage/' . $item['path']) }}" alt="صورة {{ $index + 1 }}" class="w-full h-full object-cover">
+                        @endif
                     </button>
                     @endforeach
                 </div>
@@ -128,7 +156,7 @@
                                 style="background-color: {{ $colorHex }}"
                                 data-color="{{ $color['color'] ?? '' }}"
                                 data-index="{{ $index }}"
-                                data-images='@json($color['images'] ?? [])'
+                                data-media='@json(buildMediaItems($color))'
                                 title="{{ $color['color'] ?? '' }}">
                         </button>
                         @endforeach
@@ -143,7 +171,12 @@
                         <h3 class="font-semibold text-slate-900">
                             المقاس: <span class="font-normal text-slate-600" id="selected-size-name">اختر المقاس</span>
                         </h3>
-                        <button class="text-blue-600 text-sm hover:underline" id="size-guide-btn">دليل المقاسات</button>
+                        <button type="button" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors" id="size-guide-btn">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                            </svg>
+                            <span>دليل المقاسات</span>
+                        </button>
                     </div>
                     <div class="grid grid-cols-4 sm:grid-cols-5 gap-2" id="size-options">
                         @foreach($sizes as $size)
@@ -302,7 +335,7 @@
     </div>
 </div>
 
-<!-- Fullscreen Image Modal -->
+<!-- Fullscreen Media Modal (Image/Video) -->
 <div class="fixed inset-0 z-50 hidden bg-black" id="fullscreen-modal">
     <button class="absolute top-4 right-4 z-10 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors" id="close-fullscreen">
         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,7 +343,8 @@
         </svg>
     </button>
     <div class="absolute inset-0 flex items-center justify-center p-4">
-        <img src="" alt="" class="max-w-full max-h-full object-contain" id="fullscreen-image">
+        <img src="" alt="" class="max-w-full max-h-full object-contain hidden" id="fullscreen-image">
+        <video src="" class="max-w-full max-h-full object-contain hidden" id="fullscreen-video" controls></video>
     </div>
     <button class="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors" id="fullscreen-prev">
         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -335,10 +369,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let selectedColor = colors[0]?.color || '';
     let selectedSize = '';
-    let currentImages = colors[0]?.images || [];
-    let currentImageIndex = 0;
+    let currentMedia = @json($firstColorMedia);
+    let currentMediaIndex = 0;
     
     const mainImage = document.getElementById('main-image');
+    const mainVideo = document.getElementById('main-video');
+    const mainMediaContainer = document.getElementById('main-media-container');
     const thumbnailsContainer = document.getElementById('thumbnails-container');
     const colorOptions = document.querySelectorAll('.color-option');
     const sizeOptions = document.querySelectorAll('.size-option:not(.out-of-stock)');
@@ -351,26 +387,59 @@ document.addEventListener('DOMContentLoaded', function() {
     const quantityInput = document.getElementById('quantity-input');
     const whatsappBtn = document.getElementById('whatsapp-btn');
     
-    function updateGallery(images) {
-        currentImages = images;
-        currentImageIndex = 0;
+    function showMediaItem(item, index) {
+        if (!item) return;
+        if (item.type === 'video') {
+            mainImage.style.display = 'none';
+            mainVideo.style.display = 'block';
+            mainVideo.src = '{{ asset("storage") }}/' + item.path;
+            mainVideo.load();
+            document.getElementById('zoom-result')?.classList.add('hidden');
+        } else {
+            mainVideo.style.display = 'none';
+            mainVideo.pause();
+            mainImage.style.display = 'block';
+            mainImage.src = '{{ asset("storage") }}/' + item.path;
+            document.getElementById('zoom-result')?.classList.remove('hidden');
+        }
+        currentMediaIndex = index;
+    }
+    
+    function updateGallery(media) {
+        currentMedia = media && media.length ? media : [];
+        currentMediaIndex = 0;
         
-        if (images.length > 0) {
-            mainImage.src = '{{ asset("storage") }}/' + images[0];
+        if (currentMedia.length > 0) {
+            showMediaItem(currentMedia[0], 0);
+        } else {
+            mainImage.style.display = 'none';
+            mainVideo.style.display = 'none';
         }
         
         thumbnailsContainer.innerHTML = '';
-        images.forEach((img, index) => {
+        currentMedia.forEach((item, index) => {
             const btn = document.createElement('button');
             btn.className = `gallery-thumb flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 ${index === 0 ? 'border-blue-500' : 'border-gray-200'}`;
-            btn.dataset.image = '{{ asset("storage") }}/' + img;
+            btn.dataset.type = item.type;
+            btn.dataset.path = item.path;
             btn.dataset.index = index;
-            btn.innerHTML = `<img src="{{ asset("storage") }}/${img}" alt="صورة ${index + 1}" class="w-full h-full object-cover">`;
+            if (item.type === 'video') {
+                btn.innerHTML = `<div class="relative w-full h-full bg-slate-800 flex items-center justify-center">
+                    <video src="{{ asset("storage") }}/${item.path}" class="w-full h-full object-cover opacity-70" muted preload="metadata"></video>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                            <svg class="w-5 h-5 text-slate-900 mr-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                btn.innerHTML = `<img src="{{ asset("storage") }}/${item.path}" alt="صورة ${index + 1}" class="w-full h-full object-cover">`;
+            }
             thumbnailsContainer.appendChild(btn);
             
             btn.addEventListener('click', function() {
-                currentImageIndex = index;
-                mainImage.src = this.dataset.image;
+                const idx = parseInt(this.dataset.index);
+                showMediaItem(currentMedia[idx], idx);
                 document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('border-blue-500'));
                 this.classList.add('border-blue-500');
             });
@@ -430,8 +499,8 @@ document.addEventListener('DOMContentLoaded', function() {
             selectedColor = this.dataset.color;
             selectedColorName.textContent = selectedColor;
             
-            const images = JSON.parse(this.dataset.images || '[]');
-            updateGallery(images);
+            const media = JSON.parse(this.dataset.media || '[]');
+            updateGallery(media);
             updateStock();
         });
     });
@@ -476,36 +545,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fullscreen Modal
     const fullscreenModal = document.getElementById('fullscreen-modal');
     const fullscreenImage = document.getElementById('fullscreen-image');
+    const fullscreenVideo = document.getElementById('fullscreen-video');
+    
+    function showFullscreenMedia() {
+        if (currentMedia.length === 0) return;
+        const item = currentMedia[currentMediaIndex];
+        if (item.type === 'video') {
+            fullscreenImage.classList.add('hidden');
+            fullscreenVideo.classList.remove('hidden');
+            fullscreenVideo.src = '{{ asset("storage") }}/' + item.path;
+            fullscreenVideo.load();
+            fullscreenVideo.play();
+        } else {
+            fullscreenVideo.classList.add('hidden');
+            fullscreenVideo.pause();
+            fullscreenImage.classList.remove('hidden');
+            fullscreenImage.src = '{{ asset("storage") }}/' + item.path;
+        }
+        fullscreenModal.classList.remove('hidden');
+    }
     
     document.getElementById('fullscreen-btn')?.addEventListener('click', function() {
-        if (currentImages.length > 0) {
-            fullscreenImage.src = '{{ asset("storage") }}/' + currentImages[currentImageIndex];
-            fullscreenModal.classList.remove('hidden');
-        }
+        if (currentMedia.length > 0) showFullscreenMedia();
     });
     
-    document.getElementById('close-fullscreen')?.addEventListener('click', () => fullscreenModal.classList.add('hidden'));
+    document.getElementById('close-fullscreen')?.addEventListener('click', () => {
+        fullscreenModal.classList.add('hidden');
+        fullscreenVideo.pause();
+    });
     
     document.getElementById('fullscreen-next')?.addEventListener('click', function() {
-        if (currentImages.length > 0) {
-            currentImageIndex = (currentImageIndex + 1) % currentImages.length;
-            fullscreenImage.src = '{{ asset("storage") }}/' + currentImages[currentImageIndex];
+        if (currentMedia.length > 0) {
+            currentMediaIndex = (currentMediaIndex + 1) % currentMedia.length;
+            showFullscreenMedia();
         }
     });
     
     document.getElementById('fullscreen-prev')?.addEventListener('click', function() {
-        if (currentImages.length > 0) {
-            currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
-            fullscreenImage.src = '{{ asset("storage") }}/' + currentImages[currentImageIndex];
+        if (currentMedia.length > 0) {
+            currentMediaIndex = (currentMediaIndex - 1 + currentMedia.length) % currentMedia.length;
+            showFullscreenMedia();
         }
     });
     
-    // Zoom functionality (desktop only)
-    const mainImageContainer = document.getElementById('main-image-container');
+    // Zoom functionality (desktop only, images only)
+    const mainImageContainer = document.getElementById('main-media-container');
     const zoomResult = document.getElementById('zoom-result');
     
-    if (window.innerWidth >= 1024) {
+    if (window.innerWidth >= 1024 && zoomResult) {
         mainImage?.addEventListener('mousemove', function(e) {
+            if (currentMedia[currentMediaIndex]?.type === 'video') return;
             const rect = mainImageContainer.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -535,7 +624,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Initialize
+    // Initialize - build thumbnail click handlers
+    updateGallery(currentMedia);
     updateStock();
 });
 </script>
