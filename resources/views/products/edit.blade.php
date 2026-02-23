@@ -67,63 +67,81 @@
                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-3">
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">المقاس (مثال: M)</label>
-                            <input type="text" id="size-name" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">الأحجام المتاحة ومخطط المقاسات</label>
+                <div class="bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-200 shadow-sm rounded-xl p-5 mb-5 transition-all hover:shadow-md">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                المقاس (مثال: M)
+                            </label>
+                            <input type="text" id="size-name" placeholder="أدخل المقاس.." class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
                         </div>
                         <div>
-                            <label class="block text-xs text-gray-500 mb-1">عرض الصدر (سم)</label>
-                            <input type="number" id="size-chest" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                                عرض الصدر (سم)
+                            </label>
+                            <input type="number" id="size-chest" min="0" placeholder="مثال: 50" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
                         </div>
                         <div class="sm:col-span-2 md:col-span-1">
-                            <label class="block text-xs text-gray-500 mb-1">الوزن (كجم)</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1.5 text-center">الوزن (كجم)</label>
                             <div class="flex items-center gap-2">
-                                <input type="number" id="size-w-min" placeholder="أدنى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
-                                <span class="text-gray-400">-</span>
-                                <input type="number" id="size-w-max" placeholder="أقصى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                                <input type="number" id="size-w-min" placeholder="من" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
+                                <span class="text-slate-400 font-medium">-</span>
+                                <input type="number" id="size-w-max" placeholder="إلى" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
                             </div>
                         </div>
-                        <div class="sm:col-span-2 md:col-span-1 border-t sm:border-t-0 pt-3 sm:pt-0">
-                            <label class="block text-xs text-gray-500 mb-1">الطول (سم)</label>
+                        <div class="sm:col-span-2 md:col-span-1 border-t sm:border-t-0 pt-4 sm:pt-0">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1.5 text-center">الطول (سم)</label>
                             <div class="flex items-center gap-2">
-                                <input type="number" id="size-h-min" placeholder="أدنى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
-                                <span class="text-gray-400">-</span>
-                                <input type="number" id="size-h-max" placeholder="أقصى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                                <input type="number" id="size-h-min" placeholder="من" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
+                                <span class="text-slate-400 font-medium">-</span>
+                                <input type="number" id="size-h-max" placeholder="إلى" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
                             </div>
                         </div>
-                        <div class="sm:col-span-2 md:col-span-3 border-t sm:border-t-0 pt-3 sm:pt-0 mt-3 md:mt-0">
-                            <label class="block text-xs font-medium text-gray-700 mb-2">أضف ألوان لهذا المقاس (قبل حفظ المقاس)</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="temp-color-name" placeholder="اللون (مثال: أحمر)" class="flex-1 border border-gray-300 rounded-md py-1.5 px-3 text-sm focus:ring-slate-500 focus:border-slate-500">
-                                <input type="number" id="temp-color-stock" placeholder="الكمية" min="0" class="w-24 border border-gray-300 rounded-md py-1.5 px-3 text-sm focus:ring-slate-500 focus:border-slate-500">
-                                <button type="button" onclick="addTempColor()" class="px-3 py-1.5 bg-violet-600 text-white rounded-md text-sm hover:bg-violet-700 transition-colors">إضافة لون</button>
+                        <div class="sm:col-span-2 md:col-span-3 border-t sm:border-t-0 pt-4 sm:pt-0 mt-2 md:mt-0 bg-white/50 p-4 rounded-lg border border-slate-100">
+                            <label class="block text-xs font-semibold text-slate-700 mb-2">أضف ألوان لهذا المقاس (قبل حفظ المقاس)</label>
+                            <div class="flex flex-wrap sm:flex-nowrap gap-2 items-center">
+                                <input type="text" id="temp-color-name" placeholder="اللون (مثال: أحمر، أسود..)" class="flex-1 min-w-[150px] border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors shadow-sm bg-white">
+                                <div class="relative w-32">
+                                    <input type="number" id="temp-color-stock" placeholder="الكمية" min="0" class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors shadow-sm bg-white pr-8">
+                                    <span class="absolute right-3 top-2.5 text-slate-400 text-xs font-medium pointer-events-none">ق</span>
+                                </div>
+                                <button type="button" onclick="addTempColor()" class="whitespace-nowrap flex items-center gap-1.5 px-4 py-2 bg-violet-600 text-white rounded-full text-sm font-medium hover:bg-violet-700 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-offset-2 focus:ring-violet-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    إضافة لون
+                                </button>
                             </div>
                             <!-- Container for temporary colors before size is saved -->
                             <div id="temp-colors-list" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
                         </div>
                     </div>
-                    <div class="flex justify-end mt-4 pt-4 border-t border-gray-200">
-                        <button type="button" id="add-size-btn" class="px-5 py-2.5 bg-slate-700 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors text-sm font-medium w-full sm:w-auto">
-                            حفظ وإضافة المقاس
+                    <div class="flex justify-end mt-2 pt-4 border-t border-slate-200/60">
+                        <button type="button" id="add-size-btn" class="flex items-center gap-2 px-6 py-2.5 bg-slate-800 text-white shadow-md hover:shadow-lg rounded-lg hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-700 transition-all text-sm font-bold w-full sm:w-auto">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            اعتماد المقاس وإضافته
                         </button>
                     </div>
                 </div>
 
-                <div id="sizes-container" class="flex flex-col gap-3 min-h-[44px]">
+                <div id="sizes-container" class="flex flex-col gap-4 min-h-[44px]">
                     @php
                         $sizes = old('available_sizes', $product->available_sizes ?? []);
                         if (is_string($sizes)) $sizes = json_decode($sizes, true) ?? [];
                     @endphp
                     @foreach($sizes as $index => $sizeObj)
                         @if(is_array($sizeObj) && isset($sizeObj['size']))
-                            <div class="relative bg-white border border-emerald-200 shadow-sm rounded-lg p-3 flex flex-col gap-3">
+                            <div class="relative bg-white border-l-4 border-violet-500 border-y border-r border-slate-200 shadow-md hover:shadow-lg transition-shadow rounded-xl p-4 flex flex-col gap-3">
                                 <div class="flex flex-wrap md:flex-nowrap items-center gap-4 w-full">
-                                    <div class="flex-shrink-0 w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center font-bold text-lg">
+                                    <div class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-violet-100 to-purple-100 text-violet-800 rounded-full flex items-center justify-center font-black text-xl shadow-inner border border-violet-200">
                                         {{ $sizeObj['size'] }}
                                     </div>
-                                    <div class="flex-1 grid grid-cols-3 gap-2 text-sm text-gray-600 pr-2 border-r border-emerald-100">
-                                        <div><span class="font-medium text-gray-900">الصدر:</span> {{ $sizeObj['chest_width_cm'] ?? '-' }} سم</div>
-                                        <div><span class="font-medium text-gray-900">الوزن:</span> {{ $sizeObj['weight_kg']['min'] ?? '-' }} - {{ $sizeObj['weight_kg']['max'] ?? '-' }} كجم</div>
-                                        <div><span class="font-medium text-gray-900">الطول:</span> {{ $sizeObj['height_cm']['min'] ?? '-' }} - {{ $sizeObj['height_cm']['max'] ?? '-' }} سم</div>
+                                    <div class="flex-1 flex flex-wrap gap-4 text-sm text-gray-700 md:pr-4 md:border-r border-slate-100">
+                                        <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الصدر:</span> {{ $sizeObj['chest_width_cm'] ?? '-' }} سم</div>
+                                        <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الوزن:</span> {{ $sizeObj['weight_kg']['min'] ?? '-' }} - {{ $sizeObj['weight_kg']['max'] ?? '-' }} كجم</div>
+                                        <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الطول:</span> {{ $sizeObj['height_cm']['min'] ?? '-' }} - {{ $sizeObj['height_cm']['max'] ?? '-' }} سم</div>
                                     </div>
                                     <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj['size'] }}">
                                     <input type="hidden" name="available_sizes[{{$index}}][chest_width_cm]" value="{{ $sizeObj['chest_width_cm'] ?? '' }}">
@@ -131,28 +149,24 @@
                                     <input type="hidden" name="available_sizes[{{$index}}][weight_kg][max]" value="{{ $sizeObj['weight_kg']['max'] ?? '' }}">
                                     <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
                                     <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <button type="button" class="text-blue-500 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 rounded p-1" onclick="editSize(this)" title="تعديل المقاس">
+                                    <div class="absolute top-3 right-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg p-1 shadow-sm border border-slate-100">
+                                        <button type="button" class="text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 rounded-md p-1.5" onclick="editSize(this)" title="تعديل المقاس">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                         </button>
-                                        <button type="button" class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 rounded p-1" onclick="removeSize(this)" title="حذف المقاس">
+                                        <button type="button" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 rounded-md p-1.5" onclick="removeSize(this)" title="حذف المقاس">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </div>
                                 </div>
                                 @if(isset($sizeObj['colors']) && is_array($sizeObj['colors']) && count($sizeObj['colors']) > 0)
-                                    <div class="pt-3 mt-1 border-t border-gray-100">
+                                    <div class="pt-3 mt-2 border-t border-slate-100">
                                         <div class="flex flex-wrap gap-2">
                                             @foreach($sizeObj['colors'] as $cIdx => $cObj)
-                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200">
-                                                    {{ $cObj['color'] }} (الكمية: {{ $cObj['stock'] }})
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-sm">
+                                                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                                                    {{ $cObj['color'] }} <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] mr-1">{{ $cObj['stock'] }} ق</span>
                                                     <input type="hidden" name="available_sizes[{{$index}}][colors][{{$cIdx}}][color]" value="{{ $cObj['color'] }}">
                                                     <input type="hidden" name="available_sizes[{{$index}}][colors][{{$cIdx}}][stock]" value="{{ $cObj['stock'] }}">
-                                                    <button type="button" class="text-violet-600 hover:text-red-500" onclick="this.closest('span').remove()">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                    </button>
                                                 </span>
                                             @endforeach
                                         </div>
@@ -161,16 +175,15 @@
                             </div>
                         @elseif(is_string($sizeObj))
                             <!-- Fallback for old simple string sizes -->
-                            <div class="relative bg-white border border-gray-200 shadow-sm rounded-lg p-3 flex flex-wrap md:flex-nowrap items-center gap-4">
-                                <div class="flex-shrink-0 bg-gray-100 text-gray-800 px-3 py-1 rounded font-bold">{{ $sizeObj }}</div>
+                            <div class="relative bg-white border border-gray-200 shadow-sm rounded-xl p-3 flex items-center gap-4">
+                                <div class="flex-shrink-0 bg-gray-100 text-gray-800 px-3 py-1 rounded-lg font-bold">{{ $sizeObj }}</div>
                                 <div class="flex-1 text-sm text-gray-500">بيانات غير مكتملة</div>
                                 <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj }}">
-                                <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj }}">
-                                <div class="absolute top-2 right-2 flex items-center gap-1">
-                                    <button type="button" class="text-blue-500 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 rounded p-1" onclick="editSize(this)" title="تعديل المقاس">
+                                <div class="absolute top-3 right-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg p-1 shadow-sm border border-slate-100">
+                                    <button type="button" class="text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 rounded-md p-1.5" onclick="editSize(this)" title="تعديل المقاس">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                     </button>
-                                    <button type="button" class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 rounded p-1" onclick="removeSize(this)" title="حذف المقاس">
+                                    <button type="button" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 rounded-md p-1.5" onclick="removeSize(this)" title="حذف المقاس">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </div>
@@ -321,11 +334,12 @@
         container.innerHTML = '';
         tempColors.forEach((tc, idx) => {
             const badge = document.createElement('span');
-            badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200';
+            badge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-sm animate-fade-in-up';
             badge.innerHTML = `
-                ${tc.color} (الكمية: ${tc.stock})
-                <button type="button" class="text-violet-600 hover:text-red-500" onclick="removeTempColor(${idx})">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                ${tc.color} <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] mr-1">${tc.stock} ق</span>
+                <button type="button" class="text-slate-400 hover:text-red-500 transition-colors ml-1 border-r border-slate-200 pr-2" onclick="removeTempColor(${idx})">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             `;
             container.appendChild(badge);
@@ -371,15 +385,20 @@
     function addSizeCard(data, index) {
         const c = document.getElementById('sizes-container');
         const d = document.createElement('div');
-        d.className = 'relative bg-white border border-emerald-200 shadow-sm rounded-lg p-3 flex flex-col gap-3 animate-fade-in-up';
+        d.className = 'relative bg-white border-l-4 border-violet-500 border-y border-r border-slate-200 shadow-md hover:shadow-lg transition-shadow rounded-xl p-4 flex flex-col gap-3 animate-fade-in-up';
         
         let colorsHtml = '';
         let colorsHiddenInputs = '';
         
         if (data.colors && data.colors.length > 0) {
-            colorsHtml += '<div class="pt-3 mt-1 border-t border-gray-100"><div class="flex flex-wrap gap-2">';
+            colorsHtml += '<div class="pt-3 mt-2 border-t border-slate-100"><div class="flex flex-wrap gap-2">';
             data.colors.forEach((col, cIdx) => {
-                colorsHtml += `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200">${col.color} (الكمية: ${col.stock})</span>`;
+                colorsHtml += `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-200 shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                        ${col.color} <span class="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] mr-1">${col.stock} ق</span>
+                    </span>
+                `;
                 colorsHiddenInputs += `
                     <input type="hidden" name="available_sizes[${index}][colors][${cIdx}][color]" value="${col.color}">
                     <input type="hidden" name="available_sizes[${index}][colors][${cIdx}][stock]" value="${col.stock}">
@@ -390,13 +409,13 @@
 
         d.innerHTML = `
             <div class="flex flex-wrap md:flex-nowrap items-center gap-4 w-full">
-                <div class="flex-shrink-0 w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center font-bold text-lg">
+                <div class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-violet-100 to-purple-100 text-violet-800 rounded-full flex items-center justify-center font-black text-xl shadow-inner border border-violet-200">
                     ${data.size}
                 </div>
-                <div class="flex-1 grid grid-cols-3 gap-2 text-sm text-gray-600 pr-2 border-r border-emerald-100">
-                    <div><span class="font-medium text-gray-900">الصدر:</span> ${data.chest || '-'} سم</div>
-                    <div><span class="font-medium text-gray-900">الوزن:</span> ${data.wMin || '-'} - ${data.wMax || '-'} كجم</div>
-                    <div><span class="font-medium text-gray-900">الطول:</span> ${data.hMin || '-'} - ${data.hMax || '-'} سم</div>
+                <div class="flex-1 flex flex-wrap gap-4 text-sm text-gray-700 md:pr-4 md:border-r border-slate-100">
+                    <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الصدر:</span> ${data.chest || '-'} سم</div>
+                    <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الوزن:</span> ${data.wMin || '-'} - ${data.wMax || '-'} كجم</div>
+                    <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الطول:</span> ${data.hMin || '-'} - ${data.hMax || '-'} سم</div>
                 </div>
                 
                 <input type="hidden" name="available_sizes[${index}][size]" value="${data.size}">
@@ -406,15 +425,12 @@
                 <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
                 <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
                 ${colorsHiddenInputs}
-                <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
-                <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
-                ${colorsHiddenInputs}
                 
-                <div class="absolute top-2 right-2 flex items-center gap-1">
-                    <button type="button" class="text-blue-500 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 rounded p-1" onclick="editSize(this)" title="تعديل المقاس">
+                <div class="absolute top-3 right-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg p-1 shadow-sm border border-slate-100">
+                    <button type="button" class="text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 rounded-md p-1.5" onclick="editSize(this)" title="تعديل المقاس">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     </button>
-                    <button type="button" class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 rounded p-1" onclick="removeSize(this)" title="حذف المقاس">
+                    <button type="button" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 rounded-md p-1.5" onclick="removeSize(this)" title="حذف المقاس">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
