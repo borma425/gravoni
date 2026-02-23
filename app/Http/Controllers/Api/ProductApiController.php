@@ -23,13 +23,10 @@ class ProductApiController extends Controller
             'quantity',
             'description',
             'available_sizes',
-            'samples',
-            'videos',
             'created_at',
             'updated_at'
         ])->get();
 
-        // Format products data
         $formattedProducts = $products->map(function ($product) {
             return $this->formatProduct($product);
         });
@@ -54,8 +51,6 @@ class ProductApiController extends Controller
             'discounted_price',
             'description',
             'available_sizes',
-            'samples',
-            'videos',
             'created_at',
             'updated_at'
         ])->find($id);
@@ -75,15 +70,23 @@ class ProductApiController extends Controller
 
     /**
      * Format a product for API response.
-     * Media (images/videos) is nested inside each color.
+     * Media (images/videos) is nested inside each color within each size.
      */
     private function formatProduct(Product $product): array
     {
-        // Build availability with media URLs inside each color
-        $availability = array_values($product->available_sizes ?? []);
+        $sizes = $product->available_sizes ?? [];
+
+        // Normalize: ensure it's a sequential array
+        if (!empty($sizes) && !array_is_list($sizes)) {
+            $sizes = array_values($sizes);
+        }
+
         $availability = array_map(function ($size) {
             if (isset($size['colors']) && is_array($size['colors'])) {
                 $size['colors'] = array_values(array_map(function ($color) {
+                    // Cast stock to integer
+                    $color['stock'] = (int) ($color['stock'] ?? 0);
+
                     // Convert image paths to full URLs
                     if (isset($color['images']) && is_array($color['images'])) {
                         $color['images'] = array_values(array_map(
@@ -106,16 +109,11 @@ class ProductApiController extends Controller
 
                     return $color;
                 }, $size['colors']));
+            } else {
+                $size['colors'] = [];
             }
             return $size;
-        }, $availability);
-
-        // Legacy standalone media (backward compat — will be empty for new products)
-        $samples = $product->samples ?? [];
-        $sampleUrls = array_map(fn($p) => asset('storage/' . $p), $samples);
-
-        $videos = $product->videos ?? [];
-        $videoUrls = array_map(fn($v) => asset('storage/' . $v), $videos);
+        }, $sizes);
 
         return [
             'id' => (string) $product->id,
@@ -124,11 +122,10 @@ class ProductApiController extends Controller
             'discounted_price' => $product->discounted_price ? (float) $product->discounted_price : null,
             'availability' => $availability,
             'description' => $product->description ?? '',
-            'samples' => $sampleUrls,
-            'videos' => $videoUrls,
             'sku' => $product->sku,
             'created_at' => $product->created_at->toISOString(),
             'updated_at' => $product->updated_at->toISOString(),
         ];
     }
 }
+

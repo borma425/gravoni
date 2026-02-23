@@ -214,6 +214,7 @@
 <script>
     const UPLOAD_URL = '{{ route("products.upload-media") }}';
     const CSRF_TOKEN = '{{ csrf_token() }}';
+    const STORAGE_URL = '{{ asset("storage") }}/';
 
     // ================================================================
     // Per-Color Temp Media State
@@ -444,6 +445,32 @@
         const hMin = document.getElementById('size-h-min').value.trim();
         const hMax = document.getElementById('size-h-max').value.trim();
 
+        // Auto-flush pending color if the user filled in color name/stock but didn't click "إضافة لون"
+        const pendingColorName = document.getElementById('temp-color-name').value.trim();
+        const pendingColorStock = document.getElementById('temp-color-stock').value.trim();
+        
+        if (pendingColorName && pendingColorStock) {
+            tempColors.push({
+                color: pendingColorName,
+                stock: pendingColorStock,
+                images: [...tempColorImages],
+                videos: [...tempColorVideos]
+            });
+            document.getElementById('temp-color-name').value = '';
+            document.getElementById('temp-color-stock').value = '';
+            tempColorImages = [];
+            tempColorVideos = [];
+            renderTempColorMedia();
+        } else if (tempColorImages.length > 0 || tempColorVideos.length > 0) {
+            alert('لديك وسائط مرفوعة بدون لون! يرجى إدخال اسم اللون والكمية أولاً ثم اضغط "إضافة لون مع الوسائط"');
+            return;
+        }
+
+        if (tempColors.length === 0) {
+            alert('يرجى إضافة لون واحد على الأقل قبل اعتماد المقاس');
+            return;
+        }
+
         addSizeCard({ size: sizeName, chest, wMin, wMax, hMin, hMax, colors: [...tempColors] }, sizeIndexCounter++);
         
         sizeInputs.forEach(id => document.getElementById(id).value = '');
@@ -564,12 +591,12 @@
             
             const imgInputs = card.querySelectorAll(`input[name*="[colors][${i}][images]"]`);
             imgInputs.forEach(inp => {
-                colorObj.images.push({ path: inp.value, url: '/storage/' + inp.value });
+                colorObj.images.push({ path: inp.value, url: STORAGE_URL + inp.value });
             });
             
             const vidInputs = card.querySelectorAll(`input[name*="[colors][${i}][videos]"]`);
             vidInputs.forEach(inp => {
-                colorObj.videos.push({ path: inp.value, url: '/storage/' + inp.value });
+                colorObj.videos.push({ path: inp.value, url: STORAGE_URL + inp.value });
             });
             
             tempColors.push(colorObj);
@@ -586,8 +613,13 @@
     // Load Existing Product Sizes on Page Load
     // ================================================================
     (function loadExistingSizes() {
-        const existingSizes = @json($product->available_sizes ?? []);
-        if (!Array.isArray(existingSizes)) return;
+        let existingSizes = @json($product->available_sizes ?? []);
+        
+        // Normalize: if it's an object (non-sequential keys), convert to array
+        if (existingSizes && !Array.isArray(existingSizes)) {
+            existingSizes = Object.values(existingSizes);
+        }
+        if (!Array.isArray(existingSizes) || existingSizes.length === 0) return;
         
         existingSizes.forEach((sizeObj, idx) => {
             if (!sizeObj || !sizeObj.size) return;
@@ -595,8 +627,8 @@
             const colors = (sizeObj.colors || []).map(c => ({
                 color: c.color || '',
                 stock: c.stock || 0,
-                images: (c.images || []).map(p => ({ path: p, url: '/storage/' + p })),
-                videos: (c.videos || []).map(p => ({ path: p, url: '/storage/' + p }))
+                images: (c.images || []).map(p => ({ path: p, url: STORAGE_URL + p })),
+                videos: (c.videos || []).map(p => ({ path: p, url: STORAGE_URL + p }))
             }));
             
             addSizeCard({
@@ -612,69 +644,10 @@
     })();
 
     // ================================================================
-    // Form Submit
+    // Form Submit — use native submit (no AJAX)
     // ================================================================
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
+    // No custom handler needed. The form submits natively with all hidden inputs.
+    // The controller returns a redirect which the browser follows automatically.
 
-        document.querySelectorAll('.ajax-error').forEach(el => el.remove());
-        
-        const btn = document.getElementById('submit-btn');
-        btn.disabled = true;
-        btn.innerHTML = `<svg class="animate-spin ml-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>جاري الحفظ...</span>`;
-        
-        const formData = new FormData(form);
-        const xhr = new XMLHttpRequest();
-        xhr.open(form.method, form.action);
-        xhr.setRequestHeader('Accept', 'application/json');
-        
-        xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                window.location.href = "{{ route('products.index') }}";
-            } else if (xhr.status === 422) {
-                btn.disabled = false;
-                btn.innerHTML = '<svg class="w-5 h-5 ml-2 -mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> حفظ التعديلات';
-                
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    const errors = response.errors;
-                    let firstErrorEl = null;
-                    
-                    for (const [field, messages] of Object.entries(errors)) {
-                        const inputName = field.replace(/\.(\w+)/g, '[$1]');
-                        const inputEl = form.querySelector(`[name="${inputName}"]`) || document.getElementById(field);
-                        
-                        const errorP = document.createElement('p');
-                        errorP.className = 'mt-2 text-sm text-red-600 ajax-error font-medium';
-                        errorP.innerText = messages[0];
-                        
-                        if (inputEl) {
-                            inputEl.classList.add('border-red-300');
-                            inputEl.parentNode.appendChild(errorP);
-                            if (!firstErrorEl) firstErrorEl = inputEl;
-                        } else {
-                            alert(messages[0]);
-                        }
-                    }
-                    if (firstErrorEl) firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch(e) {
-                    alert('يوجد خطأ في البيانات المدخلة.');
-                }
-            } else {
-                alert('حدث خطأ أثناء الاتصال بالخادم.');
-                btn.disabled = false;
-                btn.innerHTML = '<svg class="w-5 h-5 ml-2 -mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> حفظ التعديلات';
-            }
-        };
-        
-        xhr.onerror = function() {
-            alert('حدث خطأ في الاتصال.');
-            btn.disabled = false;
-            btn.innerHTML = '<svg class="w-5 h-5 ml-2 -mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> حفظ التعديلات';
-        };
-        
-        xhr.send(formData);
-    });
 </script>
 @endsection

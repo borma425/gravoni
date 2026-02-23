@@ -94,21 +94,33 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        \Log::info('Store Request Data', ['all' => $request->all(), 'validated' => $request->validated()]);
-
         $data = $request->validated();
         $data['quantity'] = 0;
 
+        // Normalize available_sizes to sequential array (fix non-sequential keys from JS)
+        if (isset($data['available_sizes']) && is_array($data['available_sizes'])) {
+            $data['available_sizes'] = array_values($data['available_sizes']);
+            foreach ($data['available_sizes'] as &$size) {
+                if (isset($size['colors']) && is_array($size['colors'])) {
+                    $size['colors'] = array_values($size['colors']);
+                }
+            }
+            unset($size);
+        }
+
         // Media is already stored via AJAX and paths are embedded in available_sizes JSON
-        // No standalone samples/videos handling needed
         $data['samples'] = [];
         $data['videos'] = [];
+
+        \Log::info('Store Final Data', ['available_sizes' => $data['available_sizes'] ?? null]);
 
         $product = Product::create($data);
 
         return redirect()->route('products.index')
             ->with('success', 'تم إضافة المنتج بنجاح');
     }
+
+
 
     /**
      * Display the specified resource.
@@ -133,9 +145,18 @@ class ProductController extends Controller
      */
     public function update(StoreProductRequest $request, Product $product)
     {
-        \Log::info('Update Request Data', ['all' => $request->all(), 'validated' => $request->validated()]);
-
         $data = $request->validated();
+
+        // Normalize available_sizes to sequential array
+        if (isset($data['available_sizes']) && is_array($data['available_sizes'])) {
+            $data['available_sizes'] = array_values($data['available_sizes']);
+            foreach ($data['available_sizes'] as &$size) {
+                if (isset($size['colors']) && is_array($size['colors'])) {
+                    $size['colors'] = array_values($size['colors']);
+                }
+            }
+            unset($size);
+        }
 
         // Handle SKU uniqueness check for update
         if ($product->sku !== $data['sku']) {
@@ -151,9 +172,10 @@ class ProductController extends Controller
         $this->cleanupOrphanedMedia($product, $data['available_sizes'] ?? []);
 
         // Media paths are already in available_sizes JSON (pre-uploaded via AJAX)
-        // Clear standalone columns
         $data['samples'] = [];
         $data['videos'] = [];
+
+        \Log::info('Update Final Data', ['available_sizes' => $data['available_sizes'] ?? null]);
 
         $product->update($data);
 
