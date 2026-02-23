@@ -93,9 +93,9 @@
                     </div>
                 </div>
 
-                <button type="button" onclick="addColorCard()" class="w-full flex items-center justify-center gap-1.5 px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-violet-500">
+                <button type="button" id="btn-add-color" onclick="addColorCard()" class="w-full flex items-center justify-center gap-1.5 px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-violet-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                    إضافة هذا اللون
+                    <span id="btn-add-color-text">إضافة هذا اللون</span>
                 </button>
             </div>
 
@@ -211,6 +211,7 @@
     let tempColorImages = [];
     let tempColorVideos = [];
     let colorIndexCounter = 0;
+    let editingColorCard = null;
 
     function uploadFile(file, type) {
         return new Promise((resolve, reject) => {
@@ -279,6 +280,26 @@
         const videos = data ? data.videos : [...tempColorVideos];
         if (!name) { alert('يرجى إدخال اسم اللون'); return; }
 
+        if (editingColorCard) {
+            const oldName = editingColorCard.getAttribute('data-color-name');
+            if (oldName !== name) {
+                document.querySelectorAll('#sizes-container .border-l-4').forEach(sizeCard => {
+                    sizeCard.querySelectorAll('input[name*="[colors]"][name$="[color]"]').forEach(inp => {
+                        if (inp.value === oldName) inp.value = name;
+                    });
+                    sizeCard.querySelectorAll('input[name*="[colors]"][name$="[stock]"]').forEach(inp => {
+                        const parent = inp.closest('.inline-flex');
+                        if (parent && parent.textContent.includes(oldName)) {
+                            parent.innerHTML = parent.innerHTML.replace(oldName, name);
+                        }
+                    });
+                });
+            }
+            editingColorCard.remove();
+            editingColorCard = null;
+            document.getElementById('btn-add-color-text').textContent = 'إضافة هذا اللون';
+        }
+
         const idx = colorIndexCounter++;
         const container = document.getElementById('colors-container');
         const card = document.createElement('div');
@@ -308,9 +329,12 @@
                     <span class="text-sm font-bold text-slate-800">${name}</span>
                     <span class="text-[10px] text-slate-400">${images.length} صور · ${videos.length} فيديو</span>
                 </div>
-                <button type="button" class="text-red-400 hover:text-red-600 transition-colors" onclick="removeColorCard(this)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+                <div class="flex items-center gap-1 bg-white/50 rounded-md p-1 border border-slate-100">
+                    <button type="button" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded p-1" onclick="editColorCard(this)" title="تعديل"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button>
+                    <button type="button" class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 rounded p-1 transition-colors" onclick="removeColorCard(this)" title="حذف">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
             </div>
             ${mediaHtml}
             ${hidden}
@@ -324,6 +348,26 @@
             renderTempColorMedia();
         }
         refreshSizeColorStocks();
+    }
+
+    function editColorCard(btn) {
+        const card = btn.closest('.border-l-4');
+        editingColorCard = card;
+        document.getElementById('new-color-name').value = card.getAttribute('data-color-name');
+        
+        tempColorImages = [];
+        card.querySelectorAll('input[name*="[images]"]').forEach(inp => {
+            tempColorImages.push({ path: inp.value, url: STORAGE_URL + inp.value });
+        });
+        
+        tempColorVideos = [];
+        card.querySelectorAll('input[name*="[videos]"]').forEach(inp => {
+            tempColorVideos.push({ path: inp.value, url: STORAGE_URL + inp.value });
+        });
+        
+        renderTempColorMedia();
+        card.style.display = 'none';
+        document.getElementById('btn-add-color-text').textContent = 'تحديث اللون';
     }
 
     function getDefinedColorNames() {

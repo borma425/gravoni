@@ -39,7 +39,7 @@ class ProductController extends Controller
     public function uploadMedia(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|file|max:20480',
+            'file' => 'required|file|max:256000', // 250MB limit
             'type' => 'required|in:image,video',
         ]);
 
