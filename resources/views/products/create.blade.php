@@ -209,7 +209,8 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">فيديوهات المنتج (اختياري)</label>
                 <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-slate-400 transition-colors bg-gray-50/50">
-                    <input type="file" name="videos[]" id="videos" accept="video/mp4,video/quicktime,video/ogg" multiple
+                    <!-- Note: Removed name="videos[]" so the actual large file isn't submitted with the main form. -->
+                    <input type="file" id="videos" accept="video/mp4,video/quicktime,video/ogg" multiple
                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -217,6 +218,8 @@
                     <p class="mt-2 text-sm text-gray-600">اسحب الفيديوهات هنا أو <span class="text-slate-600 font-medium">اختر ملفات</span></p>
                     <p class="mt-1 text-xs text-gray-500">MP4, MOV, OGG (حد أقصى 20MB للفيديو الواحد)</p>
                 </div>
+                <!-- Container for pre-uploaded videos hidden inputs -->
+                <div id="hidden-videos-container"></div>
                 <div id="videos-preview" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                 @error('videos')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -428,52 +431,140 @@
         renderPreviews(); // Re-render previews
     }
 
-    // Multiple videos preview and management
-    let selectedVideoFiles = new DataTransfer();
+    // Standalone asynchronous video uploads
+    let autoUploadVidIndex = 0;
 
     document.getElementById('videos').addEventListener('change', function(e) {
-        Array.from(this.files || []).forEach(file => {
-            selectedVideoFiles.items.add(file);
-        });
-        this.files = selectedVideoFiles.files;
-        renderVideoPreviews();
-    });
+        const files = Array.from(this.files || []);
+        if (files.length === 0) return;
 
-    function renderVideoPreviews() {
         const container = document.getElementById('videos-preview');
-        container.innerHTML = '';
-        
-        Array.from(selectedVideoFiles.files).forEach((file, index) => {
-            const URL = window.URL || window.webkitURL;
+        const hiddenInputsContainer = document.getElementById('hidden-videos-container');
+        const URL = window.URL || window.webkitURL;
+
+        files.forEach(file => {
+            const currentIndex = autoUploadVidIndex++;
             const videoUrl = URL.createObjectURL(file);
-            
+            const domId = 'auto-vid-' + currentIndex;
+
+            // 1. Create Preview Thumbnail & Progress UI
             const div = document.createElement('div');
             div.className = 'relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-black object-cover';
+            div.id = domId;
             div.innerHTML = `
-                <video src="${videoUrl}" class="w-full h-32 object-cover" muted></video>
-                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-colors pointer-events-none"></div>
-                <button type="button" class="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10" onclick="removeNewVideo(${index})" title="حذف هذا الفيديو">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <video src="${videoUrl}" class="w-full h-32 object-cover opacity-50" muted></video>
+                <div class="absolute inset-0 bg-black/60 pointer-events-none transition-colors" id="${domId}-overlay"></div>
+                
+                <!-- Progress Center UI -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center p-4">
+                    <span class="text-white text-xs font-medium mb-2 drop-shadow-md" id="${domId}-status">جاري الرفع...</span>
+                    <div class="w-full bg-gray-700/50 rounded-full h-2 overflow-hidden shadow-inner">
+                        <div id="${domId}-progress" class="bg-violet-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <span class="text-white text-[10px] font-bold mt-1 shadow-sm" id="${domId}-text">0%</span>
+                </div>
+
+                <button type="button" class="hidden absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10" id="${domId}-remove-btn" title="حذف هذا الفيديو">
+                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
                 <span class="absolute bottom-1 left-1 right-1 text-[11px] bg-black/60 text-white px-1.5 py-0.5 rounded truncate text-center">${file.name}</span>
             `;
             container.appendChild(div);
-        });
-    }
 
-        const dt = new DataTransfer();
-        const files = selectedVideoFiles.files;
-        
-        for (let i = 0; i < files.length; i++) {
-            if (i !== indexToRemove) {
-                dt.items.add(files[i]);
+            // 2. Prepare XHR Payload
+            const formData = new FormData();
+            formData.append('video', file);
+            formData.append('_token', '{{ csrf_token() }}');
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '{{ route('products.upload-video') }}');
+            xhr.setRequestHeader('Accept', 'application/json');
+
+            // 3. Track Progress
+            xhr.upload.onprogress = function(event) {
+                if (event.lengthComputable) {
+                    const percentComplete = Math.round((event.loaded / event.total) * 100);
+                    document.getElementById(domId + '-progress').style.width = percentComplete + '%';
+                    document.getElementById(domId + '-text').innerText = percentComplete + '%';
+                    if(percentComplete === 100) {
+                         document.getElementById(domId + '-status').innerText = 'المعالجة...';
+                    }
+                }
+            };
+
+            // 4. Handle Response
+            xhr.onload = function() {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const res = JSON.parse(xhr.responseText);
+                        if (res.success) {
+                            // Success UI
+                            document.getElementById(domId + '-progress').classList.replace('bg-violet-500', 'bg-emerald-500');
+                            document.getElementById(domId + '-status').innerText = 'تم الرفع بنجاح';
+                            setTimeout(() => {
+                                // Fade out overlay
+                                document.getElementById(domId + '-overlay').style.opacity = '0';
+                                div.querySelector('.flex-col').style.display = 'none'; // hide progress center UI
+                                div.querySelector('video').classList.remove('opacity-50');
+                                
+                                // Show remove button
+                                const removeBtn = document.getElementById(domId + '-remove-btn');
+                                removeBtn.classList.remove('hidden');
+                                removeBtn.classList.add('flex');
+                                
+                                // Inject hidden input so it gets submitted with the main form
+                                const hiddenInput = document.createElement('input');
+                                hiddenInput.type = 'hidden';
+                                hiddenInput.name = 'videos[]';
+                                hiddenInput.value = res.path;
+                                hiddenInput.id = domId + '-hidden-input';
+                                hiddenInputsContainer.appendChild(hiddenInput);
+
+                                // Setup removal logic
+                                removeBtn.onclick = function() {
+                                    div.remove();
+                                    hiddenInput.remove();
+                                };
+                            }, 1000);
+                        }
+                    } catch(e) {
+                        displayError('خطأ داخلي أثناء المعالجة.');
+                    }
+                } else {
+                    let errorMessage = 'فشل الرفع.';
+                    if (xhr.status === 422) {
+                        try {
+                            const res = JSON.parse(xhr.responseText);
+                            errorMessage = res.errors.video[0] || 'تنسيق غير مدعوم أو حجم كبير.';
+                        } catch(e) {}
+                    }
+                    displayError(errorMessage);
+                }
+                
+                function displayError(msg) {
+                    document.getElementById(domId + '-progress').classList.replace('bg-violet-500', 'bg-red-500');
+                    document.getElementById(domId + '-status').innerText = msg;
+                    document.getElementById(domId + '-status').classList.replace('text-white', 'text-red-300');
+                    
+                    const removeBtn = document.getElementById(domId + '-remove-btn');
+                    removeBtn.classList.remove('hidden');
+                    removeBtn.classList.add('flex');
+                    removeBtn.onclick = function() { div.remove(); };
+                }
+            };
+            
+            xhr.onerror = function() {
+                 document.getElementById(domId + '-status').innerText = 'انقطع الاتصال.';
+                 document.getElementById(domId + '-progress').classList.replace('bg-violet-500', 'bg-red-500');
             }
-        }
-        
-        selectedVideoFiles = dt;
-        document.getElementById('videos').files = selectedVideoFiles.files;
-        renderVideoPreviews();
-    }
+
+            // Let's go!
+            xhr.send(formData);
+        });
+
+        // Clear the actual input so selecting the same file again triggers change event
+        this.value = '';
+    });
 
     // AJAX Form Submit for Upload Progress
     const form = document.querySelector('form');

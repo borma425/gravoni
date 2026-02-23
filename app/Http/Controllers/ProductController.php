@@ -43,6 +43,34 @@ class ProductController extends Controller
     }
 
     /**
+     * Handle standalone asynchronous video uploads.
+     */
+    public function uploadVideo(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'video' => 'required|mimes:mp4,mov,ogg,qt|max:20480',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $file = $request->file('video');
+        if ($file && $file->isValid()) {
+            $path = $file->store('products/videos', 'public');
+            if ($path) {
+                return response()->json([
+                    'success' => true,
+                    'path' => $path,
+                    'url' => asset('storage/' . $path)
+                ]);
+            }
+        }
+
+        return response()->json(['message' => 'Failed to upload video.'], 500);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreProductRequest $request)
@@ -59,20 +87,17 @@ class ProductController extends Controller
             }
         }
 
-        // Handle multiple videos
+        // Handle pre-uploaded videos array
         $data['videos'] = [];
-        if ($request->hasFile('videos')) {
-            foreach ($request->file('videos') as $file) {
-                if ($file->isValid()) {
-                    $path = $file->store('products/videos', 'public');
-                    if ($path) {
-                        $data['videos'][] = $path;
-                    }
+        if ($request->has('videos') && is_array($request->input('videos'))) {
+            foreach ($request->input('videos') as $videoPath) {
+                if (is_string($videoPath) && !empty($videoPath)) {
+                    $data['videos'][] = $videoPath;
                 }
             }
         }
 
-        // Ensure we don't save an empty array if there were no videos uploaded or all failed
+        // Ensure we don't save an empty array if there were no videos
         if (empty($data['videos'])) {
             $data['videos'] = null;
         }
@@ -156,13 +181,11 @@ class ProductController extends Controller
         }
         $videos = array_values($videos);
 
-        if ($request->hasFile('videos')) {
-            foreach ($request->file('videos') as $file) {
-                if ($file->isValid()) {
-                    $path = $file->store('products/videos', 'public');
-                    if ($path) {
-                        $videos[] = $path;
-                    }
+        // Handle pre-uploaded new videos
+        if ($request->has('videos') && is_array($request->input('videos'))) {
+            foreach ($request->input('videos') as $videoPath) {
+                if (is_string($videoPath) && !empty($videoPath)) {
+                    $videos[] = $videoPath;
                 }
             }
         }

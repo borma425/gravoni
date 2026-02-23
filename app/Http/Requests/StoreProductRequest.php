@@ -55,7 +55,7 @@ class StoreProductRequest extends FormRequest
             'samples_remove' => 'nullable|array',
             'samples_remove.*' => 'integer',
             'videos' => 'nullable|array',
-            'videos.*' => 'mimes:mp4,mov,ogg,qt|max:20480', // 20 MB max
+            'videos.*' => 'string|max:255',
             'videos_remove' => 'nullable|array',
             'videos_remove.*' => 'integer',
         ];
