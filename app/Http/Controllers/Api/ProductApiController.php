@@ -23,8 +23,8 @@ class ProductApiController extends Controller
             'quantity',
             'description',
             'available_sizes',
-            'available_colors',
             'samples',
+            'videos',
             'created_at',
             'updated_at'
         ])->get();
@@ -33,17 +33,21 @@ class ProductApiController extends Controller
         $formattedProducts = $products->map(function ($product) {
             $samples = $product->samples ?? [];
             $sampleUrls = array_map(fn ($p) => asset('storage/' . $p), $samples);
+            
+            $videos = $product->videos ?? [];
+            $videoUrls = array_map(fn ($v) => asset('storage/' . $v), $videos);
+
             return [
                 'id' => (string) $product->id,
                 'name' => $product->name,
                 'price' => (float) $product->selling_price,
                 'discounted_price' => $product->discounted_price ? (float) $product->discounted_price : null,
-                'availableSizes' => $product->available_sizes ?? [],
-                'availableColors' => $product->available_colors ?? [],
+                'availability' => $product->available_sizes ?? [],
                 'stockCount' => (int) $product->quantity,
                 'description' => $product->description ?? '',
                 'samples' => $sampleUrls,
                 'sample' => !empty($sampleUrls) ? $sampleUrls[0] : null,
+                'videos' => $videoUrls,
                 'sku' => $product->sku,
                 'created_at' => $product->created_at->toISOString(),
                 'updated_at' => $product->updated_at->toISOString(),
@@ -71,8 +75,8 @@ class ProductApiController extends Controller
             'quantity',
             'description',
             'available_sizes',
-            'available_colors',
             'samples',
+            'videos',
             'created_at',
             'updated_at'
         ])->find($id);
@@ -87,17 +91,20 @@ class ProductApiController extends Controller
         $samples = $product->samples ?? [];
         $sampleUrls = array_map(fn ($p) => asset('storage/' . $p), $samples);
 
+        $videos = $product->videos ?? [];
+        $videoUrls = array_map(fn ($v) => asset('storage/' . $v), $videos);
+
         $formattedProduct = [
             'id' => (string) $product->id,
             'name' => $product->name,
             'price' => (float) $product->selling_price,
             'discounted_price' => $product->discounted_price ? (float) $product->discounted_price : null,
-            'availableSizes' => $product->available_sizes ?? [],
-            'availableColors' => $product->available_colors ?? [],
+            'availability' => $product->available_sizes ?? [],
             'stockCount' => (int) $product->quantity,
             'description' => $product->description ?? '',
             'samples' => $sampleUrls,
             'sample' => !empty($sampleUrls) ? $sampleUrls[0] : null,
+            'videos' => $videoUrls,
             'sku' => $product->sku,
             'created_at' => $product->created_at->toISOString(),
             'updated_at' => $product->updated_at->toISOString(),

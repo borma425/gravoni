@@ -118,15 +118,20 @@ class PineconeService
      */
     protected function buildEmbeddingText(Product $product): string
     {
-        $sizes = is_array($product->available_sizes)
-            ? implode(', ', $product->available_sizes)
-            : ($product->available_sizes ?? '');
+        // available_sizes can now be a deep associative array containing stock, chest measurements, and nested colors.
+        // imploding blindly will trigger "Array to string conversion".
+        $sizesStr = '';
+        if (is_array($product->available_sizes)) {
+            $sizesStr = json_encode($product->available_sizes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        } else {
+            $sizesStr = $product->available_sizes ?? '';
+        }
 
         return sprintf(
             'Product: %s. Category: Clothing. Description: %s. Available Sizes: %s',
             $product->name,
             $product->description ?? '',
-            $sizes
+            $sizesStr
         );
     }
 

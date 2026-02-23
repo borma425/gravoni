@@ -57,12 +57,18 @@
                     <td class="px-6 py-4">
                         <div class="flex flex-wrap gap-1.5">
                             @foreach($product->available_sizes ?? [] as $s)
-                                <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">{{ is_array($s) ? ($s['size'] ?? '?') : $s }}</span>
+                                @if(is_array($s))
+                                    <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">{{ $s['size'] ?? '?' }}</span>
+                                    @if(isset($s['colors']) && is_array($s['colors']))
+                                        @foreach($s['colors'] as $c)
+                                            <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-violet-100 text-violet-800">{{ $c['color'] ?? '' }} ({{ $c['stock'] ?? 0 }})</span>
+                                        @endforeach
+                                    @endif
+                                @else
+                                    <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">{{ $s }}</span>
+                                @endif
                             @endforeach
-                            @foreach($product->available_colors ?? [] as $c)
-                                <span class="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-violet-100 text-violet-800">{{ $c }}</span>
-                            @endforeach
-                            @if(empty($product->available_sizes ?? []) && empty($product->available_colors ?? []))
+                            @if(empty($product->available_sizes ?? []))
                                 <span class="text-gray-400 text-sm">-</span>
                             @endif
                         </div>

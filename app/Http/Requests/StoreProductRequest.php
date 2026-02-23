@@ -19,13 +19,7 @@ class StoreProductRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        if ($this->has('available_colors_input') && !empty($this->available_colors_input)) {
-            $colors = array_map('trim', explode(',', $this->available_colors_input));
-            $this->merge(['available_colors' => array_merge(
-                $this->available_colors ?? [],
-                array_filter($colors)
-            )]);
-        }
+        // Independent colors are removed, replaced by nested colors inside availability
     }
 
     /**
@@ -53,13 +47,17 @@ class StoreProductRequest extends FormRequest
             'available_sizes.*.height_cm' => 'nullable|array',
             'available_sizes.*.height_cm.min' => 'nullable|numeric|min:0',
             'available_sizes.*.height_cm.max' => 'nullable|numeric|min:0',
-            'available_colors_input' => 'nullable|string',
-            'available_colors' => 'nullable|array',
-            'available_colors.*' => 'string|max:50',
+            'available_sizes.*.colors' => 'nullable|array',
+            'available_sizes.*.colors.*.color' => 'required_with:available_sizes.*.colors|string|max:50',
+            'available_sizes.*.colors.*.stock' => 'required_with:available_sizes.*.colors|integer|min:0',
             'samples' => 'nullable|array',
             'samples.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'samples_remove' => 'nullable|array',
             'samples_remove.*' => 'integer',
+            'videos' => 'nullable|array',
+            'videos.*' => 'mimes:mp4,mov,ogg,qt|max:20480', // 20 MB max
+            'videos_remove' => 'nullable|array',
+            'videos_remove.*' => 'integer',
         ];
     }
 }

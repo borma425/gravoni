@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProductRequest;
 use App\Models\Product;
 use App\Services\StockService;
-use App\Services\PineconeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -13,12 +12,10 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends Controller
 {
     protected $stockService;
-    protected $pineconeService;
 
-    public function __construct(StockService $stockService, PineconeService $pineconeService)
+    public function __construct(StockService $stockService)
     {
         $this->stockService = $stockService;
-        $this->pineconeService = $pineconeService;
     }
 
     /**
@@ -50,8 +47,9 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
+        \Log::info('Upload Request Data', ['all' => $request->all(), 'files' => $request->allFiles()]);
         $data = $request->validated();
-        unset($data['samples'], $data['samples_remove'], $data['available_colors_input']);
+        unset($data['samples'], $data['samples_remove'], $data['available_colors_input'], $data['videos'], $data['videos_remove']);
 
         // Handle multiple sample images
         $data['samples'] = [];
@@ -61,10 +59,25 @@ class ProductController extends Controller
             }
         }
 
-        $product = Product::create($data);
+        // Handle multiple videos
+        $data['videos'] = [];
+        if ($request->hasFile('videos')) {
+            foreach ($request->file('videos') as $file) {
+                if ($file->isValid()) {
+                    $path = $file->store('products/videos', 'public');
+                    if ($path) {
+                        $data['videos'][] = $path;
+                    }
+                }
+            }
+        }
 
-        // Sync to Pinecone
-        $this->pineconeService->upsertProduct($product);
+        // Ensure we don't save an empty array if there were no videos uploaded or all failed
+        if (empty($data['videos'])) {
+            $data['videos'] = null;
+        }
+
+        $product = Product::create($data);
 
         return redirect()->route('products.index')
             ->with('success', 'تم إضافة المنتج بنجاح');
@@ -93,8 +106,9 @@ class ProductController extends Controller
      */
     public function update(StoreProductRequest $request, Product $product)
     {
+        \Log::info('Update Request Data', ['all' => $request->all(), 'files' => $request->allFiles()]);
         $data = $request->validated();
-        unset($data['samples'], $data['samples_remove'], $data['available_colors_input']);
+        unset($data['samples'], $data['samples_remove'], $data['available_colors_input'], $data['videos'], $data['videos_remove']);
 
         // Handle SKU uniqueness check for update
         if ($product->sku !== $data['sku']) {
@@ -124,10 +138,37 @@ class ProductController extends Controller
         }
         $data['samples'] = $samples;
 
-        $product->update($data);
+        // Handle videos: keep existing minus removed, add new
+        $videos = $product->videos ?? [];
+        // Ensure $videos is an array of strings, filtering out any previous 'false' DB corruptions
+        if (is_array($videos)) {
+            $videos = array_filter($videos, function($v) { return is_string($v) && !empty($v); });
+        } else {
+            $videos = [];
+        }
 
-        // Sync to Pinecone
-        $this->pineconeService->upsertProduct($product);
+        $removeVideoIndices = array_map('intval', (array) $request->input('videos_remove', []));
+        foreach ($removeVideoIndices as $idx) {
+            if (isset($videos[$idx]) && Storage::disk('public')->exists($videos[$idx])) {
+                Storage::disk('public')->delete($videos[$idx]);
+                unset($videos[$idx]);
+            }
+        }
+        $videos = array_values($videos);
+
+        if ($request->hasFile('videos')) {
+            foreach ($request->file('videos') as $file) {
+                if ($file->isValid()) {
+                    $path = $file->store('products/videos', 'public');
+                    if ($path) {
+                        $videos[] = $path;
+                    }
+                }
+            }
+        }
+        $data['videos'] = empty($videos) ? null : $videos;
+
+        $product->update($data);
 
         return redirect()->route('products.index')
             ->with('success', 'تم تحديث المنتج بنجاح');
@@ -150,8 +191,12 @@ class ProductController extends Controller
             }
         }
 
-        // Delete from Pinecone
-        $this->pineconeService->deleteProduct($productId);
+        $videos = $product->videos ?? [];
+        foreach ($videos as $path) {
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
 
         return redirect()->route('products.index')
             ->with('success', 'تم حذف المنتج بنجاح');

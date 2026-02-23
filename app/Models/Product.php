@@ -17,6 +17,7 @@ class Product extends Model
         'available_sizes',
         'available_colors',
         'samples',
+        'videos',
     ];
 
     protected $casts = [
@@ -26,6 +27,7 @@ class Product extends Model
         'available_sizes' => 'array',
         'available_colors' => 'array',
         'samples' => 'array',
+        'videos' => 'array',
     ];
 
     /**

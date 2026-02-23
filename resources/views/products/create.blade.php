@@ -97,10 +97,20 @@
                                 <input type="number" id="size-h-max" placeholder="أقصى" min="0" class="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
                             </div>
                         </div>
+                        <div class="sm:col-span-2 md:col-span-3 border-t sm:border-t-0 pt-3 sm:pt-0 mt-3 md:mt-0">
+                            <label class="block text-xs font-medium text-gray-700 mb-2">أضف ألوان لهذا المقاس (قبل حفظ المقاس)</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="temp-color-name" placeholder="اللون (مثال: أحمر)" class="flex-1 border border-gray-300 rounded-md py-1.5 px-3 text-sm focus:ring-slate-500 focus:border-slate-500">
+                                <input type="number" id="temp-color-stock" placeholder="الكمية" min="0" class="w-24 border border-gray-300 rounded-md py-1.5 px-3 text-sm focus:ring-slate-500 focus:border-slate-500">
+                                <button type="button" onclick="addTempColor()" class="px-3 py-1.5 bg-violet-600 text-white rounded-md text-sm hover:bg-violet-700 transition-colors">إضافة لون</button>
+                            </div>
+                            <!-- Container for temporary colors before size is saved -->
+                            <div id="temp-colors-list" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
+                        </div>
                     </div>
-                    <div class="flex justify-end">
-                        <button type="button" id="add-size-btn" class="px-4 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors text-sm font-medium">
-                            إضافة المقاس
+                    <div class="flex justify-end mt-4 pt-4 border-t border-gray-200">
+                        <button type="button" id="add-size-btn" class="px-5 py-2.5 bg-slate-700 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors text-sm font-medium w-full sm:w-auto">
+                            حفظ وإضافة المقاس
                         </button>
                     </div>
                 </div>
@@ -109,24 +119,39 @@
                     @if(is_array(old('available_sizes')))
                         @foreach(old('available_sizes') as $index => $sizeObj)
                             @if(is_array($sizeObj) && isset($sizeObj['size']))
-                                <div class="relative bg-white border border-emerald-200 shadow-sm rounded-lg p-3 flex flex-wrap md:flex-nowrap items-center gap-4">
-                                    <div class="flex-shrink-0 w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center font-bold text-lg">
-                                        {{ $sizeObj['size'] }}
+                                <div class="relative bg-white border border-emerald-200 shadow-sm rounded-lg p-3 flex flex-col gap-3">
+                                    <div class="flex flex-wrap md:flex-nowrap items-center gap-4 w-full">
+                                        <div class="flex-shrink-0 w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center font-bold text-lg">
+                                            {{ $sizeObj['size'] }}
+                                        </div>
+                                        <div class="flex-1 grid grid-cols-3 gap-2 text-sm text-gray-600 pr-2 border-r border-emerald-100">
+                                            <div><span class="font-medium text-gray-900">الصدر:</span> {{ $sizeObj['chest_width_cm'] ?? '-' }} سم</div>
+                                            <div><span class="font-medium text-gray-900">الوزن:</span> {{ $sizeObj['weight_kg']['min'] ?? '-' }} - {{ $sizeObj['weight_kg']['max'] ?? '-' }} كجم</div>
+                                            <div><span class="font-medium text-gray-900">الطول:</span> {{ $sizeObj['height_cm']['min'] ?? '-' }} - {{ $sizeObj['height_cm']['max'] ?? '-' }} سم</div>
+                                        </div>
+                                        <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj['size'] }}">
+                                        <input type="hidden" name="available_sizes[{{$index}}][chest_width_cm]" value="{{ $sizeObj['chest_width_cm'] ?? '' }}">
+                                        <input type="hidden" name="available_sizes[{{$index}}][weight_kg][min]" value="{{ $sizeObj['weight_kg']['min'] ?? '' }}">
+                                        <input type="hidden" name="available_sizes[{{$index}}][weight_kg][max]" value="{{ $sizeObj['weight_kg']['max'] ?? '' }}">
+                                        <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
+                                        <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
+                                        <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)" title="حذف المقاس">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                        </button>
                                     </div>
-                                    <div class="flex-1 grid grid-cols-3 gap-2 text-sm text-gray-600">
-                                        <div><span class="font-medium text-gray-900">الصدر:</span> {{ $sizeObj['chest_width_cm'] ?? '-' }} سم</div>
-                                        <div><span class="font-medium text-gray-900">الوزن:</span> {{ $sizeObj['weight_kg']['min'] ?? '-' }} - {{ $sizeObj['weight_kg']['max'] ?? '-' }} كجم</div>
-                                        <div><span class="font-medium text-gray-900">الطول:</span> {{ $sizeObj['height_cm']['min'] ?? '-' }} - {{ $sizeObj['height_cm']['max'] ?? '-' }} سم</div>
-                                    </div>
-                                    <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj['size'] }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][chest_width_cm]" value="{{ $sizeObj['chest_width_cm'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][min]" value="{{ $sizeObj['weight_kg']['min'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][max]" value="{{ $sizeObj['weight_kg']['max'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
-                                    <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)" title="حذف المقاس">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
+                                    @if(isset($sizeObj['colors']) && is_array($sizeObj['colors']) && count($sizeObj['colors']) > 0)
+                                        <div class="pt-3 mt-1 border-t border-gray-100">
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach($sizeObj['colors'] as $cIdx => $cObj)
+                                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200">
+                                                        {{ $cObj['color'] }} (الكمية: {{ $cObj['stock'] }})
+                                                        <input type="hidden" name="available_sizes[{{$index}}][colors][{{$cIdx}}][color]" value="{{ $cObj['color'] }}">
+                                                        <input type="hidden" name="available_sizes[{{$index}}][colors][{{$cIdx}}][stock]" value="{{ $cObj['stock'] }}">
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                             @elseif(is_string($sizeObj))
                                 <!-- Fallback for old simple string sizes if validation fails over old data -->
@@ -150,33 +175,7 @@
                 @enderror
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">الألوان المتاحة</label>
-                <div class="flex gap-2 mb-2">
-                    <input type="text" id="color-input" placeholder="أدخل لون جديد"
-                           class="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
-                    <button type="button" id="add-color-btn" class="px-4 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors text-sm font-medium">
-                        إضافة
-                    </button>
-                </div>
-                <div id="colors-container" class="flex flex-wrap gap-2 min-h-[44px] p-3 border border-gray-200 rounded-lg bg-gray-50/50">
-                    @if(is_array(old('available_colors')))
-                        @foreach(old('available_colors') as $color)
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-violet-100 text-violet-800 border border-violet-200 shadow-sm">
-                                {{ $color }}
-                                <input type="hidden" name="available_colors[]" value="{{ $color }}">
-                                <button type="button" class="p-0.5 rounded hover:bg-violet-200/80 transition-colors" onclick="removeColor(this)" aria-label="حذف">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                            </span>
-                        @endforeach
-                    @endif
-                </div>
-                <p class="mt-1.5 text-xs text-gray-500">أدخل كل لون واضغط إضافة</p>
-                @error('available_colors')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
+            <!-- Independent Colors Section Removed -->
 
             <div>
                 <label for="description" class="block text-sm font-medium text-gray-700">الوصف</label>
@@ -207,12 +206,43 @@
                 @enderror
             </div>
 
-            <div class="flex items-center justify-end space-x-reverse space-x-3">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">فيديوهات المنتج (اختياري)</label>
+                <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-slate-400 transition-colors bg-gray-50/50">
+                    <input type="file" name="videos[]" id="videos" accept="video/mp4,video/quicktime,video/ogg" multiple
+                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <p class="mt-2 text-sm text-gray-600">اسحب الفيديوهات هنا أو <span class="text-slate-600 font-medium">اختر ملفات</span></p>
+                    <p class="mt-1 text-xs text-gray-500">MP4, MOV, OGG (حد أقصى 20MB للفيديو الواحد)</p>
+                </div>
+                <div id="videos-preview" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                @error('videos')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                @error('videos.*')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div id="upload-progress-container" class="hidden mt-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <div class="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                    <span id="upload-progress-label">جاري الرفع والحفظ...</span>
+                    <span id="upload-progress-text">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div id="upload-progress-bar" class="bg-violet-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2 text-center" id="upload-progress-hint">يرجى عدم إغلاق الصفحة حتى يكتمل الرفع</p>
+            </div>
+
+            <div class="flex items-center justify-end space-x-reverse space-x-3 mt-6">
                 <a href="{{ route('products.index') }}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
                     إلغاء
                 </a>
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-                    حفظ
+                <button type="submit" id="submit-btn" class="inline-flex justify-center flex-row-reverse py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                    <span>حفظ</span>
                 </button>
             </div>
         </form>
@@ -220,7 +250,45 @@
 </div>
 
 <script>
-    // Sizes detailed logic
+    // Temporary colors logic
+    let tempColors = [];
+    
+    function addTempColor() {
+        const cName = document.getElementById('temp-color-name').value.trim();
+        const cStock = document.getElementById('temp-color-stock').value.trim();
+        
+        if(!cName) { alert('يرجى إدخال اسم اللون'); return; }
+        if(!cStock || isNaN(cStock) || cStock < 0) { alert('يرجى إدخال كمية صحيحة'); return; }
+        
+        tempColors.push({ color: cName, stock: cStock });
+        renderTempColors();
+        
+        document.getElementById('temp-color-name').value = '';
+        document.getElementById('temp-color-stock').value = '';
+        document.getElementById('temp-color-name').focus();
+    }
+    
+    function removeTempColor(idx) {
+        tempColors.splice(idx, 1);
+        renderTempColors();
+    }
+    
+    function renderTempColors() {
+        const container = document.getElementById('temp-colors-list');
+        container.innerHTML = '';
+        tempColors.forEach((tc, idx) => {
+            const badge = document.createElement('span');
+            badge.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200';
+            badge.innerHTML = `
+                ${tc.color} (الكمية: ${tc.stock})
+                <button type="button" class="text-violet-600 hover:text-red-500" onclick="removeTempColor(${idx})">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            `;
+            container.appendChild(badge);
+        });
+    }
+
     let sizeIndexCounter = document.querySelectorAll('#sizes-container > div').length || 0;
     
     document.getElementById('add-size-btn').addEventListener('click', () => addSizeFromInputs());
@@ -244,56 +312,67 @@
             return;
         }
 
-        addSizeCard({ size: sizeName, chest, wMin, wMax, hMin, hMax }, sizeIndexCounter++);
+        // Pass a copy of tempColors
+        addSizeCard({ size: sizeName, chest, wMin, wMax, hMin, hMax, colors: [...tempColors] }, sizeIndexCounter++);
         
         // Clear inputs
         sizeInputs.forEach(id => document.getElementById(id).value = '');
+        
+        // Clear temp colors
+        tempColors = [];
+        renderTempColors();
+        
         document.getElementById('size-name').focus();
     }
 
     function addSizeCard(data, index) {
         const c = document.getElementById('sizes-container');
         const d = document.createElement('div');
-        d.className = 'relative bg-white border border-emerald-200 shadow-sm rounded-lg p-3 flex flex-wrap md:flex-nowrap items-center gap-4 animate-fade-in-up';
+        d.className = 'relative bg-white border border-emerald-200 shadow-sm rounded-lg p-3 flex flex-col gap-3 animate-fade-in-up';
         
+        let colorsHtml = '';
+        let colorsHiddenInputs = '';
+        
+        if (data.colors && data.colors.length > 0) {
+            colorsHtml += '<div class="pt-3 mt-1 border-t border-gray-100"><div class="flex flex-wrap gap-2">';
+            data.colors.forEach((col, cIdx) => {
+                colorsHtml += `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200">${col.color} (الكمية: ${col.stock})</span>`;
+                colorsHiddenInputs += `
+                    <input type="hidden" name="available_sizes[${index}][colors][${cIdx}][color]" value="${col.color}">
+                    <input type="hidden" name="available_sizes[${index}][colors][${cIdx}][stock]" value="${col.stock}">
+                `;
+            });
+            colorsHtml += '</div></div>';
+        }
+
         d.innerHTML = `
-            <div class="flex-shrink-0 w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center font-bold text-lg">
-                ${data.size}
+            <div class="flex flex-wrap md:flex-nowrap items-center gap-4 w-full">
+                <div class="flex-shrink-0 w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center font-bold text-lg">
+                    ${data.size}
+                </div>
+                <div class="flex-1 grid grid-cols-3 gap-2 text-sm text-gray-600 pr-2 border-r border-emerald-100">
+                    <div><span class="font-medium text-gray-900">الصدر:</span> ${data.chest || '-'} سم</div>
+                    <div><span class="font-medium text-gray-900">الوزن:</span> ${data.wMin || '-'} - ${data.wMax || '-'} كجم</div>
+                    <div><span class="font-medium text-gray-900">الطول:</span> ${data.hMin || '-'} - ${data.hMax || '-'} سم</div>
+                </div>
+                
+                <input type="hidden" name="available_sizes[${index}][size]" value="${data.size}">
+                <input type="hidden" name="available_sizes[${index}][chest_width_cm]" value="${data.chest}">
+                <input type="hidden" name="available_sizes[${index}][weight_kg][min]" value="${data.wMin}">
+                <input type="hidden" name="available_sizes[${index}][weight_kg][max]" value="${data.wMax}">
+                <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
+                <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
+                ${colorsHiddenInputs}
+                
+                <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)" title="حذف المقاس">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
-            <div class="flex-1 grid grid-cols-3 gap-2 text-sm text-gray-600">
-                <div><span class="font-medium text-gray-900">الصدر:</span> ${data.chest || '-'} سم</div>
-                <div><span class="font-medium text-gray-900">الوزن:</span> ${data.wMin || '-'} - ${data.wMax || '-'} كجم</div>
-                <div><span class="font-medium text-gray-900">الطول:</span> ${data.hMin || '-'} - ${data.hMax || '-'} سم</div>
-            </div>
-            <input type="hidden" name="available_sizes[${index}][size]" value="${data.size}">
-            <input type="hidden" name="available_sizes[${index}][chest_width_cm]" value="${data.chest}">
-            <input type="hidden" name="available_sizes[${index}][weight_kg][min]" value="${data.wMin}">
-            <input type="hidden" name="available_sizes[${index}][weight_kg][max]" value="${data.wMax}">
-            <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
-            <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
-            <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)" title="حذف المقاس">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
+            ${colorsHtml}
         `;
         c.appendChild(d);
     }
     function removeSize(btn) { btn.closest('div.relative.bg-white').remove(); }
-
-    // Colors
-    document.getElementById('add-color-btn').addEventListener('click', () => addColorFromInput());
-    document.getElementById('color-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addColorFromInput(); } });
-    function addColorFromInput() {
-        const v = document.getElementById('color-input').value.trim();
-        if (v) { addColorBadge(v); document.getElementById('color-input').value = ''; }
-    }
-    function addColorBadge(color) {
-        const c = document.getElementById('colors-container');
-        const b = document.createElement('span');
-        b.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-violet-100 text-violet-800 border border-violet-200 shadow-sm';
-        b.innerHTML = `${color}<input type="hidden" name="available_colors[]" value="${color}"><button type="button" class="p-0.5 rounded hover:bg-violet-200/80" onclick="removeColor(this)"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>`;
-        c.appendChild(b);
-    }
-    function removeColor(btn) { btn.closest('span').remove(); }
 
     // Multiple images preview and management
     let selectedFiles = new DataTransfer();
@@ -348,5 +427,156 @@
         document.getElementById('samples').files = selectedFiles.files; // Update the actual input
         renderPreviews(); // Re-render previews
     }
+
+    // Multiple videos preview and management
+    let selectedVideoFiles = new DataTransfer();
+
+    document.getElementById('videos').addEventListener('change', function(e) {
+        Array.from(this.files || []).forEach(file => {
+            selectedVideoFiles.items.add(file);
+        });
+        this.files = selectedVideoFiles.files;
+        renderVideoPreviews();
+    });
+
+    function renderVideoPreviews() {
+        const container = document.getElementById('videos-preview');
+        container.innerHTML = '';
+        
+        Array.from(selectedVideoFiles.files).forEach((file, index) => {
+            const URL = window.URL || window.webkitURL;
+            const videoUrl = URL.createObjectURL(file);
+            
+            const div = document.createElement('div');
+            div.className = 'relative group rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-black object-cover';
+            div.innerHTML = `
+                <video src="${videoUrl}" class="w-full h-32 object-cover" muted></video>
+                <div class="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-colors pointer-events-none"></div>
+                <button type="button" class="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10" onclick="removeNewVideo(${index})" title="حذف هذا الفيديو">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <span class="absolute bottom-1 left-1 right-1 text-[11px] bg-black/60 text-white px-1.5 py-0.5 rounded truncate text-center">${file.name}</span>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+        const dt = new DataTransfer();
+        const files = selectedVideoFiles.files;
+        
+        for (let i = 0; i < files.length; i++) {
+            if (i !== indexToRemove) {
+                dt.items.add(files[i]);
+            }
+        }
+        
+        selectedVideoFiles = dt;
+        document.getElementById('videos').files = selectedVideoFiles.files;
+        renderVideoPreviews();
+    }
+
+    // AJAX Form Submit for Upload Progress
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Clear previous ajax error messages and borders
+        document.querySelectorAll('.ajax-error').forEach(el => el.remove());
+        document.querySelectorAll('.border-red-300').forEach(el => el.classList.remove('border-red-300', 'text-red-900', 'placeholder-red-300'));
+        
+        const btn = document.getElementById('submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="animate-spin ml-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>جاري الحفظ...</span>`;
+        
+        const progressContainer = document.getElementById('upload-progress-container');
+        const progressBar = document.getElementById('upload-progress-bar');
+        const progressText = document.getElementById('upload-progress-text');
+        const progressLabel = document.getElementById('upload-progress-label');
+        const progressHint = document.getElementById('upload-progress-hint');
+        
+        progressContainer.classList.remove('hidden');
+        progressBar.style.width = '0%';
+        progressText.innerText = '0%';
+        progressLabel.innerText = 'جاري الرفع...';
+        progressHint.innerText = 'يرجى عدم إغلاق الصفحة حتى يكتمل الرفع';
+        
+        const formData = new FormData(form);
+        const xhr = new XMLHttpRequest();
+        xhr.open(form.method, form.action);
+        xhr.setRequestHeader('Accept', 'application/json');
+        
+        xhr.upload.onprogress = function(event) {
+            if (event.lengthComputable) {
+                const percentComplete = Math.round((event.loaded / event.total) * 100);
+                progressBar.style.width = percentComplete + '%';
+                progressText.innerText = percentComplete + '%';
+                
+                if (percentComplete === 100) {
+                    progressLabel.innerText = 'جاري معالجة البيانات...';
+                    progressHint.innerText = 'اكتمل الرفع، بانتظار استجابة الخادم';
+                }
+            }
+        };
+        
+        xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                // Success
+                window.location.href = "{{ route('products.index') }}";
+            } else if (xhr.status === 422) {
+                // Validation error
+                btn.disabled = false;
+                btn.innerHTML = '<span>حفظ</span>';
+                progressContainer.classList.add('hidden');
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    const errors = response.errors;
+                    let firstErrorEl = null;
+                    
+                    for (const [field, messages] of Object.entries(errors)) {
+                        const inputName = field.replace(/\.(\w+)/g, '[$1]'); // convert videos.0 to videos[0]
+                        const inputEl = form.querySelector(`[name="${inputName}"]`) || form.querySelector(`[name="${inputName}[]"]`) || document.getElementById(field);
+                        
+                        const errorP = document.createElement('p');
+                        errorP.className = 'mt-2 text-sm text-red-600 ajax-error font-medium';
+                        errorP.innerText = messages[0];
+                        
+                        if (inputEl) {
+                            inputEl.classList.add('border-red-300', 'text-red-900', 'placeholder-red-300');
+                            inputEl.parentNode.appendChild(errorP);
+                            if (!firstErrorEl) firstErrorEl = inputEl;
+                        } else {
+                            if (field.startsWith('samples')) {
+                                document.getElementById('samples-preview').parentNode.appendChild(errorP);
+                                if (!firstErrorEl) firstErrorEl = document.getElementById('samples-preview');
+                            } else if (field.startsWith('videos')) {
+                                document.getElementById('videos-preview').parentNode.appendChild(errorP);
+                                if (!firstErrorEl) firstErrorEl = document.getElementById('videos-preview');
+                            } else {
+                                alert(messages[0]);
+                            }
+                        }
+                    }
+                    if (firstErrorEl) firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch(e) {
+                    alert('يوجد خطأ في البيانات المدخلة.');
+                }
+            } else {
+                alert('حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة مرة أخرى.');
+                btn.disabled = false;
+                btn.innerHTML = '<span>حفظ</span>';
+                progressContainer.classList.add('hidden');
+            }
+        };
+        
+        xhr.onerror = function() {
+            alert('حدث خطأ في الاتصال.');
+            btn.disabled = false;
+            btn.innerHTML = '<span>حفظ</span>';
+            progressContainer.classList.add('hidden');
+        };
+        
+        xhr.send(formData);
+    });
 </script>
 @endsection

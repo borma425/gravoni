@@ -62,6 +62,7 @@
                                         <th scope="col" class="px-4 py-2.5 text-right font-semibold text-gray-900">الصدر (سم)</th>
                                         <th scope="col" class="px-4 py-2.5 text-right font-semibold text-gray-900">الوزن (كجم)</th>
                                         <th scope="col" class="px-4 py-2.5 text-right font-semibold text-gray-900">الطول (سم)</th>
+                                        <th scope="col" class="px-4 py-2.5 text-right font-semibold text-gray-900">الألوان والكميات</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 bg-white">
@@ -72,11 +73,24 @@
                                             <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ $s['chest_width_cm'] ?? '-' }}</td>
                                             <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ $s['weight_kg']['min'] ?? '-' }} - {{ $s['weight_kg']['max'] ?? '-' }}</td>
                                             <td class="whitespace-nowrap px-4 py-2 text-gray-700">{{ $s['height_cm']['min'] ?? '-' }} - {{ $s['height_cm']['max'] ?? '-' }}</td>
+                                            <td class="px-4 py-2">
+                                                @if(isset($s['colors']) && is_array($s['colors']) && count($s['colors']) > 0)
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @foreach($s['colors'] as $cObj)
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-800 border border-violet-200">
+                                                                {{ $cObj['color'] ?? 'بدون اسم' }} (كمية: {{ $cObj['stock'] ?? 0 }})
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <span class="text-xs text-gray-400">لا توجد ألوان</span>
+                                                @endif
+                                            </td>
                                         </tr>
                                         @else
                                         <tr class="hover:bg-gray-50/50">
                                             <td class="whitespace-nowrap px-4 py-2 font-bold text-gray-700 bg-gray-50">{{ $s }}</td>
-                                            <td colspan="3" class="whitespace-nowrap px-4 py-2 text-gray-400 text-center">لا يوجد تفاصيل إضافية لهذا المقاس</td>
+                                            <td colspan="4" class="whitespace-nowrap px-4 py-2 text-gray-400 text-center">لا يوجد تفاصيل إضافية لهذا المقاس</td>
                                         </tr>
                                         @endif
                                     @endforeach
@@ -86,16 +100,7 @@
                     </dd>
                 </div>
                 @endif
-                @if($product->available_colors && count($product->available_colors) > 0)
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">الألوان المتاحة</dt>
-                    <dd class="mt-1.5 flex flex-wrap gap-2">
-                        @foreach($product->available_colors as $c)
-                            <span class="inline-flex px-3 py-1 rounded-lg text-sm font-medium bg-violet-100 text-violet-800 border border-violet-200">{{ $c }}</span>
-                        @endforeach
-                    </dd>
-                </div>
-                @endif
+                <!-- Independent Colors Section Removed -->
                 <div>
                     <dt class="text-sm font-medium text-gray-500">متوسط التكلفة</dt>
                     <dd class="mt-1 text-sm text-gray-900">{{ number_format($product->average_cost, 2) }} ج.م</dd>
@@ -117,6 +122,23 @@
                                     <img src="{{ asset('storage/' . $path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-200">
                                     <span class="block py-1.5 text-center text-xs text-gray-500 bg-gray-50">صورة {{ $idx + 1 }}</span>
                                 </a>
+                            @endforeach
+                        </div>
+                    </dd>
+                </div>
+                @endif
+                
+                @php $videos = $product->videos ?? []; @endphp
+                @if(!empty($videos))
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">فيديوهات المنتج</dt>
+                    <dd class="mt-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($videos as $idx => $path)
+                                <div class="block group rounded-xl overflow-hidden border-2 border-gray-200 bg-black shadow-sm transition-all focus-within:ring-2 focus-within:ring-slate-500">
+                                    <video src="{{ asset('storage/' . $path) }}" class="w-full h-40 object-cover" controls preload="metadata"></video>
+                                    <span class="block py-1.5 text-center text-xs text-white bg-gray-900">فيديو {{ $idx + 1 }}</span>
+                                </div>
                             @endforeach
                         </div>
                     </dd>
