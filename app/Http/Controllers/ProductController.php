@@ -94,6 +94,8 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
+        \Log::info('Store Request Data', ['all' => $request->all(), 'validated' => $request->validated()]);
+
         $data = $request->validated();
         $data['quantity'] = 0;
 
@@ -131,6 +133,8 @@ class ProductController extends Controller
      */
     public function update(StoreProductRequest $request, Product $product)
     {
+        \Log::info('Update Request Data', ['all' => $request->all(), 'validated' => $request->validated()]);
+
         $data = $request->validated();
 
         // Handle SKU uniqueness check for update
