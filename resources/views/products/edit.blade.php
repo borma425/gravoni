@@ -18,138 +18,125 @@
     </div>
 </div>
 
-<div class="bg-white shadow rounded-lg">
-    <div class="px-4 py-5 sm:p-6">
-        <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-            @csrf
-            @method('PUT')
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700">اسم المنتج</label>
-                <input type="text" name="name" id="name" value="{{ old('name', $product->name) }}" required
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('name') border-red-300 @enderror">
-                @error('name')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
+<form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    @csrf
+    @method('PUT')
 
-            <div>
-                <label for="sku" class="block text-sm font-medium text-gray-700">SKU</label>
-                <input type="text" name="sku" id="sku" value="{{ old('sku', $product->sku) }}" required
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('sku') border-red-300 @enderror">
-                @error('sku')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="selling_price" class="block text-sm font-medium text-gray-700">السعر الأساسي</label>
-                <input type="number" step="0.01" name="selling_price" id="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required min="0"
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('selling_price') border-red-300 @enderror">
-                <p class="mt-1 text-xs text-gray-500">السعر الأصلي للمنتج قبل التخفيض</p>
-                @error('selling_price')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label for="discounted_price" class="block text-sm font-medium text-gray-700">سعر بعد التخفيض</label>
-                <input type="number" step="0.01" name="discounted_price" id="discounted_price" value="{{ old('discounted_price', $product->discounted_price) }}" min="0"
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('discounted_price') border-red-300 @enderror">
-                <p class="mt-1 text-xs text-gray-500">السعر بعد تطبيق التخفيض (اختياري)</p>
-                @error('discounted_price')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">الأحجام المتاحة ومخطط المقاسات</label>
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-3">
-                        <div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">الأحجام المتاحة ومخطط المقاسات</label>
-                <div class="bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-200 shadow-sm rounded-xl p-5 mb-5 transition-all hover:shadow-md">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 mb-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                                المقاس (مثال: M)
-                            </label>
-                            <input type="text" id="size-name" placeholder="أدخل المقاس.." class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                                عرض الصدر (سم)
-                            </label>
-                            <input type="number" id="size-chest" min="0" placeholder="مثال: 50" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
-                        </div>
-                        <div class="sm:col-span-2 md:col-span-1">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1.5 text-center">الوزن (كجم)</label>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="size-w-min" placeholder="من" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
-                                <span class="text-slate-400 font-medium">-</span>
-                                <input type="number" id="size-w-max" placeholder="إلى" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
-                            </div>
-                        </div>
-                        <div class="sm:col-span-2 md:col-span-1 border-t sm:border-t-0 pt-4 sm:pt-0">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1.5 text-center">الطول (سم)</label>
-                            <div class="flex items-center gap-2">
-                                <input type="number" id="size-h-min" placeholder="من" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
-                                <span class="text-slate-400 font-medium">-</span>
-                                <input type="number" id="size-h-max" placeholder="إلى" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
-                            </div>
-                        </div>
-                        <div class="sm:col-span-2 md:col-span-3 border-t sm:border-t-0 pt-4 sm:pt-0 mt-2 md:mt-0 bg-white/50 p-4 rounded-lg border border-slate-100">
-                            <label class="block text-xs font-semibold text-slate-700 mb-2">أضف ألوان لهذا المقاس (قبل حفظ المقاس)</label>
-                            <div class="flex flex-wrap sm:flex-nowrap gap-2 items-center">
-                                <input type="text" id="temp-color-name" placeholder="اللون (مثال: أحمر، أسود..)" class="flex-1 min-w-[150px] border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors shadow-sm bg-white">
-                                <div class="relative w-32">
-                                    <input type="number" id="temp-color-stock" placeholder="الكمية" min="0" class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors shadow-sm bg-white pr-8">
-                                    <span class="absolute right-3 top-2.5 text-slate-400 text-xs font-medium pointer-events-none">ق</span>
-                                </div>
-                                <button type="button" onclick="addTempColor()" class="whitespace-nowrap flex items-center gap-1.5 px-4 py-2 bg-violet-600 text-white rounded-full text-sm font-medium hover:bg-violet-700 shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-offset-2 focus:ring-violet-500">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                    إضافة لون
-                                </button>
-                            </div>
-                            <!-- Container for temporary colors before size is saved -->
-                            <div id="temp-colors-list" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
-                        </div>
-                    </div>
-                    <div class="flex justify-end mt-2 pt-4 border-t border-slate-200/60">
-                        <button type="button" id="add-size-btn" class="flex items-center gap-2 px-6 py-2.5 bg-slate-800 text-white shadow-md hover:shadow-lg rounded-lg hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-700 transition-all text-sm font-bold w-full sm:w-auto">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            اعتماد المقاس وإضافته
-                        </button>
-                    </div>
+    <!-- Main Content Column -->
+    <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Basic Info Card -->
+        <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                المعلومات الأساسية
+            </h2>
+            <div class="space-y-5">
+                <div>
+                    <label for="name" class="block text-sm font-semibold text-gray-700">اسم المنتج</label>
+                    <input type="text" name="name" id="name" value="{{ old('name', $product->name) }}" required
+                           class="mt-1.5 block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-sm transition-colors @error('name') border-red-300 ring-red-100 @enderror">
+                    @error('name')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                <div id="sizes-container" class="flex flex-col gap-4 min-h-[44px]">
-                    @php
-                        $sizes = old('available_sizes', $product->available_sizes ?? []);
-                        if (is_string($sizes)) $sizes = json_decode($sizes, true) ?? [];
-                    @endphp
-                    @foreach($sizes as $index => $sizeObj)
+                <div>
+                    <label for="sku" class="block text-sm font-semibold text-gray-700">رمز التخزين (SKU)</label>
+                    <input type="text" name="sku" id="sku" value="{{ old('sku', $product->sku) }}" required
+                           class="mt-1.5 block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-sm transition-colors @error('sku') border-red-300 ring-red-100 @enderror">
+                    @error('sku')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+                
+                <!-- Description moved here -->
+                <div>
+                    <label for="description" class="block text-sm font-semibold text-gray-700">الوصف</label>
+                    <textarea name="description" id="description" rows="4"
+                              class="mt-1.5 block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-sm transition-colors @error('description') border-red-300 ring-red-100 @enderror">{{ old('description', $product->description) }}</textarea>
+                    @error('description')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Availability (Sizes & Colors) Card -->
+        <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                الأحجام والألوان المتاحة
+            </h2>
+            <div class="bg-gradient-to-br from-slate-50 to-gray-50 border border-slate-200 shadow-sm rounded-xl p-5 mb-5 transition-all hover:shadow-md">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">المقاس (مثال: M)</label>
+                        <input type="text" id="size-name" placeholder="أدخل المقاس.." class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">عرض الصدر (سم)</label>
+                        <input type="number" id="size-chest" min="0" placeholder="مثال: 50" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-1">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5 text-center">الوزن (كجم)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="size-w-min" placeholder="أدنى" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
+                            <span class="text-slate-400 font-medium">-</span>
+                            <input type="number" id="size-w-max" placeholder="أقصى" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
+                        </div>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-1 border-t sm:border-t-0 pt-4 sm:pt-0">
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5 text-center">الطول (سم)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="size-h-min" placeholder="من" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
+                            <span class="text-slate-400 font-medium">-</span>
+                            <input type="number" id="size-h-max" placeholder="إلى" min="0" class="block w-full border border-gray-300 rounded-lg shadow-sm py-2 px-2 text-sm text-center focus:ring-violet-500 focus:border-violet-500 transition-colors bg-white">
+                        </div>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-3 border-t sm:border-t-0 pt-4 sm:pt-0 mt-2 md:mt-0 bg-white/60 p-4 rounded-xl border border-slate-200">
+                        <label class="block text-xs font-bold text-slate-800 mb-2">أضف ألوان المتوفرة لهذا المقاس</label>
+                        <div class="flex flex-wrap sm:flex-nowrap gap-2 items-center">
+                            <input type="text" id="temp-color-name" placeholder="اللون (مثال: أحمر)" class="flex-1 min-w-[150px] border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors shadow-sm bg-white">
+                            <div class="relative w-32">
+                                <input type="number" id="temp-color-stock" placeholder="الكمية" min="0" class="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-violet-500 focus:border-violet-500 transition-colors shadow-sm bg-white pr-8">
+                                <span class="absolute right-3 top-2.5 text-slate-400 text-xs font-medium pointer-events-none">ق</span>
+                            </div>
+                            <button type="button" onclick="addTempColor()" class="whitespace-nowrap flex items-center gap-1.5 px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-bold hover:bg-violet-700 shadow-sm transition-all focus:ring-2 focus:ring-offset-2 focus:ring-violet-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                إضافة لون
+                            </button>
+                        </div>
+                        <div id="temp-colors-list" class="mt-3 flex flex-wrap gap-2 empty:hidden"></div>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-2 pt-4 border-t border-slate-200/60">
+                    <button type="button" id="add-size-btn" class="flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-800 text-white shadow-sm hover:shadow-md rounded-lg hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-700 transition-all text-sm font-bold w-full sm:w-auto">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        اعتماد المقاس
+                    </button>
+                </div>
+            </div>
+
+            <div id="sizes-container" class="flex flex-col gap-4 min-h-[44px]">
+                @php $existingSizes = $product->available_sizes ?? []; @endphp
+                @if(is_array($existingSizes))
+                    @foreach($existingSizes as $index => $sizeObj)
                         @if(is_array($sizeObj) && isset($sizeObj['size']))
-                            <div class="relative bg-white border-l-4 border-violet-500 border-y border-r border-slate-200 shadow-md hover:shadow-lg transition-shadow rounded-xl p-4 flex flex-col gap-3">
-                                <div class="flex flex-wrap md:flex-nowrap items-center gap-4 w-full">
-                                    <div class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-violet-100 to-purple-100 text-violet-800 rounded-full flex items-center justify-center font-black text-xl shadow-inner border border-violet-200">
+                            <div class="bg-white border-l-4 border-violet-500 border-y border-r border-slate-200 shadow-sm hover:shadow-md transition-shadow rounded-xl p-4 flex flex-col gap-3">
+                                <div class="flex items-start gap-4 w-full">
+                                    <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-violet-100 to-purple-100 text-violet-800 rounded-full flex items-center justify-center font-black text-lg sm:text-xl shadow-inner border border-violet-200">
                                         {{ $sizeObj['size'] }}
                                     </div>
-                                    <div class="flex-1 flex flex-wrap gap-4 text-sm text-gray-700 md:pr-4 md:border-r border-slate-100">
-                                        <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الصدر:</span> {{ $sizeObj['chest_width_cm'] ?? '-' }} سم</div>
-                                        <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الوزن:</span> {{ $sizeObj['weight_kg']['min'] ?? '-' }} - {{ $sizeObj['weight_kg']['max'] ?? '-' }} كجم</div>
-                                        <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الطول:</span> {{ $sizeObj['height_cm']['min'] ?? '-' }} - {{ $sizeObj['height_cm']['max'] ?? '-' }} سم</div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex flex-wrap gap-2 text-sm text-gray-700">
+                                            <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الصدر:</span> {{ $sizeObj['chest_width_cm'] ?? '-' }} سم</div>
+                                            <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الوزن:</span> {{ $sizeObj['weight_kg']['min'] ?? '-' }} - {{ $sizeObj['weight_kg']['max'] ?? '-' }} كجم</div>
+                                            <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الطول:</span> {{ $sizeObj['height_cm']['min'] ?? '-' }} - {{ $sizeObj['height_cm']['max'] ?? '-' }} سم</div>
+                                        </div>
                                     </div>
-                                    <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj['size'] }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][chest_width_cm]" value="{{ $sizeObj['chest_width_cm'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][min]" value="{{ $sizeObj['weight_kg']['min'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][max]" value="{{ $sizeObj['weight_kg']['max'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
-                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
-                                    <div class="absolute top-3 right-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg p-1 shadow-sm border border-slate-100">
+                                    <div class="flex-shrink-0 flex items-center gap-1 bg-slate-50 rounded-lg p-1 border border-slate-200">
                                         <button type="button" class="text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 rounded-md p-1.5" onclick="editSize(this)" title="تعديل المقاس">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                         </button>
@@ -157,6 +144,12 @@
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>
                                     </div>
+                                    <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj['size'] }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][chest_width_cm]" value="{{ $sizeObj['chest_width_cm'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][min]" value="{{ $sizeObj['weight_kg']['min'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][weight_kg][max]" value="{{ $sizeObj['weight_kg']['max'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
                                 </div>
                                 @if(isset($sizeObj['colors']) && is_array($sizeObj['colors']) && count($sizeObj['colors']) > 0)
                                     <div class="pt-3 mt-2 border-t border-slate-100">
@@ -174,136 +167,187 @@
                                 @endif
                             </div>
                         @elseif(is_string($sizeObj))
-                            <!-- Fallback for old simple string sizes -->
                             <div class="relative bg-white border border-gray-200 shadow-sm rounded-xl p-3 flex items-center gap-4">
                                 <div class="flex-shrink-0 bg-gray-100 text-gray-800 px-3 py-1 rounded-lg font-bold">{{ $sizeObj }}</div>
                                 <div class="flex-1 text-sm text-gray-500">بيانات غير مكتملة</div>
                                 <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj }}">
                                 <div class="absolute top-3 right-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg p-1 shadow-sm border border-slate-100">
-                                    <button type="button" class="text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 rounded-md p-1.5" onclick="editSize(this)" title="تعديل المقاس">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    </button>
-                                    <button type="button" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 rounded-md p-1.5" onclick="removeSize(this)" title="حذف المقاس">
+                                    <button type="button" class="text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 rounded-md p-1.5" onclick="removeSize(this)">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </div>
                             </div>
                         @endif
                     @endforeach
-                </div>
-                @error('available_sizes')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-                @error('available_sizes.*')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Independent Colors Section Removed -->
-
-            <div>
-                <label for="description" class="block text-sm font-medium text-gray-700">الوصف</label>
-                <textarea name="description" id="description" rows="4"
-                          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('description') border-red-300 @enderror">{{ old('description', $product->description) }}</textarea>
-                @error('description')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">صور العينة</label>
-                @php $existingSamples = $product->samples ?? []; @endphp
-                <div id="samples-remove-inputs" class="hidden"></div>
-                @if(count($existingSamples) > 0)
-                    <p class="text-sm text-gray-600 mb-2">الصور الحالية — اضغط على ✕ لحذف الصورة عند حفظ التعديلات</p>
-                    <div id="existing-samples" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
-                        @foreach($existingSamples as $idx => $path)
-                            <div class="sample-card relative rounded-xl overflow-hidden border-2 border-gray-200 bg-white shadow-sm hover:shadow-md transition-all group" data-idx="{{ $idx }}">
-                                <img src="{{ asset('storage/' . $path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-32 object-cover">
-                                <button type="button" class="sample-remove-btn absolute top-1 right-1 z-20 w-6 h-6 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-all cursor-pointer opacity-0 group-hover:opacity-100" data-idx="{{ $idx }}" title="حذف الصورة">
-                                    <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                                <span class="absolute bottom-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded">صورة {{ $idx + 1 }}</span>
-                            </div>
-                        @endforeach
-                    </div>
                 @endif
-                <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-slate-400 transition-colors bg-gray-50/50 min-h-[140px]">
-                    <input type="file" name="samples[]" id="samples" accept="image/*" multiple
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <p class="mt-2 text-sm text-gray-600">إضافة صور جديدة</p>
-                    <p class="mt-1 text-xs text-gray-500">JPEG, PNG, JPG, GIF, WebP (حد أقصى 2MB)</p>
-                </div>
-                <div id="samples-preview" class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
-                @error('samples')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
             </div>
+            @error('available_sizes')
+                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+            @error('available_sizes.*')
+                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+        </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">فيديوهات المنتج (اختياري)</label>
-                @php $existingVideos = $product->videos ?? []; @endphp
-                <div id="videos-remove-inputs" class="hidden"></div>
-                @if(count($existingVideos) > 0)
-                    <p class="text-sm text-gray-600 mb-2">الفيديوهات الحالية — اضغط على ✕ لحذف الفيديو عند حفظ التعديلات</p>
-                    <div id="existing-videos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                        @foreach($existingVideos as $idx => $path)
-                            <div class="video-card relative rounded-xl overflow-hidden border-2 border-gray-200 bg-black shadow-sm group" data-idx="{{ $idx }}">
-                                <video src="{{ asset('storage/' . $path) }}" class="w-full h-32 object-cover" muted controls></video>
-                                <button type="button" class="video-remove-btn absolute top-1 right-1 z-20 w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-all cursor-pointer opacity-0 group-hover:opacity-100" data-idx="{{ $idx }}" title="حذف الفيديو">
-                                    <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                                <span class="absolute bottom-1 left-1 right-1 text-[11px] bg-black/60 text-white px-1.5 py-0.5 rounded truncate text-center z-10">فيديو {{ $idx + 1 }}</span>
-                            </div>
-                        @endforeach
+        <!-- Media Card -->
+        <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                الصور والفيديوهات
+            </h2>
+
+            <div class="space-y-6">
+                <!-- Images Upload -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">صور العينة</label>
+                    @php $existingSamples = $product->samples ?? []; @endphp
+                    <div id="samples-remove-inputs" class="hidden"></div>
+                    @if(count($existingSamples) > 0)
+                        <p class="text-xs text-gray-500 mb-3">الصور الحالية — اضغط على ✕ لحذف الصورة عند حفظ التعديلات</p>
+                        <div id="existing-samples" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
+                            @foreach($existingSamples as $idx => $path)
+                                <div class="sample-card relative rounded-xl overflow-hidden border-2 border-slate-200 bg-white shadow-sm hover:shadow-md transition-all group" data-idx="{{ $idx }}">
+                                    <img src="{{ asset('storage/' . $path) }}" alt="عينة {{ $idx + 1 }}" class="w-full h-28 object-cover">
+                                    <button type="button" class="sample-remove-btn absolute top-1.5 right-1.5 z-20 w-6 h-6 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-all cursor-pointer opacity-0 group-hover:opacity-100" data-idx="{{ $idx }}" title="حذف الصورة">
+                                        <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                    <span class="absolute bottom-1 left-1 text-[10px] bg-slate-900/70 text-white px-1.5 py-0.5 rounded backdrop-blur-sm">صورة {{ $idx + 1 }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-violet-400 transition-colors bg-slate-50 min-h-[140px] flex flex-col items-center justify-center group">
+                        <input type="file" name="samples[]" id="samples" accept="image/*" multiple
+                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium text-slate-700">اسحب الصور هنا أو انقر للاختيار</p>
+                        <p class="mt-1 text-xs text-slate-500">JPEG, PNG, JPG, WebP (حد أقصى 2MB)</p>
                     </div>
-                @endif
-                <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-slate-400 transition-colors bg-gray-50/50">
-                    <!-- Note: Removed name="videos[]" so the actual large file isn't submitted with the main form. -->
-                    <input type="file" id="videos" accept="video/mp4,video/quicktime,video/ogg" multiple
-                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    <p class="mt-2 text-sm text-gray-600">اسحب الفيديوهات هنا أو <span class="text-slate-600 font-medium">اختر ملفات</span></p>
-                    <p class="mt-1 text-xs text-gray-500">MP4, MOV, OGG (حد أقصى 20MB للفيديو الواحد)</p>
+                    <div id="samples-preview" class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+                    @error('samples')
+                        <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p>
+                    @enderror
                 </div>
-                <!-- Container for pre-uploaded videos hidden inputs -->
-                <div id="hidden-videos-container"></div>
-                <div id="videos-preview" class="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-                @error('videos')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-                @error('videos.*')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+
+                <hr class="border-slate-100">
+
+                <!-- Videos Upload -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">فيديوهات المنتج (اختياري)</label>
+                    @php $existingVideos = $product->videos ?? []; @endphp
+                    <div id="videos-remove-inputs" class="hidden"></div>
+                    @if(count($existingVideos) > 0)
+                        <p class="text-xs text-gray-500 mb-3">الفيديوهات الحالية — اضغط على ✕ لحذف الفيديو عند حفظ التعديلات</p>
+                        <div id="existing-videos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                            @foreach($existingVideos as $idx => $path)
+                                <div class="video-card relative rounded-xl overflow-hidden border-2 border-slate-200 bg-slate-900 shadow-sm group" data-idx="{{ $idx }}">
+                                    <video src="{{ asset('storage/' . $path) }}" class="w-full h-32 object-cover opacity-90 group-hover:opacity-100 transition-opacity" muted controls></video>
+                                    <button type="button" class="video-remove-btn absolute top-1.5 right-1.5 z-20 w-7 h-7 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full shadow-md transition-all cursor-pointer opacity-0 group-hover:opacity-100" data-idx="{{ $idx }}" title="حذف الفيديو">
+                                        <svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                    <span class="absolute bottom-1.5 left-1.5 text-[10px] font-medium bg-black/60 backdrop-blur-sm text-white px-2 py-0.5 rounded shadow">فيديو {{ $idx + 1 }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="relative border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-violet-400 transition-colors bg-slate-50 flex flex-col items-center justify-center group min-h-[140px]">
+                        <!-- Note: Removed name="videos[]" so the actual large file isn't submitted with the main form. -->
+                        <input type="file" id="videos" accept="video/mp4,video/quicktime,video/ogg" multiple
+                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div class="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="h-6 w-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-medium text-slate-700">اسحب الفيديوهات هنا أو انقر للاختيار</p>
+                        <p class="mt-1 text-xs text-slate-500">MP4, MOV (حد أقصى 20MB للفيديو)</p>
+                    </div>
+                    <!-- Container for pre-uploaded videos hidden inputs -->
+                    <div id="hidden-videos-container"></div>
+                    <div id="videos-preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    @error('videos')
+                        <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p>
+                    @enderror
+                    @error('videos.*')
+                        <p class="mt-2 text-sm text-red-600 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Column (Right Side on Desktop) -->
+    <div class="space-y-6">
+        
+        <!-- Pricing Card -->
+        <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                التسعير
+            </h2>
+            <div class="space-y-5">
+                <div>
+                    <label for="selling_price" class="block text-sm font-semibold text-gray-700">السعر الأساسي</label>
+                    <div class="mt-1.5 relative rounded-lg shadow-sm">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm font-medium">DA</span>
+                        </div>
+                        <input type="number" step="0.01" name="selling_price" id="selling_price" value="{{ old('selling_price', $product->selling_price) }}" required min="0"
+                               class="block w-full pr-10 border border-gray-300 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-sm transition-colors text-left @error('selling_price') border-red-300 ring-red-100 @enderror" dir="ltr">
+                    </div>
+                    @error('selling_price')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="discounted_price" class="block text-sm font-semibold text-gray-700">السعر بعد التخفيض <span class="text-xs font-normal text-slate-400">(اختياري)</span></label>
+                    <div class="mt-1.5 relative rounded-lg shadow-sm">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm font-medium">DA</span>
+                        </div>
+                        <input type="number" step="0.01" name="discounted_price" id="discounted_price" value="{{ old('discounted_price', $product->discounted_price) }}" min="0"
+                               class="block w-full pr-10 border border-gray-300 rounded-lg py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-colors text-left @error('discounted_price') border-red-300 ring-red-100 @enderror" dir="ltr">
+                    </div>
+                    @error('discounted_price')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+        </div>
+
+        <!-- Publish Actions Card (Sticky) -->
+        <div class="bg-white shadow-sm border border-slate-200 rounded-xl p-6 sticky top-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">تحديث المنتج</h2>
+            <p class="text-xs text-slate-500 mb-6">تأكد من مراجعة كافة البيانات والأسعار قبل حفظ التعديلات.</p>
+            
+            <!-- Upload Progress UI Wrapper inside Sidebar -->
+            <div id="upload-progress-container" class="hidden mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div class="flex justify-between text-xs font-bold text-slate-700 mb-2">
+                    <span id="upload-progress-label">جاري رفع الفيديوهات...</span>
+                    <span id="upload-progress-text" class="text-violet-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                    <div id="upload-progress-bar" class="bg-gradient-to-r from-violet-500 to-fuchsia-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
             </div>
 
-            <div id="upload-progress-container" class="hidden mt-4 bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <div class="flex justify-between text-sm font-medium text-gray-700 mb-2">
-                    <span id="upload-progress-label">جاري الرفع والحفظ...</span>
-                    <span id="upload-progress-text">0%</span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                    <div id="upload-progress-bar" class="bg-violet-600 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-                <p class="text-xs text-gray-500 mt-2 text-center" id="upload-progress-hint">يرجى عدم إغلاق الصفحة حتى يكتمل الرفع</p>
-            </div>
-
-            <div class="flex items-center justify-end space-x-reverse space-x-3 mt-6">
-                <a href="{{ route('products.index') }}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+            <div class="flex flex-col gap-3">
+                <button type="submit" id="submit-btn" class="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    حفظ التعديلات
+                </button>
+                <a href="{{ route('products.index') }}" class="w-full flex justify-center items-center py-2.5 px-4 rounded-lg text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
                     إلغاء
                 </a>
-                <button type="submit" id="submit-btn" class="inline-flex justify-center flex-row-reverse py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-                    <span>حفظ التغييرات</span>
-                </button>
             </div>
-        </form>
+        </div>
     </div>
-</div>
+</form>
 
 <script>
     // Temporary colors logic
@@ -385,7 +429,7 @@
     function addSizeCard(data, index) {
         const c = document.getElementById('sizes-container');
         const d = document.createElement('div');
-        d.className = 'relative bg-white border-l-4 border-violet-500 border-y border-r border-slate-200 shadow-md hover:shadow-lg transition-shadow rounded-xl p-4 flex flex-col gap-3 animate-fade-in-up';
+        d.className = 'bg-white border-l-4 border-violet-500 border-y border-r border-slate-200 shadow-md hover:shadow-lg transition-shadow rounded-xl p-4 flex flex-col gap-3 animate-fade-in-up';
         
         let colorsHtml = '';
         let colorsHiddenInputs = '';
@@ -408,25 +452,18 @@
         }
 
         d.innerHTML = `
-            <div class="flex flex-wrap md:flex-nowrap items-center gap-4 w-full">
-                <div class="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-violet-100 to-purple-100 text-violet-800 rounded-full flex items-center justify-center font-black text-xl shadow-inner border border-violet-200">
+            <div class="flex items-start gap-4 w-full">
+                <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-violet-100 to-purple-100 text-violet-800 rounded-full flex items-center justify-center font-black text-lg sm:text-xl shadow-inner border border-violet-200">
                     ${data.size}
                 </div>
-                <div class="flex-1 flex flex-wrap gap-4 text-sm text-gray-700 md:pr-4 md:border-r border-slate-100">
-                    <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الصدر:</span> ${data.chest || '-'} سم</div>
-                    <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الوزن:</span> ${data.wMin || '-'} - ${data.wMax || '-'} كجم</div>
-                    <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100"><span class="font-bold text-slate-800">الطول:</span> ${data.hMin || '-'} - ${data.hMax || '-'} سم</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap gap-2 text-sm text-gray-700">
+                        <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الصدر:</span> ${data.chest || '-'} سم</div>
+                        <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الوزن:</span> ${data.wMin || '-'} - ${data.wMax || '-'} كجم</div>
+                        <div class="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100 text-xs sm:text-sm"><span class="font-bold text-slate-800">الطول:</span> ${data.hMin || '-'} - ${data.hMax || '-'} سم</div>
+                    </div>
                 </div>
-                
-                <input type="hidden" name="available_sizes[${index}][size]" value="${data.size}">
-                <input type="hidden" name="available_sizes[${index}][chest_width_cm]" value="${data.chest}">
-                <input type="hidden" name="available_sizes[${index}][weight_kg][min]" value="${data.wMin}">
-                <input type="hidden" name="available_sizes[${index}][weight_kg][max]" value="${data.wMax}">
-                <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
-                <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
-                ${colorsHiddenInputs}
-                
-                <div class="absolute top-3 right-3 flex items-center gap-1 bg-white/80 backdrop-blur rounded-lg p-1 shadow-sm border border-slate-100">
+                <div class="flex-shrink-0 flex items-center gap-1 bg-slate-50 rounded-lg p-1 border border-slate-200">
                     <button type="button" class="text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 rounded-md p-1.5" onclick="editSize(this)" title="تعديل المقاس">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     </button>
@@ -434,6 +471,13 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
+                <input type="hidden" name="available_sizes[${index}][size]" value="${data.size}">
+                <input type="hidden" name="available_sizes[${index}][chest_width_cm]" value="${data.chest}">
+                <input type="hidden" name="available_sizes[${index}][weight_kg][min]" value="${data.wMin}">
+                <input type="hidden" name="available_sizes[${index}][weight_kg][max]" value="${data.wMax}">
+                <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
+                <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
+                ${colorsHiddenInputs}
             </div>
             ${colorsHtml}
         `;
@@ -441,7 +485,7 @@
     }
     
     function editSize(btn) {
-        const card = btn.closest('div.relative.bg-white');
+        const card = btn.closest('.border-l-4');
         
         // Extract basic data (allow empty fallback for missing inputs in legacy cards)
         const sizeInp = card.querySelector('input[name$="[size]"]');
@@ -480,7 +524,7 @@
         document.getElementById('size-name').focus();
     }
     
-    function removeSize(btn) { btn.closest('div.relative.bg-white').remove(); }
+    function removeSize(btn) { btn.closest('.border-l-4').remove(); }
 
     // Samples remove - immediate visual removal
     const toRemove = new Set();

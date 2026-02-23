@@ -65,7 +65,7 @@ class OrderApiController extends Controller
             'items.*.color' => 'nullable|string|max:50',
             'total_amount' => 'required|numeric|min:0',
             'status' => 'required|in:pending,delivery_fees_paid,shipped',
-            'payment_method' => 'nullable|in:InstaPay,wallet',
+            'payment_method' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -136,7 +136,7 @@ class OrderApiController extends Controller
             'items.*.color' => 'nullable|string|max:50',
             'total_amount' => 'required|numeric|min:0',
             'status' => 'required|in:pending,delivery_fees_paid,shipped',
-            'payment_method' => 'nullable|in:InstaPay,wallet',
+            'payment_method' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
