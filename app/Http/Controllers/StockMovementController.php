@@ -92,7 +92,7 @@ class StockMovementController extends Controller
         $product = Product::findOrFail($request->product_id);
 
         try {
-            $result = $this->stockService->recordDamage($product, $request->quantity, $request->note);
+            $result = $this->stockService->recordDamage($product, $request->quantity, $request->note, $request->size, $request->color);
 
             return redirect()->route('losses.index')
                 ->with('success', 'تم تسجيل التلف والخسارة بنجاح');
@@ -123,16 +123,14 @@ class StockMovementController extends Controller
             if ($loss) {
                 // Restore product quantity
                 $product = $loss->product;
-                $product->quantity += abs($movement->quantity);
-                $product->save();
+                $this->stockService->updateProductStock($product, abs($movement->quantity), $loss->size, $loss->color);
                 
                 // Delete loss
                 $loss->delete();
             } else {
                 // If no loss record, just restore quantity
                 $product = $movement->product;
-                $product->quantity += abs($movement->quantity);
-                $product->save();
+                $this->stockService->updateProductStock($product, abs($movement->quantity), $movement->size, $movement->color);
             }
 
             $movement->delete();

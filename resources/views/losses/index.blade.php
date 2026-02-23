@@ -39,6 +39,13 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-500">{{ $loss->product->sku }}</div>
+                        @if($loss->size || $loss->color)
+                        <div class="text-xs font-bold text-violet-600 mt-0.5">
+                            {{ $loss->size ? 'مقاس: ' . $loss->size : '' }}
+                            {{ $loss->size && $loss->color ? ' | ' : '' }}
+                            {{ $loss->color ? 'لون: ' . $loss->color : '' }}
+                        </div>
+                        @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">

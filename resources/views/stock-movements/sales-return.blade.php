@@ -29,7 +29,10 @@
                     <option value="">اختر بيع</option>
                     @foreach($sales as $sale)
                     <option value="{{ $sale->id }}" {{ old('sale_id') == $sale->id ? 'selected' : '' }}>
-                        {{ $sale->product->name }} - كمية: {{ $sale->quantity }} - تاريخ: {{ $sale->created_at->format('Y-m-d') }}
+                        {{ $sale->product->name }} 
+                        {{ $sale->size ? '- مقاس: ' . $sale->size : '' }} 
+                        {{ $sale->color ? '- لون: ' . $sale->color : '' }}
+                        - كمية: {{ $sale->quantity }} - تاريخ: {{ $sale->created_at->format('Y-m-d') }}
                     </option>
                     @endforeach
                 </select>

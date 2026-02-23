@@ -9,6 +9,8 @@ class Sale extends Model
 {
     protected $fillable = [
         'product_id',
+        'size',
+        'color',
         'quantity',
         'selling_price',
         'cost_price_at_sale',

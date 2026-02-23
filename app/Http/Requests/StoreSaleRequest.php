@@ -23,6 +23,8 @@ class StoreSaleRequest extends FormRequest
     {
         return [
             'product_id' => 'required|exists:products,id',
+            'size' => 'nullable|string',
+            'color' => 'nullable|string',
             'quantity' => 'required|integer|min:1',
             'selling_price' => 'nullable|numeric|min:0',
             'governorate' => 'nullable|string|max:255',

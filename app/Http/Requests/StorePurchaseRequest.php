@@ -23,6 +23,8 @@ class StorePurchaseRequest extends FormRequest
     {
         return [
             'product_id' => 'required|exists:products,id',
+            'size' => 'nullable|string',
+            'color' => 'nullable|string',
             'quantity' => 'required|integer|min:1',
             'cost_price' => 'nullable|numeric|min:0',
         ];

@@ -61,7 +61,9 @@ class PurchaseController extends Controller
             $this->stockService->recordPurchase(
                 $product,
                 $request->quantity,
-                $costPrice
+                $costPrice,
+                $request->size,
+                $request->color
             );
 
             return redirect()->route('purchases.index')
@@ -94,8 +96,7 @@ class PurchaseController extends Controller
             $netQuantity = $purchase->quantity - $returnedQuantity;
             
             // Restore product quantity (subtract the net quantity that was added)
-            $product->quantity -= $netQuantity;
-            $product->save();
+            $this->stockService->updateProductStock($product, -$netQuantity, $purchase->size, $purchase->color);
 
             // Delete associated stock movement
             $movement = \App\Models\StockMovement::where('type', \App\Models\StockMovement::TYPE_PURCHASE)
@@ -109,10 +110,9 @@ class PurchaseController extends Controller
             // Delete associated returns and restore their quantities
             foreach ($purchase->returns as $return) {
                 // Restore quantity from return (since return subtracts from stock)
-                $product->quantity += abs($return->quantity);
+                $this->stockService->updateProductStock($product, abs($return->quantity), $return->size, $return->color);
                 $return->delete();
             }
-            $product->save();
 
             $purchase->delete();
 

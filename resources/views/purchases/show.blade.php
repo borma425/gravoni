@@ -29,6 +29,16 @@
                 <dt class="text-sm font-medium text-gray-500">SKU</dt>
                 <dd class="mt-1 text-sm text-gray-900">{{ $purchase->product->sku }}</dd>
             </div>
+            @if($purchase->size || $purchase->color)
+            <div>
+                <dt class="text-sm font-medium text-gray-500">النوع</dt>
+                <dd class="mt-1 text-sm font-bold text-violet-600">
+                    {{ $purchase->size ? 'مقاس: ' . $purchase->size : '' }}
+                    {{ $purchase->size && $purchase->color ? ' | ' : '' }}
+                    {{ $purchase->color ? 'لون: ' . $purchase->color : '' }}
+                </dd>
+            </div>
+            @endif
             <div>
                 <dt class="text-sm font-medium text-gray-500">الكمية</dt>
                 <dd class="mt-1 text-sm text-gray-900">{{ $purchase->quantity }}</dd>

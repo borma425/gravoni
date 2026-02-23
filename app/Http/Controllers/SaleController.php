@@ -52,7 +52,9 @@ class SaleController extends Controller
                 $product,
                 $request->quantity,
                 $sellingPrice,
-                $request->governorate
+                $request->governorate,
+                $request->size,
+                $request->color
             );
 
             return redirect()->route('sales.index')
@@ -85,8 +87,7 @@ class SaleController extends Controller
             $netQuantity = $sale->quantity - $returnedQuantity;
             
             // Restore product quantity (add back the net quantity that was sold)
-            $product->quantity += $netQuantity;
-            $product->save();
+            $this->stockService->updateProductStock($product, $netQuantity, $sale->size, $sale->color);
 
             // Delete associated stock movement
             $movement = \App\Models\StockMovement::where('type', \App\Models\StockMovement::TYPE_SALE)
@@ -100,10 +101,9 @@ class SaleController extends Controller
             // Delete associated returns and restore their quantities
             foreach ($sale->returns as $return) {
                 // Subtract quantity from return (since return adds to stock)
-                $product->quantity -= $return->quantity;
+                $this->stockService->updateProductStock($product, -$return->quantity, $return->size, $return->color);
                 $return->delete();
             }
-            $product->save();
 
             $sale->delete();
 

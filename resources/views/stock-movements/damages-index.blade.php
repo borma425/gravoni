@@ -45,6 +45,13 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-500">{{ $damage->product->sku }}</div>
+                        @if($damage->size || $damage->color)
+                        <div class="text-xs font-bold text-violet-600 mt-0.5">
+                            {{ $damage->size ? 'مقاس: ' . $damage->size : '' }}
+                            {{ $damage->size && $damage->color ? ' | ' : '' }}
+                            {{ $damage->color ? 'لون: ' . $damage->color : '' }}
+                        </div>
+                        @endif
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">

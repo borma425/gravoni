@@ -9,6 +9,8 @@ class Loss extends Model
 {
     protected $fillable = [
         'product_id',
+        'size',
+        'color',
         'quantity',
         'cost_price_at_loss',
         'total_loss',

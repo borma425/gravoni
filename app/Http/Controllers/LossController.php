@@ -3,10 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Loss;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 
 class LossController extends Controller
 {
+    protected $stockService;
+
+    public function __construct(StockService $stockService)
+    {
+        $this->stockService = $stockService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -41,10 +48,9 @@ class LossController extends Controller
                 }
             }
 
-            // Restore product quantity
+            // Restore product quantity and specific size/color stock
             $product = $loss->product;
-            $product->quantity += $loss->quantity;
-            $product->save();
+            $this->stockService->updateProductStock($product, $loss->quantity, $loss->size, $loss->color);
 
             $loss->delete();
 

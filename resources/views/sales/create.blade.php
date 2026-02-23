@@ -30,14 +30,32 @@
                     @foreach($products as $product)
                     <option value="{{ $product->id }}" 
                             data-selling-price="{{ $product->selling_price }}"
+                            data-sizes="{{ json_encode($product->available_sizes ?? []) }}"
                             {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                        {{ $product->name }} ({{ $product->sku }}) - المخزون: {{ $product->quantity ?? 0 }}
+                        {{ $product->name }} ({{ $product->sku }}) - المخزون الإجمالي: {{ $product->quantity ?? 0 }}
                     </option>
                     @endforeach
                 </select>
                 @error('product_id')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
+            </div>
+
+            <!-- حاوية المقاسات الديناميكية -->
+            <div id="size-container" style="display: none;">
+                <label for="size" class="block text-sm font-medium text-gray-700">المقاس <span class="text-xs text-gray-500">(اختياري إذا لم يكن المنتج مقسماً)</span></label>
+                <select name="size" id="size" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                    <option value="">اختر المقاس</option>
+                </select>
+            </div>
+
+            <!-- حاوية الألوان الديناميكية -->
+            <div id="color-container" style="display: none;">
+                <label for="color" class="block text-sm font-medium text-gray-700">اللون <span class="text-xs text-gray-500">(اختياري)</span></label>
+                <select name="color" id="color" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm">
+                    <option value="">اختر اللون</option>
+                </select>
+                <p id="stock-info" class="mt-1 text-sm font-bold text-violet-600 hidden"></p>
             </div>
 
             <div>
@@ -116,13 +134,82 @@
 document.addEventListener('DOMContentLoaded', function() {
     const productSelect = document.getElementById('product_id');
     const sellingPriceInput = document.getElementById('selling_price');
+    const sizeContainer = document.getElementById('size-container');
+    const sizeSelect = document.getElementById('size');
+    const colorContainer = document.getElementById('color-container');
+    const colorSelect = document.getElementById('color');
+    const stockInfo = document.getElementById('stock-info');
+    let currentSizes = [];
 
     productSelect.addEventListener('change', function() {
         const selectedOption = productSelect.options[productSelect.selectedIndex];
+        if (!selectedOption.value) {
+            sizeContainer.style.display = 'none';
+            colorContainer.style.display = 'none';
+            stockInfo.classList.add('hidden');
+            return;
+        }
+
         const sellingPrice = selectedOption.getAttribute('data-selling-price');
-        
         if (sellingPrice && !sellingPriceInput.value) {
             sellingPriceInput.placeholder = 'السعر الافتراضي: ' + parseFloat(sellingPrice).toFixed(2) + ' ج.م';
+        }
+
+        const sizesData = selectedOption.getAttribute('data-sizes');
+        currentSizes = sizesData ? JSON.parse(sizesData) : [];
+
+        // Reset dropdowns
+        sizeSelect.innerHTML = '<option value="">اختر المقاس</option>';
+        colorSelect.innerHTML = '<option value="">اختر اللون</option>';
+        stockInfo.classList.add('hidden');
+
+        if (currentSizes && currentSizes.length > 0) {
+            sizeContainer.style.display = 'block';
+            colorContainer.style.display = 'none'; // Will show when size is selected
+            currentSizes.forEach(size => {
+                const opt = document.createElement('option');
+                opt.value = size.size;
+                opt.textContent = size.size;
+                sizeSelect.appendChild(opt);
+            });
+        } else {
+            sizeContainer.style.display = 'none';
+            colorContainer.style.display = 'none';
+        }
+    });
+
+    sizeSelect.addEventListener('change', function() {
+        const selectedSizeName = this.value;
+        colorSelect.innerHTML = '<option value="">اختر اللون</option>';
+        stockInfo.classList.add('hidden');
+
+        if (!selectedSizeName) {
+            colorContainer.style.display = 'none';
+            return;
+        }
+
+        const selectedSizeData = currentSizes.find(s => s.size === selectedSizeName);
+        if (selectedSizeData && selectedSizeData.colors && selectedSizeData.colors.length > 0) {
+            colorContainer.style.display = 'block';
+            selectedSizeData.colors.forEach(color => {
+                const opt = document.createElement('option');
+                opt.value = color.color;
+                opt.textContent = color.color + ` (المتاح: ${color.stock || 0})`;
+                opt.setAttribute('data-stock', color.stock || 0);
+                colorSelect.appendChild(opt);
+            });
+        } else {
+            colorContainer.style.display = 'none';
+        }
+    });
+
+    colorSelect.addEventListener('change', function() {
+        const option = this.options[this.selectedIndex];
+        if (option.value) {
+            stockInfo.textContent = 'المخزون المتوفر لهذا اللون والمقاس: ' + option.getAttribute('data-stock');
+            stockInfo.classList.remove('hidden');
+        } else {
+            stockInfo.classList.add('hidden');
         }
     });
 });

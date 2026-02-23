@@ -29,7 +29,10 @@
                     <option value="">اختر شراء</option>
                     @foreach($purchases as $purchase)
                     <option value="{{ $purchase->id }}" {{ old('purchase_id') == $purchase->id ? 'selected' : '' }}>
-                        {{ $purchase->product->name }} - كمية: {{ $purchase->quantity }} - تاريخ: {{ $purchase->created_at->format('Y-m-d') }}
+                        {{ $purchase->product->name }} 
+                        {{ $purchase->size ? '- مقاس: ' . $purchase->size : '' }} 
+                        {{ $purchase->color ? '- لون: ' . $purchase->color : '' }}
+                        - كمية: {{ $purchase->quantity }} - تاريخ: {{ $purchase->created_at->format('Y-m-d') }}
                     </option>
                     @endforeach
                 </select>

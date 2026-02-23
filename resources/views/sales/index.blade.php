@@ -37,6 +37,13 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm font-medium text-gray-900">{{ $sale->product->name }}</div>
                         <div class="text-sm text-gray-500">{{ $sale->product->sku }}</div>
+                        @if($sale->size || $sale->color)
+                        <div class="text-xs font-bold text-violet-600 mt-0.5">
+                            {{ $sale->size ? 'مقاس: ' . $sale->size : '' }}
+                            {{ $sale->size && $sale->color ? ' | ' : '' }}
+                            {{ $sale->color ? 'لون: ' . $sale->color : '' }}
+                        </div>
+                        @endif
                         @if($sale->returned_quantity > 0)
                         <div class="mt-1">
                             <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
