@@ -37,16 +37,23 @@ class ProductApiController extends Controller
             $videos = $product->videos ?? [];
             $videoUrls = array_map(fn ($v) => asset('storage/' . $v), $videos);
 
+            $availability = array_values($product->available_sizes ?? []);
+            $availability = array_map(function($size) {
+                if (isset($size['colors']) && is_array($size['colors'])) {
+                    $size['colors'] = array_values($size['colors']);
+                }
+                return $size;
+            }, $availability);
+
             return [
                 'id' => (string) $product->id,
                 'name' => $product->name,
                 'price' => (float) $product->selling_price,
                 'discounted_price' => $product->discounted_price ? (float) $product->discounted_price : null,
-                'availability' => $product->available_sizes ?? [],
+                'availability' => $availability,
                 'stockCount' => (int) $product->quantity,
                 'description' => $product->description ?? '',
                 'samples' => $sampleUrls,
-                'sample' => !empty($sampleUrls) ? $sampleUrls[0] : null,
                 'videos' => $videoUrls,
                 'sku' => $product->sku,
                 'created_at' => $product->created_at->toISOString(),
@@ -94,16 +101,23 @@ class ProductApiController extends Controller
         $videos = $product->videos ?? [];
         $videoUrls = array_map(fn ($v) => asset('storage/' . $v), $videos);
 
+        $availability = array_values($product->available_sizes ?? []);
+        $availability = array_map(function($size) {
+            if (isset($size['colors']) && is_array($size['colors'])) {
+                $size['colors'] = array_values($size['colors']);
+            }
+            return $size;
+        }, $availability);
+
         $formattedProduct = [
             'id' => (string) $product->id,
             'name' => $product->name,
             'price' => (float) $product->selling_price,
             'discounted_price' => $product->discounted_price ? (float) $product->discounted_price : null,
-            'availability' => $product->available_sizes ?? [],
+            'availability' => $availability,
             'stockCount' => (int) $product->quantity,
             'description' => $product->description ?? '',
             'samples' => $sampleUrls,
-            'sample' => !empty($sampleUrls) ? $sampleUrls[0] : null,
             'videos' => $videoUrls,
             'sku' => $product->sku,
             'created_at' => $product->created_at->toISOString(),
