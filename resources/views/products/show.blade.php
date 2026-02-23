@@ -42,14 +42,6 @@
                     <dd class="mt-1 text-sm text-green-600 font-medium">{{ number_format($product->discounted_price, 2) }} ج.م</dd>
                 </div>
                 @endif
-                <div>
-                    <dt class="text-sm font-medium text-gray-500">الكمية المتاحة</dt>
-                    <dd class="mt-1">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $product->quantity > 10 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                            {{ $product->quantity }}
-                        </span>
-                    </dd>
-                </div>
                 @if($product->available_sizes && count($product->available_sizes) > 0)
                 <div class="sm:col-span-2">
                     <dt class="text-sm font-medium text-gray-500 mb-2">مخطط المقاسات المتاح</dt>

@@ -36,7 +36,6 @@ class StoreProductRequest extends FormRequest
             'sku' => 'required|string|max:255|unique:products,sku,' . $productId,
             'selling_price' => 'required|numeric|min:0',
             'discounted_price' => 'nullable|numeric|min:0',
-            'quantity' => 'required|integer|min:0',
             'description' => 'nullable|string',
             'available_sizes' => 'nullable|array',
             'available_sizes.*.size' => 'required_with:available_sizes|string|max:50',

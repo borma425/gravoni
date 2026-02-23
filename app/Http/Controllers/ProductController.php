@@ -78,6 +78,7 @@ class ProductController extends Controller
         \Log::info('Upload Request Data', ['all' => $request->all(), 'files' => $request->allFiles()]);
         $data = $request->validated();
         unset($data['samples'], $data['samples_remove'], $data['available_colors_input'], $data['videos'], $data['videos_remove']);
+        $data['quantity'] = 0;
 
         // Handle multiple sample images
         $data['samples'] = [];

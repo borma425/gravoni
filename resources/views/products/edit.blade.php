@@ -61,14 +61,6 @@
                 @enderror
             </div>
 
-            <div>
-                <label for="quantity" class="block text-sm font-medium text-gray-700">الكمية المتاحة</label>
-                <input type="number" name="quantity" id="quantity" value="{{ old('quantity', $product->quantity) }}" required min="0"
-                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('quantity') border-red-300 @enderror">
-                @error('quantity')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
 
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">الأحجام المتاحة ومخطط المقاسات</label>
@@ -139,9 +131,16 @@
                                     <input type="hidden" name="available_sizes[{{$index}}][weight_kg][max]" value="{{ $sizeObj['weight_kg']['max'] ?? '' }}">
                                     <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
                                     <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
-                                    <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)" title="حذف المقاس">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
+                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][min]" value="{{ $sizeObj['height_cm']['min'] ?? '' }}">
+                                    <input type="hidden" name="available_sizes[{{$index}}][height_cm][max]" value="{{ $sizeObj['height_cm']['max'] ?? '' }}">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <button type="button" class="text-blue-500 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 rounded p-1" onclick="editSize(this)" title="تعديل المقاس">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                        </button>
+                                        <button type="button" class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 rounded p-1" onclick="removeSize(this)" title="حذف المقاس">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        </button>
+                                    </div>
                                 </div>
                                 @if(isset($sizeObj['colors']) && is_array($sizeObj['colors']) && count($sizeObj['colors']) > 0)
                                     <div class="pt-3 mt-1 border-t border-gray-100">
@@ -166,9 +165,15 @@
                                 <div class="flex-shrink-0 bg-gray-100 text-gray-800 px-3 py-1 rounded font-bold">{{ $sizeObj }}</div>
                                 <div class="flex-1 text-sm text-gray-500">بيانات غير مكتملة</div>
                                 <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj }}">
-                                <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
+                                <input type="hidden" name="available_sizes[{{$index}}][size]" value="{{ $sizeObj }}">
+                                <div class="absolute top-2 right-2 flex items-center gap-1">
+                                    <button type="button" class="text-blue-500 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 rounded p-1" onclick="editSize(this)" title="تعديل المقاس">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                    <button type="button" class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 rounded p-1" onclick="removeSize(this)" title="حذف المقاس">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </div>
                             </div>
                         @endif
                     @endforeach
@@ -401,15 +406,64 @@
                 <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
                 <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
                 ${colorsHiddenInputs}
+                <input type="hidden" name="available_sizes[${index}][height_cm][min]" value="${data.hMin}">
+                <input type="hidden" name="available_sizes[${index}][height_cm][max]" value="${data.hMax}">
+                ${colorsHiddenInputs}
                 
-                <button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="removeSize(this)" title="حذف المقاس">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+                <div class="absolute top-2 right-2 flex items-center gap-1">
+                    <button type="button" class="text-blue-500 hover:text-blue-700 transition-colors bg-blue-50 hover:bg-blue-100 rounded p-1" onclick="editSize(this)" title="تعديل المقاس">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </button>
+                    <button type="button" class="text-red-400 hover:text-red-600 transition-colors bg-red-50 hover:bg-red-100 rounded p-1" onclick="removeSize(this)" title="حذف المقاس">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
             </div>
             ${colorsHtml}
         `;
         c.appendChild(d);
     }
+    
+    function editSize(btn) {
+        const card = btn.closest('div.relative.bg-white');
+        
+        // Extract basic data (allow empty fallback for missing inputs in legacy cards)
+        const sizeInp = card.querySelector('input[name$="[size]"]');
+        const chestInp = card.querySelector('input[name$="[chest_width_cm]"]');
+        const wMinInp = card.querySelector('input[name$="[weight_kg][min]"]');
+        const wMaxInp = card.querySelector('input[name$="[weight_kg][max]"]');
+        const hMinInp = card.querySelector('input[name$="[height_cm][min]"]');
+        const hMaxInp = card.querySelector('input[name$="[height_cm][max]"]');
+        
+        document.getElementById('size-name').value = sizeInp ? sizeInp.value : '';
+        document.getElementById('size-chest').value = chestInp ? chestInp.value : '';
+        document.getElementById('size-w-min').value = wMinInp ? wMinInp.value : '';
+        document.getElementById('size-w-max').value = wMaxInp ? wMaxInp.value : '';
+        document.getElementById('size-h-min').value = hMinInp ? hMinInp.value : '';
+        document.getElementById('size-h-max').value = hMaxInp ? hMaxInp.value : '';
+        
+        // Extract colors
+        tempColors = [];
+        const colorInputs = card.querySelectorAll('input[name*="[colors]"][name$="[color]"]');
+        const stockInputs = card.querySelectorAll('input[name*="[colors]"][name$="[stock]"]');
+        
+        for(let i = 0; i < colorInputs.length; i++) {
+            tempColors.push({
+                color: colorInputs[i].value,
+                stock: stockInputs[i].value
+            });
+        }
+        
+        // Re-render
+        renderTempColors();
+        
+        // Remove card
+        card.remove();
+        
+        // Focus
+        document.getElementById('size-name').focus();
+    }
+    
     function removeSize(btn) { btn.closest('div.relative.bg-white').remove(); }
 
     // Samples remove - immediate visual removal
