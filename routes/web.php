@@ -10,7 +10,12 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
+
+// Public Store Routes
+Route::get('/', [StoreController::class, 'index'])->name('store.index');
+Route::get('/product/{product}', [StoreController::class, 'show'])->name('store.product');
 
 // Public routes - Admin login
 Route::prefix('admin')->group(function () {
