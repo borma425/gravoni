@@ -7,22 +7,31 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     protected $fillable = [
+        'tracking_id',
         'customer_name',
         'customer_address',
         'customer_numbers',
+        'governorate_id',
         'delivery_fees',
         'items',
         'total_amount',
         'status',
         'payment_method',
+        'shipping_data',
     ];
 
     protected $casts = [
         'customer_numbers' => 'array',
         'items' => 'array',
+        'shipping_data' => 'array',
         'delivery_fees' => 'decimal:2',
         'total_amount' => 'decimal:2',
     ];
+
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class);
+    }
 
     /**
      * Get status label in Arabic
@@ -31,8 +40,10 @@ class Order extends Model
     {
         return match($this->status) {
             'pending' => 'قيد الانتظار',
+            'accepted' => 'تم القبول',
             'delivery_fees_paid' => 'تم دفع رسوم التوصيل',
             'shipped' => 'تم الشحن',
+            'cancelled' => 'مرفوض',
             default => $this->status,
         };
     }
@@ -45,7 +56,19 @@ class Order extends Model
         return match($this->payment_method) {
             'InstaPay' => 'InstaPay',
             'wallet' => 'محفظة',
-            default => '-',
+            'cod' => 'الدفع عند الاستلام',
+            default => $this->payment_method ?? '-',
         };
+    }
+
+    /**
+     * Generate unique tracking ID
+     */
+    public static function generateTrackingId(): string
+    {
+        do {
+            $id = 'GRV' . strtoupper(substr(uniqid(), -6)) . rand(100, 999);
+        } while (static::where('tracking_id', $id)->exists());
+        return $id;
     }
 }

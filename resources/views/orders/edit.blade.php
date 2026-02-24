@@ -115,8 +115,10 @@
                         <select name="status" id="status" required
                                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('status') border-red-300 @enderror">
                             <option value="pending" {{ old('status', $order->status) == 'pending' ? 'selected' : '' }}>قيد الانتظار</option>
+                            <option value="accepted" {{ old('status', $order->status) == 'accepted' ? 'selected' : '' }}>تم القبول</option>
                             <option value="delivery_fees_paid" {{ old('status', $order->status) == 'delivery_fees_paid' ? 'selected' : '' }}>تم دفع رسوم التوصيل</option>
                             <option value="shipped" {{ old('status', $order->status) == 'shipped' ? 'selected' : '' }}>تم الشحن</option>
+                            <option value="cancelled" {{ old('status', $order->status) == 'cancelled' ? 'selected' : '' }}>مرفوض</option>
                         </select>
                         @error('status')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>

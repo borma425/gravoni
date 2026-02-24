@@ -35,7 +35,7 @@ class StoreOrderRequest extends FormRequest
             'items.*.size' => 'nullable|string|max:50',
             'items.*.color' => 'nullable|string|max:50',
             'total_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,delivery_fees_paid,shipped',
+            'status' => 'required|in:pending,accepted,delivery_fees_paid,shipped,cancelled',
             'payment_method' => 'nullable|string',
         ];
     }

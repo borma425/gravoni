@@ -16,6 +16,14 @@ use Illuminate\Support\Facades\Route;
 // Public Store Routes
 Route::get('/', [StoreController::class, 'index'])->name('store.index');
 Route::get('/product/{product}', [StoreController::class, 'show'])->name('store.product');
+Route::get('/cart', [\App\Http\Controllers\CartController::class, 'index'])->name('store.cart');
+Route::post('/cart/add', [\App\Http\Controllers\CartController::class, 'add'])->name('store.cart.add');
+Route::post('/cart/update', [\App\Http\Controllers\CartController::class, 'update'])->name('store.cart.update');
+Route::delete('/cart/remove/{key}', [\App\Http\Controllers\CartController::class, 'remove'])->name('store.cart.remove');
+Route::get('/checkout', [StoreController::class, 'checkout'])->name('store.checkout');
+Route::post('/checkout', [StoreController::class, 'placeOrder'])->name('store.checkout.place');
+Route::get('/order/success/{order}', [StoreController::class, 'orderSuccess'])->name('store.order.success');
+Route::get('/track/{trackingId}', [StoreController::class, 'track'])->name('store.track');
 
 // Public routes - Admin login
 Route::prefix('admin')->group(function () {
@@ -43,6 +51,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::resource('sales', SaleController::class)->except(['edit', 'update']);
 
     // Orders
+    Route::post('orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
     Route::resource('orders', OrderController::class);
 
     // Governorates

@@ -222,8 +222,16 @@
                         </div>
                     </div>
                     
-                    <!-- Add to Cart Button -->
-                    <button class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed" 
+                    <!-- Add to Cart Form -->
+                    <form action="{{ route('store.cart.add') }}" method="POST" id="add-to-cart-form" class="contents">
+                        @csrf
+                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <input type="hidden" name="quantity" id="form-quantity" value="1">
+                        <input type="hidden" name="size" id="form-size" value="">
+                        <input type="hidden" name="color" id="form-color" value="">
+                    </form>
+                    <button type="submit" form="add-to-cart-form"
+                            class="btn-primary w-full py-4 rounded-xl text-white font-semibold text-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed" 
                             id="add-to-cart-btn" disabled>
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -465,13 +473,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else {
             stockStatus.classList.add('hidden');
-            addToCartBtn.disabled = true;
-            if (!selectedSize && !selectedColor) {
-                btnText.textContent = 'اختر المقاس واللون أولاً';
-            } else if (!selectedSize) {
-                btnText.textContent = 'اختر المقاس أولاً';
+            const needsSize = {{ count($sizes) > 0 ? 'true' : 'false' }};
+            const needsColor = {{ count($colors) > 0 ? 'true' : 'false' }};
+            const hasSize = !needsSize || selectedSize;
+            const hasColor = !needsColor || selectedColor;
+            if (hasSize && hasColor) {
+                addToCartBtn.disabled = false;
+                btnText.textContent = 'أضف إلى السلة';
             } else {
-                btnText.textContent = 'اختر اللون أولاً';
+                addToCartBtn.disabled = true;
+                if (!hasSize && !hasColor) btnText.textContent = 'اختر المقاس واللون أولاً';
+                else if (!hasSize) btnText.textContent = 'اختر المقاس أولاً';
+                else btnText.textContent = 'اختر اللون أولاً';
             }
         }
         
@@ -498,6 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             selectedColor = this.dataset.color;
             selectedColorName.textContent = selectedColor;
+            document.getElementById('form-color').value = selectedColor;
             
             const media = JSON.parse(this.dataset.media || '[]');
             updateGallery(media);
@@ -512,6 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             selectedSize = this.dataset.size;
             selectedSizeName.textContent = selectedSize;
+            document.getElementById('form-size').value = selectedSize;
             updateStock();
         });
     });
@@ -519,6 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('qty-minus')?.addEventListener('click', function() {
         const val = parseInt(quantityInput.value);
         if (val > 1) quantityInput.value = val - 1;
+        document.getElementById('form-quantity').value = quantityInput.value;
         updateWhatsAppLink();
     });
     
@@ -526,6 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const val = parseInt(quantityInput.value);
         const max = parseInt(quantityInput.max) || 99;
         if (val < max) quantityInput.value = val + 1;
+        document.getElementById('form-quantity').value = quantityInput.value;
         updateWhatsAppLink();
     });
     
@@ -533,6 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const max = parseInt(this.max) || 99;
         if (parseInt(this.value) > max) this.value = max;
         if (parseInt(this.value) < 1) this.value = 1;
+        document.getElementById('form-quantity').value = this.value;
         updateWhatsAppLink();
     });
     
@@ -624,7 +642,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Initialize - build thumbnail click handlers
+    // Initialize - build thumbnail click handlers, set form defaults
+    document.getElementById('form-color').value = selectedColor;
     updateGallery(currentMedia);
     updateStock();
 });

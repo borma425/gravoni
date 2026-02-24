@@ -12,7 +12,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\Plugins\Shipping\Mylerz\MylerzService::class, function () {
+            return new \Plugins\Shipping\Mylerz\MylerzService();
+        });
     }
 
     /**

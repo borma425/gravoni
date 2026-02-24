@@ -12,10 +12,55 @@ class OrderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::latest()->paginate(20);
+        $query = Order::query();
+
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->where(function ($qry) use ($q) {
+                $qry->where('customer_name', 'like', "%{$q}%")
+                    ->orWhere('customer_address', 'like', "%{$q}%")
+                    ->orWhere('tracking_id', 'like', "%{$q}%")
+                    ->orWhere('customer_numbers', 'like', "%{$q}%");
+            });
+        }
+
+        $orders = $query->latest()->paginate(20)->withQueryString();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'html' => view('orders.partials.table', compact('orders'))->render(),
+            ]);
+        }
+
         return view('orders.index', compact('orders'));
+    }
+
+    public function reject(Order $order)
+    {
+        if ($order->status === 'cancelled') {
+            return redirect()->route('orders.index')->with('error', 'الطلب مرفوض بالفعل');
+        }
+
+        $barcode = $order->shipping_data['barcode'] ?? null;
+        if ($barcode && config('plugins.mylerz.enabled', false)) {
+            try {
+                $mylerz = app(\Plugins\Shipping\Mylerz\MylerzService::class);
+                if ($mylerz->isConfigured()) {
+                    $mylerz->cancelShipment($barcode);
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Mylerz cancel failed', [
+                    'order_id' => $order->id,
+                    'barcode' => $barcode,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $order->update(['status' => 'cancelled']);
+        return redirect()->route('orders.index')->with('success', $barcode ? 'تم رفض الطلب وإلغاؤه في Mylerz' : 'تم رفض الطلب');
     }
 
     /**
