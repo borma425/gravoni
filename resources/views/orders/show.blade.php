@@ -41,6 +41,10 @@
                     <dd class="mt-1 text-sm text-gray-900">{{ $order->customer_address }}</dd>
                 </div>
                 <div>
+                    <dt class="text-sm font-medium text-gray-500">المحافظة</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->governorate?->name ?? '—' }}</dd>
+                </div>
+                <div>
                     <dt class="text-sm font-medium text-gray-500">أرقام الهاتف</dt>
                     <dd class="mt-1 text-sm text-gray-900">
                         @foreach($order->customer_numbers as $number)

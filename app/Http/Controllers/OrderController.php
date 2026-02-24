@@ -26,7 +26,7 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->latest()->paginate(20)->withQueryString();
+        $orders = $query->with('governorate')->latest()->paginate(20)->withQueryString();
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
