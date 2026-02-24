@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'cashup_cash' => [
+        'base_url' => env('CASHUP_BASE_URL', env('CLOUDFLARE_WORKER_BASEURL', 'https://cashup.cash/base')),
+        'api_key' => env('CASHUP_API_KEY', ''),
+        'app_id' => env('CASHUP_APP_ID', ''),
+        'enabled' => env('CASHUP_ENABLED', false),
+    ],
     'mylerz' => [
         'username' => env('MYLERZ_USERNAME', ''),
         'password' => env('MYLERZ_PASSWORD', ''),

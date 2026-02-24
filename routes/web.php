@@ -22,6 +22,10 @@ Route::post('/cart/update', [\App\Http\Controllers\CartController::class, 'updat
 Route::delete('/cart/remove/{key}', [\App\Http\Controllers\CartController::class, 'remove'])->name('store.cart.remove');
 Route::get('/checkout', [StoreController::class, 'checkout'])->name('store.checkout');
 Route::post('/checkout', [StoreController::class, 'placeOrder'])->name('store.checkout.place');
+
+// CashUp Cash payment verification (before order confirmation)
+Route::post('/checkout/cashup/create-payment-intent', [\App\Http\Controllers\CashUpCashController::class, 'createPaymentIntent'])->name('store.checkout.cashup.create-intent');
+Route::post('/checkout/cashup/validate-payment', [\App\Http\Controllers\CashUpCashController::class, 'validatePayment'])->name('store.checkout.cashup.validate');
 Route::get('/order/success/{order}', [StoreController::class, 'orderSuccess'])->name('store.order.success');
 Route::get('/track/{trackingId}', [StoreController::class, 'track'])->name('store.track');
 

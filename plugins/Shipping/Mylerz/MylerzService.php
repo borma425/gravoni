@@ -113,7 +113,9 @@ class MylerzService implements ShippingProviderInterface
             'Service' => 'ND',
             'Service_Category' => 'DELIVERY',
             'Payment_Type' => $order->payment_method === 'cod' ? 'COD' : 'PP',
-            'COD_Value' => $order->payment_method === 'cod' ? (float) $order->total_amount : 0,
+            'COD_Value' => $order->payment_method === 'cod'
+                ? (float) $order->total_amount
+                : (float) max(0, $order->total_amount - ($order->delivery_fees ?? 0)),
             'Pieces' => [
                 ['PieceNo' => 1, 'Special_Notes' => ''],
             ],

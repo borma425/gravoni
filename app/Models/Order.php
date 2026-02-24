@@ -57,6 +57,7 @@ class Order extends Model
             'InstaPay' => 'InstaPay',
             'wallet' => 'محفظة',
             'cod' => 'الدفع عند الاستلام',
+            'cashup' => 'دفع رسوم التوصيل فقط',
             default => $this->payment_method ?? '-',
         };
     }

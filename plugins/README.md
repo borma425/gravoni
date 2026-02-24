@@ -6,6 +6,9 @@
 
 ```
 plugins/
+├── Payment/               # طرق الدفع
+│   └── CashUpCash/
+│       └── CashUpCashService.php
 └── Shipping/              # شركات الشحن
     ├── Contracts/
     │   └── ShippingProviderInterface.php
@@ -13,6 +16,10 @@ plugins/
         ├── MylerzClient.php
         └── MylerzService.php
 ```
+
+## طرق الدفع (plugins/Payment/)
+
+- **CashUpCash/** - التحقق من الدفع قبل تأكيد الطلب (محفظة إلكترونية / InstaPay)
 
 ## شركات الشحن (plugins/Shipping/)
 

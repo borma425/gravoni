@@ -49,11 +49,39 @@ class StoreController extends Controller
         }
 
         $governorates = Governorate::orderBy('name')->get();
-        return view('store.checkout', compact('items', 'subtotal', 'governorates'));
+        $cashupEnabled = config('plugins.cashup_cash.enabled', false)
+            && app(\Plugins\Payment\CashUpCash\CashUpCashService::class)->isConfigured();
+
+        return view('store.checkout', compact('items', 'subtotal', 'governorates', 'cashupEnabled'));
     }
 
     public function placeOrder(CheckoutRequest $request)
     {
+        $cashupEnabled = config('plugins.cashup_cash.enabled', false)
+            && app(\Plugins\Payment\CashUpCash\CashUpCashService::class)->isConfigured();
+
+        $governorateForCheck = $request->governorate_id
+            ? \App\Models\Governorate::find($request->governorate_id)
+            : null;
+        $deliveryFeesForCheck = $governorateForCheck ? (float) $governorateForCheck->shipping_fee : 0;
+
+        if ($cashupEnabled && $deliveryFeesForCheck > 0) {
+            $verified = session('cashup_verified_payment');
+            $paymentIntentId = $request->input('cashup_payment_intent_id');
+            $senderIdentifier = $request->input('cashup_sender_identifier');
+
+            if (!$verified
+                || ($verified['payment_intent_id'] ?? '') !== $paymentIntentId
+                || empty($senderIdentifier)
+                || ($verified['sender_identifier'] ?? '') !== $senderIdentifier
+            ) {
+                return redirect()
+                    ->route('store.checkout')
+                    ->withInput()
+                    ->with('error', 'يجب التحقق من دفع رسوم التوصيل قبل تأكيد الطلب.');
+            }
+        }
+
         $cart = session('cart', []);
         if (empty($cart)) {
             return redirect()->route('store.index')->with('error', 'السلة فارغة');
@@ -83,6 +111,19 @@ class StoreController extends Controller
         $deliveryFees = $governorate ? (float) $governorate->shipping_fee : 0;
         $totalAmount = $subtotal + $deliveryFees;
 
+        if ($cashupEnabled && $deliveryFees > 0) {
+            $verified = session('cashup_verified_payment');
+            $verifiedAmount = (float) ($verified['amount'] ?? 0);
+            if ($verifiedAmount < $deliveryFees * 0.99) {
+                return redirect()
+                    ->route('store.checkout')
+                    ->withInput()
+                    ->with('error', 'المبلغ المدفوع لا يطابق رسوم التوصيل. يرجى التحقق من الدفع مرة أخرى.');
+            }
+        }
+
+        $paymentMethod = ($cashupEnabled && $deliveryFees > 0) ? 'cashup' : 'cod';
+
         $order = Order::create([
             'tracking_id' => Order::generateTrackingId(),
             'customer_name' => $request->customer_name,
@@ -93,8 +134,12 @@ class StoreController extends Controller
             'items' => $items,
             'total_amount' => $totalAmount,
             'status' => 'accepted',
-            'payment_method' => 'cod',
+            'payment_method' => $paymentMethod,
         ]);
+
+        if ($cashupEnabled && $deliveryFees > 0) {
+            session()->forget('cashup_verified_payment');
+        }
 
         $mylerzError = null;
         if (config('plugins.mylerz.enabled', false)) {
