@@ -122,12 +122,12 @@
                             <input type="tel" id="cashup-sender-phone" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="01xxxxxxxxx" maxlength="11">
                         </div>
                         <div id="cashup-instapay-input" class="hidden space-y-4">
-                            <p class="text-sm text-slate-600">اكتب اسمك ثنائي أو ثلاثي كما في تطبيق البنك، أو ارفع صورة التحويل يظهر فيها اسمك</p>
+                            <p class="text-sm text-slate-600">اكتب اسمك ثنائي أو ثلاثي كما في التطبيق (مطلوب للتحقق)، ويمكنك اختياريًا رفع صورة التحويل</p>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-2">الاسم ثنائي أو ثلاثي كما في التطبيق</label>
                                 <input type="text" id="cashup-sender-name" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200" placeholder="مثال: أحمد محمد علي">
                             </div>
-                            <div class="flex items-center gap-2 text-slate-600 text-sm">— أو —</div>
+                            <div class="flex items-center gap-2 text-slate-600 text-sm">+ اختياري: رفع صورة</div>
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-2">رفع صورة التحويل</label>
                                 <input type="file" id="cashup-transfer-image" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" class="hidden">
@@ -417,14 +417,11 @@
             }
         } else if (method === 'instapay') {
             const nameVal = document.getElementById('cashup-sender-name').value.trim();
-            if (uploadedImageUrl) {
-                senderId = uploadedImageUrl;
-            } else if (nameVal && nameVal.length >= 2) {
-                senderId = nameVal;
-            } else {
-                showMsg('اكتب اسمك ثنائي أو ثلاثي كما في التطبيق، أو ارفع صورة التحويل', 'error');
+            if (!nameVal || nameVal.length < 2) {
+                showMsg('يجب إدخال اسمك ثنائي أو ثلاثي كما في تطبيق البنك للتحقق من الدفع', 'error');
                 return;
             }
+            senderId = nameVal;
         } else {
             showMsg('اختر طريقة الدفع وأدخل البيانات', 'error');
             return;
@@ -446,7 +443,8 @@
             },
             body: JSON.stringify({
                 payment_intent_id: paymentIntentId,
-                sender_identifier: senderId
+                sender_identifier: senderId,
+                transfer_image_url: uploadedImageUrl || null
             })
         })
         .then(r => r.json())

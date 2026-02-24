@@ -18,8 +18,8 @@
     <div class="max-w-md w-full space-y-8">
         <div>
             <div class="flex justify-center">
-                <div class="bg-slate-700 p-3 rounded-full">
-                    <img src="{{ asset('favicon-32x32.png') }}" alt="Logo" class="h-12 w-12">
+                <div class="bg-white-700 p-3 rounded-full border border-gray-300">
+                    <img src="{{ asset('android-chrome-192x192.png') }}" alt="Logo" class="h-20 w-20">
                 </div>
             </div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">

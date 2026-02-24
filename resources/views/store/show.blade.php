@@ -501,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function() {
         message += `💰 السعر: ${productPrice} ج.م\n\n`;
         message += `الرابط: ${window.location.href}`;
         
-        whatsappBtn.href = `https://wa.me/201234567890?text=${encodeURIComponent(message)}`;
+        whatsappBtn.href = `https://wa.me/201108071429?text=${encodeURIComponent(message)}`;
     }
     
     colorOptions.forEach(btn => {

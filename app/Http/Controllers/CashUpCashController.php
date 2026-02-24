@@ -85,23 +85,13 @@ class CashUpCashController extends Controller
         }
 
         $senderIdentifier = trim($request->sender_identifier);
-        $isImageUrl = str_starts_with($senderIdentifier, 'http://') || str_starts_with($senderIdentifier, 'https://');
+        $transferImageUrl = $request->input('transfer_image_url');
 
-        if ($isImageUrl) {
-            $amountPaid = $pending['amount'];
-            session([
-                'cashup_verified_payment' => [
-                    'payment_intent_id' => $request->payment_intent_id,
-                    'amount' => $amountPaid,
-                    'sender_identifier' => $senderIdentifier,
-                    'validated_at' => now()->toIso8601String(),
-                ],
-            ]);
-            session()->forget('cashup_pending_payment');
+        if (str_starts_with($senderIdentifier, 'http://') || str_starts_with($senderIdentifier, 'https://')) {
             return response()->json([
-                'success' => true,
-                'message' => 'تم استلام صورة التحويل بنجاح. يمكنك تأكيد الطلب الآن.',
-            ]);
+                'success' => false,
+                'message' => 'يجب إدخال الاسم للتحقق من الدفع عبر الخدمة. الصورة وحدها لا تكفي.',
+            ], 400);
         }
 
         $service = app(CashUpCashService::class);
@@ -113,14 +103,16 @@ class CashUpCashController extends Controller
 
         $amountPaid = $result['amount_paid'] ?? $pending['amount'];
 
-        session([
-            'cashup_verified_payment' => [
-                'payment_intent_id' => $request->payment_intent_id,
-                'amount' => $amountPaid,
-                'sender_identifier' => $senderIdentifier,
-                'validated_at' => now()->toIso8601String(),
-            ],
-        ]);
+        $verifiedData = [
+            'payment_intent_id' => $request->payment_intent_id,
+            'amount' => $amountPaid,
+            'sender_identifier' => $senderIdentifier,
+            'validated_at' => now()->toIso8601String(),
+        ];
+        if (!empty($transferImageUrl)) {
+            $verifiedData['transfer_image_url'] = $transferImageUrl;
+        }
+        session(['cashup_verified_payment' => $verifiedData]);
         session()->forget('cashup_pending_payment');
 
         return response()->json(array_merge($result, [
