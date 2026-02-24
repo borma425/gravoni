@@ -4,10 +4,30 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Plugins\Payment\CashUpCash\CashUpCashService;
 
 class CashUpCashController extends Controller
 {
+    /**
+     * Upload transfer receipt image (for InstaPay).
+     */
+    public function uploadTransferImage(Request $request): JsonResponse
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+        ]);
+
+        if (!config('plugins.cashup_cash.enabled', false)) {
+            return response()->json(['success' => false, 'message' => 'غير مفعّل'], 400);
+        }
+
+        $file = $request->file('image');
+        $path = $file->store('transfer-receipts', 'public');
+        $url = asset('storage/' . $path);
+
+        return response()->json(['success' => true, 'url' => $url]);
+    }
     /**
      * Create payment intent for checkout amount.
      */
@@ -48,8 +68,8 @@ class CashUpCashController extends Controller
     public function validatePayment(Request $request): JsonResponse
     {
         $request->validate([
-            'payment_intent_id' => 'required|string|max:255',
-            'sender_identifier' => 'required|string|max:100|regex:/^[a-zA-Z0-9\s\x{0600}-\x{06FF}]+$/u',
+            'payment_intent_id' => 'required|string|max:500',
+            'sender_identifier' => 'required|string|max:500',
         ]);
 
         if (!config('plugins.cashup_cash.enabled', false)) {
@@ -64,11 +84,28 @@ class CashUpCashController extends Controller
             ], 400);
         }
 
+        $senderIdentifier = trim($request->sender_identifier);
+        $isImageUrl = str_starts_with($senderIdentifier, 'http://') || str_starts_with($senderIdentifier, 'https://');
+
+        if ($isImageUrl) {
+            $amountPaid = $pending['amount'];
+            session([
+                'cashup_verified_payment' => [
+                    'payment_intent_id' => $request->payment_intent_id,
+                    'amount' => $amountPaid,
+                    'sender_identifier' => $senderIdentifier,
+                    'validated_at' => now()->toIso8601String(),
+                ],
+            ]);
+            session()->forget('cashup_pending_payment');
+            return response()->json([
+                'success' => true,
+                'message' => 'تم استلام صورة التحويل بنجاح. يمكنك تأكيد الطلب الآن.',
+            ]);
+        }
+
         $service = app(CashUpCashService::class);
-        $result = $service->validatePayment(
-            $request->payment_intent_id,
-            trim($request->sender_identifier)
-        );
+        $result = $service->validatePayment($request->payment_intent_id, $senderIdentifier);
 
         if (!$result['success']) {
             return response()->json($result, 400);
@@ -80,7 +117,7 @@ class CashUpCashController extends Controller
             'cashup_verified_payment' => [
                 'payment_intent_id' => $request->payment_intent_id,
                 'amount' => $amountPaid,
-                'sender_identifier' => trim($request->sender_identifier),
+                'sender_identifier' => $senderIdentifier,
                 'validated_at' => now()->toIso8601String(),
             ],
         ]);
