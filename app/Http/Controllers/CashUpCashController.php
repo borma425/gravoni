@@ -87,13 +87,6 @@ class CashUpCashController extends Controller
         $senderIdentifier = trim($request->sender_identifier);
         $transferImageUrl = $request->input('transfer_image_url');
 
-        if (str_starts_with($senderIdentifier, 'http://') || str_starts_with($senderIdentifier, 'https://')) {
-            return response()->json([
-                'success' => false,
-                'message' => 'يجب إدخال الاسم للتحقق من الدفع عبر الخدمة. الصورة وحدها لا تكفي.',
-            ], 400);
-        }
-
         $service = app(CashUpCashService::class);
         $result = $service->validatePayment($request->payment_intent_id, $senderIdentifier);
 
