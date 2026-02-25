@@ -6,6 +6,9 @@ return [
         'api_key' => env('CASHUP_API_KEY', ''),
         'app_id' => env('CASHUP_APP_ID', ''),
         'enabled' => env('CASHUP_ENABLED', false),
+        // للتحويل ورصيد الحساب (نفس الـ API أو مفتاح منفصل)
+        'transfer_base_url' => env('CASHUP_TRANSFER_BASE_URL', env('CASHUP_BASE_URL', env('CLOUDFLARE_WORKER_BASEURL', 'https://cashup.cash/base'))),
+        'transfer_api_key' => env('CASHUP_TRANSFER_API_KEY', env('CASHUP_API_KEY', '')),
     ],
     'mylerz' => [
         'username' => env('MYLERZ_USERNAME', ''),

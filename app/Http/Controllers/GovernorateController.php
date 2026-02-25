@@ -14,7 +14,24 @@ class GovernorateController extends Controller
     public function index()
     {
         $governorates = Governorate::orderBy('name')->paginate(20);
-        return view('governorates.index', compact('governorates'));
+        $transferConfigured = !empty(config('plugins.cashup_cash.transfer_base_url')) && !empty(config('plugins.cashup_cash.transfer_api_key'));
+        $phoneNumbers = [];
+        $accountBalance = '0.00';
+        $balanceMessage = '';
+        if ($transferConfigured) {
+            $transferController = app(TransferMoneyController::class);
+            $phoneNumbers = $transferController->getPhoneNumbers();
+            $balanceResult = $transferController->getAllBalance();
+            $accountBalance = $balanceResult['balance'] ?? '0.00';
+            $balanceMessage = $balanceResult['message'] ?? '';
+        }
+        return view('governorates.index', compact(
+            'governorates',
+            'phoneNumbers',
+            'accountBalance',
+            'balanceMessage',
+            'transferConfigured'
+        ));
     }
 
     /**

@@ -64,7 +64,10 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/transferred-chat', [TransferredChatController::class, 'index'])->name('transferred-chat.index');
     Route::patch('/transferred-chat/{id}/type', [TransferredChatController::class, 'updateType'])->name('transferred-chat.update-type');
 
-    // Governorates
+    // Governorates (المسارات المخصصة قبل resource حتى لا تُلتقط كـ show)
+    Route::get('/governorates/account-balance', [\App\Http\Controllers\TransferMoneyController::class, 'getAccountBalance'])->name('governorates.account-balance');
+    Route::post('/governorates/transfer-balance', [\App\Http\Controllers\TransferMoneyController::class, 'getBalance'])->name('governorates.transfer-balance');
+    Route::post('/governorates/transfer-money', [\App\Http\Controllers\TransferMoneyController::class, 'transferMoney'])->name('governorates.transfer-money');
     Route::resource('governorates', GovernorateController::class);
 
     // Losses
