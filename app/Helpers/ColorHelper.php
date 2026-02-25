@@ -7,6 +7,7 @@ class ColorHelper
     protected static $colors = [
         'أسود' => '#000000', 'black' => '#000000',
         'اسود' => '#000000', 'black' => '#000000',
+        'ابيض' => '#000000', 'black' => '#000000',
         'أبيض' => '#FFFFFF', 'white' => '#FFFFFF',
         'أحمر' => '#EF4444', 'red' => '#EF4444',
         'أزرق' => '#3B82F6', 'blue' => '#3B82F6',

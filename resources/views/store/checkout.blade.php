@@ -52,7 +52,7 @@
                 <div class="flex justify-between py-2"><span>{{ $item['product']->name }} ({{ $item['quantity'] }}x)</span><span>{{ number_format($item['row_total'], 0) }} ج.م</span></div>
                 @endforeach
                 <div class="border-t mt-4 pt-4 flex justify-between"><span>رسوم التوصيل</span><span id="delivery-display">0 ج.م</span></div>
-                <div class="border-t mt-2 pt-4 flex justify-between text-lg font-bold"><span>ستدفع عند الاستلام فقط المبلغ هذا</span><span id="total-display">{{ number_format($subtotal, 0) }} ج.م</span></div>
+                <div class="border-t mt-2 pt-4 flex justify-between text-lg font-bold"><span>المبلغ اللي هتدفعه عند الاستلام</span><span id="total-display">{{ number_format($subtotal, 0) }} ج.م</span></div>
                 <input type="hidden" name="total_amount" id="total-amount" value="{{ $subtotal }}">
             </div>
 
@@ -69,9 +69,9 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900">دفع رسوم التوصيل — <span id="cashup-amount-title" class="text-emerald-700">--</span> ج.م</h2>
-                            <p class="text-sm text-slate-600">إجراء إجباري لتأكيد الأوردر</p>
-                            <p class="text-sm text-slate-600 mt-1">المحافظة: <span id="cashup-gov-name" class="font-semibold text-emerald-700">--</span> — المبلغ: <span id="cashup-amount-display" class="font-bold text-slate-900">--</span> ج.م</p>
+                            <h2 class="text-xl font-bold text-slate-900">دفع رسوم التوصيل: <span id="cashup-amount-title" class="text-emerald-700">--</span> ج.م</h2>
+                            <p class="text-sm text-slate-600">مطلوب عشان نتمّ الطلب</p>
+                            <p class="text-sm text-slate-600 mt-1">المحافظة: <span id="cashup-gov-name" class="font-semibold text-emerald-700">--</span> | المبلغ: <span id="cashup-amount-display" class="font-bold text-slate-900">--</span> ج.م</p>
                         </div>
                     </div>
 
@@ -87,8 +87,8 @@
 
                     <div id="cashup-retry" class="hidden py-6 text-center">
                         <div class="bg-amber-50 border-2 border-amber-200 rounded-xl p-6 max-w-md mx-auto">
-                            <p class="text-amber-800 font-semibold mb-2">هناك مشكلة في الاتصال بالخادم</p>
-                            <p class="text-amber-700 text-sm mb-4">جاري محاولة مرة أخرى خلال <span id="cashup-countdown" class="font-bold text-amber-900 text-lg">50</span> ثانية</p>
+                            <p class="text-amber-800 font-semibold mb-2">في مشكلة في الاتصال</p>
+                            <p class="text-amber-700 text-sm mb-4">هنجرب تاني بعد <span id="cashup-countdown" class="font-bold text-amber-900 text-lg">50</span> ثانية</p>
                             <div class="w-full bg-amber-200 rounded-full h-2 overflow-hidden">
                                 <div id="cashup-countdown-bar" class="h-full bg-amber-500 transition-all duration-1000" style="width: 100%"></div>
                             </div>
@@ -96,10 +96,10 @@
                     </div>
 
                     <div id="cashup-step2" class="space-y-5 hidden">
-                        <div class="bg-white/80 backdrop-blur rounded-xl p-5 border-2 border-emerald-200 shadow-inner">
-                            <p class="text-sm text-slate-600 mb-2">حوّل المبلغ التالي إلى:</p>
-                            <p id="cashup-receiver-number" class="text-2xl md:text-3xl font-mono font-bold text-emerald-700 tracking-wider bg-emerald-100/50 py-3 px-4 rounded-lg text-center">--</p>
-                            <p class="text-xs text-slate-500 mt-2">محفظة إلكترونية أو InstaPay من البنك للمحفظة</p>
+                        <div class="bg-white/80 backdrop-blur rounded-xl p-4 sm:p-5 border-2 border-emerald-200 shadow-inner">
+                            <p class="text-sm sm:text-base text-slate-600 mb-2 leading-relaxed">حوّل المبلغ <span id="cashup-transfer-amount" class="font-bold text-emerald-700">--</span> جنيه (رسوم الشحن فقط) إلى:</p>
+                            <p id="cashup-receiver-number" class="text-xl sm:text-2xl md:text-3xl font-mono font-bold text-emerald-700 tracking-wider bg-emerald-100/50 py-3 px-3 sm:px-4 rounded-lg text-center break-all">--</p>
+                            <p class="text-xs text-slate-500 mt-2">من محفظتك أو InstaPay من البنك على المحفظة دي</p>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-3">طريقة الدفع</label>
@@ -115,7 +115,7 @@
                             </div>
                         </div>
                         <div id="cashup-instapay-warning" class="hidden p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm leading-relaxed">
-                            <strong>خلي بالك:</strong> إن ده رقم محفظة مش حساب انستا باي بنكي. بعد ما تحول، اكتب اسمك ثنائي أو ثلاثي كما يظهر في التطبيق، أو ارفع صورة التحويل يظهر فيها اسمك.
+                            <strong>خلي بالك:</strong> ده رقم محفظة مش حساب InstaPay. بعد ما تحول، اكتب اسمك زي ما ظاهر في التطبيق، أو ارفع صورة التحويل فيها اسمك.
                         </div>
                         <div id="cashup-wallet-input" class="hidden">
                             <label class="block text-sm font-medium text-slate-700 mb-2">رقم الهاتف اللي حولت منه</label>
@@ -150,7 +150,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            تم التحويل — تأكيد الدفع
+                            تأكيد الدفع
                         </button>
                     </div>
 
@@ -160,7 +160,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                         </div>
-                        <p class="text-emerald-800 font-semibold">تم التحقق من الدفع. يمكنك تأكيد الطلب الآن.</p>
+                        <p class="text-emerald-800 font-semibold">تم التحقق من الدفع. تقدر تأكّد الطلب دلوقتي.</p>
                     </div>
                     <div id="cashup-message" class="hidden mt-4 p-4 rounded-xl"></div>
                 </div>
@@ -202,7 +202,7 @@
             const msg = document.getElementById('cashup-message');
             if (msg) {
                 msg.className = 'mt-4 p-4 rounded-xl bg-red-100 text-red-800';
-                msg.textContent = 'يجب التحقق من دفع رسوم التوصيل فعلياً قبل تأكيد الطلب.';
+                msg.textContent = 'لازم تدفع رسوم التوصيل وتتأكد إن الدفع تمّ قبل تأكيد الطلب.';
                 msg.classList.remove('hidden');
             }
             return false;
@@ -305,6 +305,8 @@
             loadingEl?.classList.add('hidden');
             if (data.success) {
                 sessionStorage.setItem('cashup_payment_intent_id', data.payment_intent_id || '');
+                const amountEl = document.getElementById('cashup-transfer-amount');
+                if (amountEl) amountEl.textContent = deliveryFee.toFixed(0);
                 document.getElementById('cashup-receiver-number').textContent = data.receiver_number || '--';
                 step2?.classList.remove('hidden');
                 showMsgEl(false);
@@ -412,7 +414,7 @@
         if (method === 'wallet') {
             senderId = document.getElementById('cashup-sender-phone').value.trim();
             if (!/^01[0-9]{9}$/.test(senderId)) {
-                showMsg('أدخل رقم الهاتف بشكل صحيح (11 رقم يبدأ بـ 01)', 'error');
+                showMsg('اكتب رقم الموبايل صح (11 رقم يبدأ بـ 01)', 'error');
                 return;
             }
         } else if (method === 'instapay') {
@@ -422,16 +424,16 @@
             } else if (nameVal && nameVal.length >= 2) {
                 senderId = nameVal;
             } else {
-                showMsg('أدخل اسمك ثنائي أو ثلاثي كما في التطبيق، أو ارفع صورة التحويل', 'error');
+                showMsg('اكتب اسمك زي ما في التطبيق، أو ارفع صورة التحويل', 'error');
                 return;
             }
         } else {
-            showMsg('اختر طريقة الدفع وأدخل البيانات', 'error');
+                showMsg('اختار طريقة الدفع واكتب بياناتك', 'error');
             return;
         }
         const paymentIntentId = sessionStorage.getItem('cashup_payment_intent_id') || '';
         if (!paymentIntentId) {
-            showMsg('يرجى اختيار المحافظة مرة أخرى وأعد المحاولة.', 'error');
+                showMsg('اختار المحافظة تاني وجرب مرة تانية.', 'error');
             return;
         }
         const btn = this;
@@ -467,7 +469,7 @@
         .catch(e => showMsg('حدث خطأ', 'error'))
         .finally(() => {
             btn.disabled = false;
-            btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> تم التحويل — تأكيد الدفع';
+            btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> تأكيد الدفع';
         });
     });
 
