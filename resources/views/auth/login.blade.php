@@ -14,7 +14,7 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<body class="bg-gradient-to-br from-slate-50 to-gray-100 min-h-screen flex items-center justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 min-h-[100dvh]">
     <div class="max-w-md w-full space-y-8">
         <div>
             <div class="flex justify-center">
@@ -22,7 +22,7 @@
                     <img src="{{ asset('android-chrome-192x192.png') }}" alt="Logo" class="h-20 w-20">
                 </div>
             </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 class="mt-4 sm:mt-6 text-center text-2xl sm:text-3xl font-extrabold text-gray-900">
                 نظام إدارة المخزون
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">

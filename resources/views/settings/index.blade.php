@@ -3,8 +3,8 @@
 @section('title', 'إعدادات الحساب')
 
 @section('content')
-<div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">إعدادات الحساب</h1>
+<div class="mb-6 sm:mb-8">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">إعدادات الحساب</h1>
     <p class="mt-2 text-sm text-gray-600">إدارة حسابات المستخدمين</p>
 </div>
 

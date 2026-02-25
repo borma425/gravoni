@@ -3,12 +3,12 @@
 @section('title', 'أوردرات تحتاج التأكيد')
 
 @section('content')
-<div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div>
-        <h1 class="text-3xl font-bold text-gray-900">أوردرات تحتاج التأكيد</h1>
-        <p class="mt-2 text-sm text-gray-600">إدارة جميع الطلبات</p>
+<div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="min-w-0">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">أوردرات تحتاج التأكيد</h1>
+        <p class="mt-1 sm:mt-2 text-sm text-gray-600">إدارة جميع الطلبات</p>
     </div>
-    <a href="{{ route('orders.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+    <a href="{{ route('orders.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 flex-shrink-0 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
         <svg class="ml-2 -mr-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>

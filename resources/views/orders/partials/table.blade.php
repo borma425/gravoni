@@ -1,23 +1,23 @@
-<div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200">
+<div class="overflow-x-auto -mx-3 sm:mx-0 sm:rounded-b-xl">
+    <table class="min-w-[900px] divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
-<th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المصدر</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم التتبع</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم العميل</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العنوان</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">أرقام الهاتف</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عدد المنتجات</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رسوم التوصيل</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المبلغ الإجمالي</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+<th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المصدر</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم التتبع</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">اسم العميل</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العنوان</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">أرقام الهاتف</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عدد المنتجات</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رسوم التوصيل</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المبلغ الإجمالي</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
             </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($orders as $order)
             <tr class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
                     @if($order->tracking_id)
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-800" title="تم الشراء من الموقع">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
@@ -30,7 +30,7 @@
                     </span>
                     @endif
                 </td>
-                <td class="px-6 py-4">
+                <td class="px-4 sm:px-6 py-4">
                     @if($order->tracking_id)
                     @php $trackUrl = url(route('store.track', $order->tracking_id)); @endphp
                     <div class="flex flex-col gap-2">
@@ -55,29 +55,29 @@
                     </div>
                     @endif
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $order->customer_name }}</div>
                 </td>
-                <td class="px-6 py-4">
+                <td class="px-4 sm:px-6 py-4">
                     <div class="text-sm text-gray-500 max-w-xs truncate">{{ $order->customer_address }}</div>
                 </td>
-                <td class="px-6 py-4">
+                <td class="px-4 sm:px-6 py-4">
                     <div class="text-sm text-gray-500">
                         @foreach($order->customer_numbers as $number)
                             <div>{{ $number }}</div>
                         @endforeach
                     </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ count($order->items) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {{ number_format($order->delivery_fees, 2) }} ج.م
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {{ number_format($order->total_amount, 2) }} ج.م
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
                     @php
                         $statusColors = [
                             'pending' => 'bg-yellow-100 text-yellow-800',
@@ -91,7 +91,7 @@
                         {{ $order->status_label }}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex flex-wrap items-center gap-2">
                         @if($order->status !== 'cancelled')
                         <form action="{{ route('orders.reject', $order) }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من رفض هذا الطلب؟ سيتم إلغاؤه في Mylerz أيضاً.')">
@@ -110,7 +110,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="10" class="px-6 py-12 text-center">
+                <td colspan="10" class="px-4 sm:px-6 py-12 text-center">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>

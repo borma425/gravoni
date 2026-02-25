@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'نظام إدارة المخزون')</title>
     
     <!-- Favicon -->
@@ -16,11 +17,11 @@
 </head>
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
-        <!-- Mobile Sidebar Overlay -->
-        <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden hidden"></div>
+        <!-- Mobile Sidebar Overlay - النقر يغلق القائمة -->
+        <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-gray-600/75 z-40 lg:hidden hidden cursor-pointer" aria-hidden="true"></div>
         
-        <!-- Sidebar -->
-        <aside id="sidebar" class="fixed inset-y-0 right-0 z-50 w-72 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-shrink-0 -translate-x-full">
+        <!-- Sidebar: في RTL تختفي يميناً (translate-x-full)، تظهر عند translate-x-0 -->
+        <aside id="sidebar" class="fixed inset-y-0 right-0 z-50 w-72 transform transition-transform duration-300 ease-in-out translate-x-full lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-shrink-0">
             <div class="flex flex-col w-72">
                 <div class="flex flex-col flex-grow bg-gradient-to-b from-slate-800 to-slate-900 pt-5 pb-4 overflow-y-auto">
                     <div class="flex items-center justify-between flex-shrink-0 px-4">
@@ -28,7 +29,7 @@
                             <img src="{{ asset('favicon-32x32.png') }}" alt="Logo" class="h-8 w-8 ml-2 flex-shrink-0" style="filter: invert(1);">
                             <span class="mr-3 text-white text-lg font-bold whitespace-nowrap">نظام المخزون جرافوني</span>
                         </div>
-                        <button type="button" class="lg:hidden text-slate-300 hover:text-white flex-shrink-0" onclick="closeSidebar()">
+                        <button type="button" id="sidebar-close-btn" class="lg:hidden flex-shrink-0 p-2.5 -m-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-700 rounded-lg transition-colors touch-manipulation" aria-label="إغلاق القائمة">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -65,6 +66,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 أوردرات تحتاج التأكيد
+                            </a>
+                            <a href="{{ route('transferred-chat.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-200 hover:bg-slate-700 hover:text-white transition-colors {{ request()->routeIs('transferred-chat.*') ? 'bg-slate-700 text-white' : '' }}">
+                                <svg class="ml-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                </svg>
+                                دردشة محولة
                             </a>
                             <div class="pt-4 mt-4 border-t border-slate-600">
                                 <p class="px-3 text-xs font-semibold text-slate-300 uppercase tracking-wider">الحركات</p>
@@ -148,19 +155,20 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex flex-col w-0 flex-1 overflow-hidden">
-            <!-- Mobile menu button -->
-            <div class="lg:hidden relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
-                <button type="button" class="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-500" id="mobile-menu-button">
+        <div class="flex flex-col w-0 flex-1 overflow-hidden min-w-0">
+            <!-- Mobile header: menu + title -->
+            <div class="lg:hidden relative z-10 flex-shrink-0 flex items-center h-14 sm:h-16 bg-white shadow min-h-[3.5rem] px-4">
+                <button type="button" class="flex-shrink-0 p-3 -m-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-slate-500 rounded-lg transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center" id="mobile-menu-button" aria-label="فتح القائمة">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
+                <span class="flex-1 truncate text-base sm:text-lg font-semibold text-gray-900 mr-1">@yield('title', 'لوحة التحكم')</span>
             </div>
 
-            <main class="flex-1 relative overflow-y-auto focus:outline-none">
-                <div class="py-6">
-                    <div class="w-full px-4 sm:px-6 lg:px-10">
+            <main class="flex-1 relative overflow-y-auto overflow-x-hidden focus:outline-none">
+                <div class="py-4 sm:py-6">
+                    <div class="w-full px-3 sm:px-6 lg:px-10 max-w-full min-w-0">
                         @if(session('success'))
                             <div class="mb-4 rounded-lg bg-green-50 border border-green-200 p-4">
                                 <div class="flex">
@@ -203,39 +211,39 @@
     </div>
 
     <script>
-        // Mobile menu toggle
+        // Mobile sidebar: في RTL القائمة تظهر من اليمين، وتختفي يميناً (translate-x-full)
         const mobileMenuButton = document.getElementById('mobile-menu-button');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('mobile-sidebar-overlay');
+        const closeBtn = document.getElementById('sidebar-close-btn');
         
         function openSidebar() {
-            if (sidebar) sidebar.classList.remove('-translate-x-full');
+            if (sidebar) sidebar.classList.remove('translate-x-full');
             if (overlay) overlay.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
         
         function closeSidebar() {
-            if (sidebar) sidebar.classList.add('-translate-x-full');
+            if (sidebar) sidebar.classList.add('translate-x-full');
             if (overlay) overlay.classList.add('hidden');
             document.body.style.overflow = '';
         }
         
         mobileMenuButton?.addEventListener('click', openSidebar);
+        closeBtn?.addEventListener('click', closeSidebar);
         overlay?.addEventListener('click', closeSidebar);
         
-        // Close sidebar when clicking on a link (mobile only)
-        if (window.innerWidth < 1024) {
-            const sidebarLinks = sidebar?.querySelectorAll('a');
-            sidebarLinks?.forEach(link => {
-                link.addEventListener('click', closeSidebar);
+        // إغلاق القائمة عند الضغط على أي رابط (موبايل فقط)
+        const sidebarLinks = sidebar?.querySelectorAll('a');
+        sidebarLinks?.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 1024) closeSidebar();
             });
-        }
+        });
         
-        // Handle window resize
+        // إغلاق عند تكبير الشاشة
         window.addEventListener('resize', function() {
-            if (window.innerWidth >= 1024) {
-                closeSidebar();
-            }
+            if (window.innerWidth >= 1024) closeSidebar();
         });
     </script>
     @stack('scripts')

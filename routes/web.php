@@ -10,6 +10,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\TransferredChatController;
 use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +59,10 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // Orders
     Route::post('orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
     Route::resource('orders', OrderController::class);
+
+    // الدردشة المحولة
+    Route::get('/transferred-chat', [TransferredChatController::class, 'index'])->name('transferred-chat.index');
+    Route::patch('/transferred-chat/{id}/type', [TransferredChatController::class, 'updateType'])->name('transferred-chat.update-type');
 
     // Governorates
     Route::resource('governorates', GovernorateController::class);
