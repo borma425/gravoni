@@ -132,7 +132,8 @@ class MylerzClient
         Log::info('Mylerz addOrders response', ['http_code' => $result['http_code'], 'response' => $data]);
 
         if (isset($data['IsErrorState']) && $data['IsErrorState'] === true) {
-            $err = $data['ErrorDescription'] ?? 'Unknown error';
+            $err = $data['Value']['ErrorMessage'] ?? $data['ErrorDescription'] ?? 'Unknown error';
+            $err = trim($err, " \t\n\r\0\x0B,");
             Log::error('Mylerz addorders API error', ['response' => $data, 'raw' => $result['raw'] ?? '']);
             return ['success' => false, 'error' => $err];
         }

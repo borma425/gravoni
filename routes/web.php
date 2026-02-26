@@ -54,6 +54,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::resource('purchases', PurchaseController::class)->except(['edit', 'update']);
 
     // Sales
+    Route::delete('sales/order/{order}', [SaleController::class, 'destroyOrder'])->name('sales.destroy-order');
     Route::resource('sales', SaleController::class)->except(['edit', 'update']);
 
     // Orders

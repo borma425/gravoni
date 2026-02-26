@@ -69,7 +69,8 @@ class OrderController extends Controller
     public function create()
     {
         $products = Product::all();
-        return view('orders.create', compact('products'));
+        $governorates = \App\Models\Governorate::orderBy('name')->get();
+        return view('orders.create', compact('products', 'governorates'));
     }
 
     /**
@@ -77,10 +78,47 @@ class OrderController extends Controller
      */
     public function store(StoreOrderRequest $request)
     {
-        Order::create($request->validated());
+        $data = $request->validated();
+        if (empty($data['tracking_id'])) {
+            $data['tracking_id'] = Order::generateTrackingId();
+        }
+        $order = Order::create($data);
+
+        $mylerzError = null;
+        if (config('plugins.mylerz.enabled', false)) {
+            try {
+                $mylerz = app(\Plugins\Shipping\Mylerz\MylerzService::class);
+                if ($mylerz->isConfigured()) {
+                    \Illuminate\Support\Facades\Log::info('Mylerz: Sending manual order to Mylerz', ['order_id' => $order->id, 'tracking_id' => $order->tracking_id]);
+                    $result = $mylerz->createShipment($order);
+                    if ($result['success'] && !empty($result['shipping_data'])) {
+                        $order->update(['shipping_data' => $result['shipping_data']]);
+                        \Illuminate\Support\Facades\Log::info('Mylerz: Manual order sent successfully', ['order_id' => $order->id, 'barcode' => $result['barcode'] ?? '']);
+                    } else {
+                        $mylerzError = $result['error'] ?? 'فشل إرسال الطلب لـ Mylerz';
+                        \Illuminate\Support\Facades\Log::error('Mylerz: createShipment failed for manual order', ['order_id' => $order->id, 'result' => $result]);
+                    }
+                } else {
+                    $mylerzError = 'Mylerz غير مُعد بشكل صحيح';
+                }
+            } catch (\Throwable $e) {
+                $mylerzError = $e->getMessage();
+                \Illuminate\Support\Facades\Log::error('Mylerz shipment exception (manual order)', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $message = 'تم إضافة الطلب بنجاح';
+        if ($mylerzError) {
+            $message .= '. تنبيه: ' . $mylerzError;
+        } elseif (config('plugins.mylerz.enabled', false)) {
+            $message .= ' وتم إرساله إلى Mylerz بنجاح.';
+        }
 
         return redirect()->route('orders.index')
-            ->with('success', 'تم إضافة الطلب بنجاح');
+            ->with('success', $message);
     }
 
     /**

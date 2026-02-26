@@ -33,6 +33,15 @@ class MylerzService implements ShippingProviderInterface
             return ['success' => false, 'error' => 'Order has no tracking ID (not from website)'];
         }
 
+        // Mylerz requires valid Egyptian mobile: +20 + 10 digits. Validate before sending.
+        $mobileNo = $this->normalizePhoneForMylerz($order->customer_numbers[0] ?? '');
+        if ($mobileNo === null || strlen(preg_replace('/[^0-9]/', '', $mobileNo)) < 12) {
+            return [
+                'success' => false,
+                'error' => 'رقم الجوال غير صالح لشركة الشحن. يرجى استخدام رقم مصري من 11 رقماً (مثل 01xxxxxxxxx).',
+            ];
+        }
+
         $mylerzOrder = $this->mapOrderToMylerz($order);
         $result = $this->client->addOrders([$mylerzOrder]);
 
@@ -81,7 +90,7 @@ class MylerzService implements ShippingProviderInterface
 
     protected function mapOrderToMylerz(Order $order): array
     {
-        // Same format as create-mylerz-order.php: +201234567890
+        // Mylerz expects Egyptian mobile: +20 + 10 digits (e.g. +201012345678)
         $phone = preg_replace('/[^0-9]/', '', $order->customer_numbers[0] ?? '');
         $phone = ltrim($phone, '0');
         if (!str_starts_with($phone, '20')) {
@@ -127,5 +136,22 @@ class MylerzService implements ShippingProviderInterface
             'Address_Category' => config('plugins.mylerz.address_category', 'H'),
             'Currency' => 'EGP',
         ];
+    }
+
+    /**
+     * Normalize phone to Mylerz format (+20 + 10 digits). Returns null if invalid.
+     */
+    protected function normalizePhoneForMylerz(string $input): ?string
+    {
+        $digits = preg_replace('/[^0-9]/', '', $input);
+        $digits = ltrim($digits, '0');
+        if (!str_starts_with($digits, '20')) {
+            $digits = '20' . (strlen($digits) === 10 ? $digits : substr($digits, -10));
+        }
+        $full = $digits;
+        if (strlen($full) < 12) {
+            return null; // Egypt: 20 + 10 digits
+        }
+        return '+' . $full;
     }
 }

@@ -21,7 +21,7 @@
         <div id="mobile-sidebar-overlay" class="fixed inset-0 bg-gray-600/75 z-40 lg:hidden hidden cursor-pointer" aria-hidden="true"></div>
         
         <!-- Sidebar: في RTL تختفي يميناً (translate-x-full)، تظهر عند translate-x-0 -->
-        <aside id="sidebar" class="fixed inset-y-0 right-0 z-50 w-72 transform transition-transform duration-300 ease-in-out translate-x-full lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-shrink-0">
+        <aside id="sidebar" class="fixed inset-y-0 right-0 z-50 w-72 transform transition-transform duration-300 ease-in-out translate-x-full lg:translate-x-0 lg:static lg:inset-0 lg:flex lg:flex-shrink-0 overflow-y-auto">
             <div class="flex flex-col w-72">
                 <div class="flex flex-col flex-grow bg-gradient-to-b from-slate-800 to-slate-900 pt-5 pb-4 overflow-y-auto">
                     <div class="flex items-center justify-between flex-shrink-0 px-4">
@@ -65,7 +65,7 @@
                                 <svg class="ml-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                أوردرات تحتاج التأكيد
+                                جميع الأوردرات
                             </a>
                             <a href="{{ route('transferred-chat.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-200 hover:bg-slate-700 hover:text-white transition-colors {{ request()->routeIs('transferred-chat.*') ? 'bg-slate-700 text-white' : '' }}">
                                 <svg class="ml-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

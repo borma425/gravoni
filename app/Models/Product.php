@@ -72,11 +72,31 @@ class Product extends Model
     }
 
     /**
-     * Get current stock quantity (from products table)
+     * Get total stock from new structure (available_sizes) or legacy quantity.
+     * New structure: stock per size/color in available_sizes[].colors[].stock
+     */
+    public function getTotalStockAttribute(): int
+    {
+        $sizes = $this->available_sizes ?? [];
+        if (!empty($sizes)) {
+            $total = 0;
+            foreach ($sizes as $size) {
+                $colors = $size['colors'] ?? [];
+                foreach ($colors as $color) {
+                    $total += (int)($color['stock'] ?? 0);
+                }
+            }
+            return $total;
+        }
+        return (int)($this->quantity ?? 0);
+    }
+
+    /**
+     * Get current stock quantity (alias for total_stock for backward compatibility)
      */
     public function getCurrentStockAttribute(): int
     {
-        return $this->quantity ?? 0;
+        return $this->total_stock;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Sale;
+use App\Services\SalesStatsService;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -23,14 +24,12 @@ class DashboardController extends Controller
     public function index()
     {
         $totalProducts = Product::count();
-        $totalSales = Sale::count();
-        $totalProfit = Sale::sum('profit');
-        $totalRevenue = Sale::get()->sum(function ($sale) {
-            return $sale->selling_price * $sale->quantity;
-        });
+        $totalSales = SalesStatsService::totalSalesCount();
+        $totalProfit = SalesStatsService::totalProfit();
+        $totalRevenue = SalesStatsService::totalRevenue();
         
-        // Get low stock products (less than 10)
-        $lowStockProducts = Product::where('quantity', '<', 10)->get();
+        // Get low stock products (less than 10) - based on total_stock from available_sizes or quantity
+        $lowStockProducts = Product::all()->filter(fn ($p) => $p->total_stock < 10)->sortBy('total_stock')->take(10)->values();
 
         // Get recent damages
         $recentDamages = \App\Models\StockMovement::where('type', \App\Models\StockMovement::TYPE_DAMAGE)
@@ -56,15 +55,13 @@ class DashboardController extends Controller
     public function exportStats()
     {
         $totalProducts = Product::count();
-        $totalSales = Sale::count();
-        $totalProfit = Sale::sum('profit');
-        $totalRevenue = Sale::get()->sum(function ($sale) {
-            return $sale->selling_price * $sale->quantity;
-        });
+        $totalSales = SalesStatsService::totalSalesCount();
+        $totalProfit = SalesStatsService::totalProfit();
+        $totalRevenue = SalesStatsService::totalRevenue();
         $totalPurchases = \App\Models\Purchase::count();
         $totalDamaged = abs(\App\Models\StockMovement::where('type', \App\Models\StockMovement::TYPE_DAMAGE)->sum('quantity'));
         $totalLosses = \App\Models\Loss::sum('total_loss');
-        $lowStockProducts = Product::where('quantity', '<', 10)->count();
+        $lowStockProducts = Product::all()->filter(fn ($p) => $p->total_stock < 10)->count();
         
         // Get all products with details
         $products = Product::all();
@@ -146,7 +143,7 @@ class DashboardController extends Controller
                 $product->id,
                 $product->name,
                 $product->sku,
-                $product->quantity,
+                $product->total_stock,
                 number_format($product->selling_price, 2) . ' ج.م',
                 $product->description ?? '-',
                 $product->created_at->format('Y-m-d'),

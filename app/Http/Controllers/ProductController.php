@@ -84,11 +84,13 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         $data = $request->validated();
-        $data['quantity'] = 0;
 
         // Normalize arrays to sequential
         $data['available_sizes'] = $this->normalizeSizes($data['available_sizes'] ?? null);
         $data['available_colors'] = $this->normalizeColors($data['available_colors'] ?? null);
+
+        // Sync quantity from available_sizes (new structure)
+        $data['quantity'] = $this->computeTotalStockFromSizes($data['available_sizes'] ?? null);
 
         // Clear legacy standalone columns
         $data['samples'] = [];
@@ -134,6 +136,9 @@ class ProductController extends Controller
 
         // Delete orphaned media files (media that was in old available_colors but not in new)
         $this->cleanupOrphanedMedia($product, $data['available_colors'] ?? []);
+
+        // Sync quantity from available_sizes (new structure)
+        $data['quantity'] = $this->computeTotalStockFromSizes($data['available_sizes'] ?? null);
 
         // Clear legacy standalone columns
         $data['samples'] = [];
@@ -184,6 +189,22 @@ class ProductController extends Controller
     {
         if (!$colors) return null;
         return array_values($colors);
+    }
+
+    /**
+     * Compute total stock from available_sizes (sum of all colors[].stock)
+     */
+    private function computeTotalStockFromSizes(?array $sizes): int
+    {
+        if (!$sizes) return 0;
+        $total = 0;
+        foreach ($sizes as $size) {
+            $colors = $size['colors'] ?? [];
+            foreach ($colors as $color) {
+                $total += (int)($color['stock'] ?? 0);
+            }
+        }
+        return $total;
     }
 
     /**

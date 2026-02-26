@@ -52,6 +52,7 @@
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">إجمالي المبيعات</dt>
                         <dd class="text-lg font-semibold text-gray-900">{{ $totalSales }}</dd>
+                        <dd class="text-xs text-gray-400 mt-1">أوردرات مقبولة + مبيعات يدوية</dd>
                     </dl>
                 </div>
             </div>
@@ -72,7 +73,7 @@
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">إجمالي الإيرادات</dt>
                         <dd class="text-lg font-semibold text-gray-900">{{ number_format($totalRevenue, 2) }} ج.م</dd>
-                        <dd class="text-xs text-gray-400 mt-1">إجمالي قيمة المبيعات</dd>
+                        <dd class="text-xs text-gray-400 mt-1">إجمالي قيمة المبيعات (أوردرات + يدوية)</dd>
                     </dl>
                 </div>
             </div>
@@ -93,7 +94,7 @@
                     <dl>
                         <dt class="text-sm font-medium text-gray-500 truncate">إجمالي الأرباح</dt>
                         <dd class="text-lg font-semibold text-gray-900">{{ number_format($totalProfit, 2) }} ج.م</dd>
-                        <dd class="text-xs text-gray-400 mt-1">الإيرادات - تكلفة البضاعة</dd>
+                        <dd class="text-xs text-gray-400 mt-1">الإيرادات - تكلفة البضاعة (أوردرات + يدوية)</dd>
                     </dl>
                 </div>
             </div>
@@ -167,7 +168,7 @@
                         <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->sku }}</td>
                         <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                {{ $product->quantity }}
+                                {{ $product->total_stock }}
                             </span>
                         </td>
                     </tr>

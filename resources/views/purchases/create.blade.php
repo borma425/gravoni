@@ -32,7 +32,7 @@
                             data-average-cost="{{ $product->average_cost > 0 ? number_format($product->average_cost, 2) : '' }}"
                             data-sizes="{{ json_encode($product->available_sizes ?? []) }}"
                             {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                        {{ $product->name }} ({{ $product->sku }}) - المخزون الإجمالي: {{ $product->quantity ?? 0 }}
+                        {{ $product->name }} ({{ $product->sku }}) - المخزون الإجمالي: {{ $product->total_stock ?? 0 }}
                     </option>
                     @endforeach
                 </select>

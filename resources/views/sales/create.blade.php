@@ -32,7 +32,7 @@
                             data-selling-price="{{ $product->selling_price }}"
                             data-sizes="{{ json_encode($product->available_sizes ?? []) }}"
                             {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                        {{ $product->name }} ({{ $product->sku }}) - المخزون الإجمالي: {{ $product->quantity ?? 0 }}
+                        {{ $product->name }} ({{ $product->sku }}) - المخزون الإجمالي: {{ $product->total_stock ?? 0 }}
                     </option>
                     @endforeach
                 </select>

@@ -72,4 +72,26 @@ class Order extends Model
         } while (static::where('tracking_id', $id)->exists());
         return $id;
     }
+
+    /**
+     * المبلغ الإجمالي الفعلي: من total_amount أو من items + delivery_fees إذا كان 0
+     */
+    public function getEffectiveTotalAmountAttribute(): float
+    {
+        $stored = (float) ($this->attributes['total_amount'] ?? 0);
+        if ($stored > 0) {
+            return $stored;
+        }
+        return $this->items_revenue + (float) ($this->delivery_fees ?? 0);
+    }
+
+    /**
+     * إيرادات المنتجات فقط (بدون رسوم الشحن) - تُستخدم في حساب إجمالي الإيرادات
+     */
+    public function getItemsRevenueAttribute(): float
+    {
+        return collect($this->items ?? [])->sum(
+            fn ($i) => ((float) ($i['price'] ?? 0)) * ((int) ($i['quantity'] ?? 0))
+        );
+    }
 }

@@ -55,11 +55,18 @@ class ReportController extends Controller
     }
 
     /**
-     * Show low stock products
+     * Show low stock products (based on total_stock from available_sizes or quantity)
      */
     public function lowStock()
     {
-        $products = Product::where('quantity', '<', 10)->orderBy('quantity')->paginate(20);
+        $all = Product::all()->filter(fn ($p) => $p->total_stock < 10)->sortBy('total_stock')->values();
+        $products = new \Illuminate\Pagination\LengthAwarePaginator(
+            $all->forPage(request('page', 1), 20)->values(),
+            $all->count(),
+            20,
+            request('page', 1),
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
 
         return view('reports.low-stock', compact('products'));
     }

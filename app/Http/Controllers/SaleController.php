@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSaleRequest;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Services\SalesStatsService;
 use App\Services\StockService;
 use Illuminate\Http\Request;
 
@@ -17,14 +19,72 @@ class SaleController extends Controller
         $this->stockService = $stockService;
     }
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $sales = Sale::with(['product', 'returns'])->latest()->paginate(20);
+    /** Statuses considered "sold" (accepted orders) */
+    public const SOLD_ORDER_STATUSES = SalesStatsService::SOLD_ORDER_STATUSES;
 
-        return view('sales.index', compact('sales'));
+    /**
+     * Display a listing of accepted orders and manual sales.
+     */
+    public function index(Request $request)
+    {
+        $q = trim((string) $request->q);
+        $search = $q !== '';
+
+        $orderQuery = Order::with('governorate')
+            ->whereIn('status', self::SOLD_ORDER_STATUSES);
+
+        if ($search) {
+            $orderQuery->where(function ($oq) use ($q) {
+                $oq->where('customer_name', 'like', "%{$q}%")
+                    ->orWhere('customer_address', 'like', "%{$q}%")
+                    ->orWhere('tracking_id', 'like', "%{$q}%")
+                    ->orWhere('customer_numbers', 'like', "%{$q}%")
+                    ->orWhere('items', 'like', "%{$q}%")
+                    ->orWhereHas('governorate', fn ($g) => $g->where('name', 'like', "%{$q}%"));
+            });
+        }
+
+        $orders = (clone $orderQuery)->latest()->paginate(15)->withQueryString();
+
+        $productIds = $orders->flatMap(fn ($o) => collect($o->items ?? [])->pluck('product_id'))->unique()->filter();
+        $products = $productIds->isNotEmpty()
+            ? Product::whereIn('id', $productIds->map(fn ($id) => (int) $id))->get()->keyBy('id')
+            : collect();
+
+        $manualSalesQuery = Sale::with(['product', 'returns']);
+
+        if ($search) {
+            $manualSalesQuery->where(function ($sq) use ($q) {
+                $sq->where('governorate', 'like', "%{$q}%")
+                    ->orWhereHas('product', fn ($p) => $p->where('name', 'like', "%{$q}%"));
+            });
+        }
+
+        $manualSales = (clone $manualSalesQuery)->latest()->paginate(10)->withQueryString();
+
+        // إحصائيات موحدة: الأوردرات المقبولة + المبيعات اليدوية (عند الحذف يتم خصمها تلقائياً)
+        if (!$search) {
+            $totalSalesCount = SalesStatsService::totalSalesCount();
+            $totalRevenue = SalesStatsService::totalRevenue();
+        } else {
+            $filteredOrdersQuery = Order::whereIn('status', self::SOLD_ORDER_STATUSES)
+                ->where(function ($oq) use ($q) {
+                    $oq->where('customer_name', 'like', "%{$q}%")
+                        ->orWhere('customer_address', 'like', "%{$q}%")
+                        ->orWhere('tracking_id', 'like', "%{$q}%")
+                        ->orWhere('customer_numbers', 'like', "%{$q}%")
+                        ->orWhere('items', 'like', "%{$q}%")
+                        ->orWhereHas('governorate', fn ($g) => $g->where('name', 'like', "%{$q}%"));
+                });
+            $ordersCount = (clone $filteredOrdersQuery)->count();
+            $ordersRevenue = (clone $filteredOrdersQuery)->get()->sum(fn ($o) => $o->items_revenue);
+            $manualSalesCount = (clone $manualSalesQuery)->count();
+            $manualSalesRevenue = (clone $manualSalesQuery)->get()->sum(fn ($s) => $s->selling_price * $s->quantity);
+            $totalSalesCount = $ordersCount + $manualSalesCount;
+            $totalRevenue = $ordersRevenue + $manualSalesRevenue;
+        }
+
+        return view('sales.index', compact('orders', 'manualSales', 'totalSalesCount', 'totalRevenue', 'products', 'q'));
     }
 
     /**
@@ -112,5 +172,17 @@ class SaleController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Delete an accepted order from the sales list (removes the order permanently).
+     */
+    public function destroyOrder(Order $order)
+    {
+        if (!in_array($order->status, self::SOLD_ORDER_STATUSES, true)) {
+            return redirect()->route('sales.index')->with('error', 'لا يمكن حذف طلب غير مقبول من صفحة المبيعات.');
+        }
+        $order->delete();
+        return redirect()->route('sales.index')->with('success', 'تم حذف المبيعة بنجاح.');
     }
 }

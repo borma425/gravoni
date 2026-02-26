@@ -304,6 +304,19 @@
         addOrderItem();
     }
 
+    // Before submit: sync product_name from selected option
+    document.getElementById('order-form').addEventListener('submit', function() {
+        document.querySelectorAll('.product-select').forEach(function(select) {
+            if (select.value && select.selectedIndex >= 0) {
+                const option = select.options[select.selectedIndex];
+                const name = option.getAttribute('data-name');
+                const itemDiv = select.closest('.border');
+                const hidden = itemDiv && itemDiv.querySelector('.product-name');
+                if (hidden && name) hidden.value = name;
+            }
+        });
+    });
+
     // Calculate total when delivery fees change
     document.getElementById('delivery_fees').addEventListener('input', calculateTotal);
     

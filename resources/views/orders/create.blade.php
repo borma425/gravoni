@@ -47,6 +47,20 @@
                     </div>
 
                     <div>
+                        <label for="governorate_id" class="block text-sm font-medium text-gray-700">المحافظة</label>
+                        <select name="governorate_id" id="governorate_id"
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('governorate_id') border-red-300 @enderror">
+                            <option value="">اختر المحافظة</option>
+                            @foreach($governorates ?? [] as $gov)
+                                <option value="{{ $gov->id }}" {{ old('governorate_id') == $gov->id ? 'selected' : '' }}>{{ $gov->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('governorate_id')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">أرقام الهاتف</label>
                         <div id="phone-numbers-container" class="space-y-2">
                             <div class="flex gap-2">
@@ -107,20 +121,7 @@
                         @enderror
                     </div>
 
-                    <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700">الحالة</label>
-                        <select name="status" id="status" required
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('status') border-red-300 @enderror">
-                            <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>قيد الانتظار</option>
-                            <option value="accepted" {{ old('status') == 'accepted' ? 'selected' : '' }}>تم القبول</option>
-                            <option value="delivery_fees_paid" {{ old('status') == 'delivery_fees_paid' ? 'selected' : '' }}>تم دفع رسوم التوصيل</option>
-                            <option value="shipped" {{ old('status') == 'shipped' ? 'selected' : '' }}>تم الشحن</option>
-                            <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>مرفوض</option>
-                        </select>
-                        @error('status')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <input type="hidden" name="status" value="accepted">
 
                     <div>
                         <label for="payment_method" class="block text-sm font-medium text-gray-700">طريقة الدفع</label>
@@ -251,6 +252,19 @@
 
     // Initialize with one item
     addOrderItem();
+
+    // Before submit: sync product_name from selected option so it is never empty
+    document.getElementById('order-form').addEventListener('submit', function() {
+        document.querySelectorAll('.product-select').forEach(function(select) {
+            if (select.value && select.selectedIndex >= 0) {
+                const option = select.options[select.selectedIndex];
+                const name = option.getAttribute('data-name');
+                const itemDiv = select.closest('.border');
+                const hidden = itemDiv && itemDiv.querySelector('.product-name');
+                if (hidden && name) hidden.value = name;
+            }
+        });
+    });
 
     // Calculate total when delivery fees change
     document.getElementById('delivery_fees').addEventListener('input', calculateTotal);

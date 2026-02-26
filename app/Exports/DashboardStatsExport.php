@@ -146,7 +146,7 @@ class ProductsSheet implements FromCollection, WithHeadings, WithTitle
                 'id' => $product->id,
                 'name' => $product->name,
                 'sku' => $product->sku,
-                'quantity' => $product->quantity,
+                'quantity' => $product->total_stock,
                 'selling_price' => number_format($product->selling_price, 2) . ' ج.م',
                 'description' => $product->description ?? '-',
                 'created_at' => $product->created_at->format('Y-m-d'),

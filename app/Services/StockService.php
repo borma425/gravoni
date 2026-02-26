@@ -45,11 +45,11 @@ class StockService
     }
 
     /**
-     * Get current stock quantity for a product
+     * Get current stock quantity (from available_sizes or legacy quantity)
      */
     public function getCurrentStock(Product $product): int
     {
-        return $product->quantity ?? 0;
+        return $product->total_stock;
     }
 
     /**
