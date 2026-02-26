@@ -7,6 +7,7 @@ use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class OrderApiController extends Controller
@@ -66,7 +67,7 @@ class OrderApiController extends Controller
             'items.*.size' => 'nullable|string|max:50',
             'items.*.color' => 'nullable|string|max:50',
             'total_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,delivery_fees_paid,shipped',
+            'status' => 'required|in:pending,accepted,delivery_fees_paid,shipped',
             'payment_method' => 'nullable|string',
         ]);
 
@@ -79,7 +80,13 @@ class OrderApiController extends Controller
         }
 
         try {
-            $order = Order::create($validator->validated());
+            $validated = $validator->validated();
+            if (empty($validated['tracking_id'])) {
+                $validated['tracking_id'] = Order::generateTrackingId();
+            }
+            $order = Order::create($validated);
+
+            $mylerzResult = $this->sendToMylerzIfNeeded($order);
 
             $formattedOrder = [
                 'id' => (string) $order->id,
@@ -94,13 +101,22 @@ class OrderApiController extends Controller
                 'payment_method' => $order->payment_method,
                 'created_at' => $order->created_at->toISOString(),
                 'updated_at' => $order->updated_at->toISOString(),
+                'shipping_data' => $order->shipping_data,
             ];
 
-            return response()->json([
+            $response = [
                 'success' => true,
                 'message' => 'تم إنشاء الطلب بنجاح',
                 'data' => $formattedOrder
-            ], 201, [], JSON_UNESCAPED_UNICODE);
+            ];
+
+            if (!empty($mylerzResult['error'])) {
+                $response['mylerz_warning'] = $mylerzResult['error'];
+            } elseif (!empty($mylerzResult['success'])) {
+                $response['mylerz_status'] = 'تم إرسال الطلب لـ Mylerz بنجاح';
+            }
+
+            return response()->json($response, 201, [], JSON_UNESCAPED_UNICODE);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -139,7 +155,7 @@ class OrderApiController extends Controller
             'items.*.size' => 'nullable|string|max:50',
             'items.*.color' => 'nullable|string|max:50',
             'total_amount' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,delivery_fees_paid,shipped',
+            'status' => 'required|in:pending,accepted,delivery_fees_paid,shipped',
             'payment_method' => 'nullable|string',
         ]);
 
@@ -152,7 +168,10 @@ class OrderApiController extends Controller
         }
 
         try {
+            $oldStatus = $order->status;
             $order->update($validator->validated());
+
+            $mylerzResult = $this->sendToMylerzIfNeeded($order, $oldStatus);
 
             $formattedOrder = [
                 'id' => (string) $order->id,
@@ -167,19 +186,93 @@ class OrderApiController extends Controller
                 'payment_method' => $order->payment_method,
                 'created_at' => $order->created_at->toISOString(),
                 'updated_at' => $order->updated_at->toISOString(),
+                'shipping_data' => $order->shipping_data,
             ];
 
-            return response()->json([
+            $response = [
                 'success' => true,
                 'message' => 'تم تحديث الطلب بنجاح',
                 'data' => $formattedOrder
-            ], 200, [], JSON_UNESCAPED_UNICODE);
+            ];
+
+            if (!empty($mylerzResult['error'])) {
+                $response['mylerz_warning'] = $mylerzResult['error'];
+            } elseif (!empty($mylerzResult['success'])) {
+                $response['mylerz_status'] = 'تم إرسال الطلب لـ Mylerz بنجاح';
+            }
+
+            return response()->json($response, 200, [], JSON_UNESCAPED_UNICODE);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء تحديث الطلب',
                 'error' => $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * Send order to Mylerz if status is accepted or delivery_fees_paid and not already sent.
+     */
+    protected function sendToMylerzIfNeeded(Order $order, ?string $oldStatus = null): array
+    {
+        $acceptedStatuses = ['accepted', 'delivery_fees_paid'];
+        
+        if (!in_array($order->status, $acceptedStatuses)) {
+            return [];
+        }
+
+        if (!empty($order->shipping_data['barcode'])) {
+            return [];
+        }
+
+        if ($oldStatus !== null && in_array($oldStatus, $acceptedStatuses)) {
+            return [];
+        }
+
+        if (!config('plugins.mylerz.enabled', false)) {
+            Log::info('Mylerz: disabled, skipping API order', ['order_id' => $order->id]);
+            return [];
+        }
+
+        try {
+            $mylerz = app(\Plugins\Shipping\Mylerz\MylerzService::class);
+            if (!$mylerz->isConfigured()) {
+                Log::warning('Mylerz: not configured for API order', ['order_id' => $order->id]);
+                return ['error' => 'Mylerz غير مُعد بشكل صحيح'];
+            }
+
+            Log::info('Mylerz: Sending API order to Mylerz', [
+                'order_id' => $order->id,
+                'tracking_id' => $order->tracking_id,
+                'status' => $order->status,
+            ]);
+
+            $result = $mylerz->createShipment($order);
+
+            if ($result['success'] && !empty($result['shipping_data'])) {
+                $order->update(['shipping_data' => $result['shipping_data']]);
+                Log::info('Mylerz: API order sent successfully', [
+                    'order_id' => $order->id,
+                    'barcode' => $result['barcode'] ?? '',
+                ]);
+                return ['success' => true, 'barcode' => $result['barcode'] ?? ''];
+            }
+
+            $error = $result['error'] ?? 'فشل إرسال الطلب لـ Mylerz';
+            Log::error('Mylerz: createShipment failed for API order', [
+                'order_id' => $order->id,
+                'result' => $result,
+            ]);
+            return ['error' => $error];
+
+        } catch (\Throwable $e) {
+            Log::error('Mylerz shipment exception (API order)', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return ['error' => $e->getMessage()];
         }
     }
 }
