@@ -50,8 +50,12 @@
                     <span class="text-sm text-gray-400">—</span>
                     @endif
                     @if(!empty($order->shipping_data['barcode']))
-                    <div class="mt-2 text-xs text-slate-500">
-                        Mylerz: <span class="font-mono">{{ $order->shipping_data['barcode'] }}</span>
+                    <div class="mt-2 flex flex-wrap items-center gap-1">
+                        <span class="text-xs text-slate-500">Mylerz: <span class="font-mono">{{ $order->shipping_data['barcode'] }}</span></span>
+                        <a href="{{ route('orders.mylerz-label', $order) }}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 text-xs font-medium rounded hover:bg-amber-200" title="طباعة ملصق Mylerz">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            طباعة الملصق
+                        </a>
                     </div>
                     @endif
                 </td>

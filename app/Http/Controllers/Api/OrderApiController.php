@@ -256,6 +256,7 @@ class OrderApiController extends Controller
                     'order_id' => $order->id,
                     'barcode' => $result['barcode'] ?? '',
                 ]);
+                $this->sendWhatsAppOrderConfirmation($order);
                 return ['success' => true, 'barcode' => $result['barcode'] ?? ''];
             }
 

@@ -225,6 +225,43 @@ class MylerzClient
         return count($arr) > 0 ? $arr[0] : null;
     }
 
+    /**
+     * Get shipping label (AWB) PDF for a package.
+     * Returns base64-encoded PDF content or error.
+     */
+    public function getAWB(string $barcode): array
+    {
+        if (!$this->ensureAuthenticated()) {
+            return ['success' => false, 'error' => 'Authentication failed'];
+        }
+
+        $url = $this->baseUrl . '/api/packages/GetAWB';
+        $result = $this->makeRequest($url, 'POST', ['Barcode' => $barcode], [
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $this->token,
+        ]);
+
+        if (isset($result['error'])) {
+            Log::error('Mylerz getAWB cURL error', ['error' => $result['error'], 'barcode' => $barcode]);
+            return ['success' => false, 'error' => $result['error']];
+        }
+
+        $data = $result['response'];
+
+        if (isset($data['IsErrorState']) && $data['IsErrorState'] === true) {
+            $err = $data['ErrorDescription'] ?? 'Unknown error';
+            Log::error('Mylerz getAWB API error', ['response' => $data, 'barcode' => $barcode]);
+            return ['success' => false, 'error' => $err];
+        }
+
+        if (!empty($data['Value'])) {
+            return ['success' => true, 'pdf_base64' => $data['Value']];
+        }
+
+        Log::error('Mylerz getAWB unexpected response', ['response' => $data, 'barcode' => $barcode]);
+        return ['success' => false, 'error' => 'Unexpected response from Mylerz'];
+    }
+
     public function getWarehouses(): array
     {
         if (!$this->ensureAuthenticated()) {

@@ -30,6 +30,7 @@ Route::post('/checkout/cashup/validate-payment', [\App\Http\Controllers\CashUpCa
 Route::post('/checkout/cashup/upload-transfer-image', [\App\Http\Controllers\CashUpCashController::class, 'uploadTransferImage'])->name('store.checkout.cashup.upload-image');
 Route::get('/order/success/{order}', [StoreController::class, 'orderSuccess'])->name('store.order.success');
 Route::get('/track/{trackingId}', [StoreController::class, 'track'])->name('store.track');
+Route::get('/mylerz-label/{order}', [StoreController::class, 'mylerzLabelPublic'])->name('store.mylerz-label')->middleware('signed');
 
 // Public routes - Admin login
 Route::prefix('admin')->group(function () {
@@ -59,6 +60,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Orders
     Route::post('orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
+    Route::get('orders/{order}/mylerz-label', [OrderController::class, 'mylerzLabel'])->name('orders.mylerz-label');
     Route::resource('orders', OrderController::class);
 
     // الدردشة المحولة

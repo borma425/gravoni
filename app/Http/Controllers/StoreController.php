@@ -52,7 +52,16 @@ class StoreController extends Controller
         $cashupEnabled = config('plugins.cashup_cash.enabled', false)
             && app(\Plugins\Payment\CashUpCash\CashUpCashService::class)->isConfigured();
 
-        return view('store.checkout', compact('items', 'subtotal', 'governorates', 'cashupEnabled'));
+        $cashupVerified = session('cashup_verified_payment');
+        $selectedGovId = old('governorate_id');
+        $selectedGov = $governorates->firstWhere('id', $selectedGovId);
+        $currentFee = $selectedGov ? (float) $selectedGov->shipping_fee : 0;
+        $canRestoreCashup = $cashupEnabled && $currentFee > 0 && !empty($cashupVerified)
+            && !empty($cashupVerified['payment_intent_id'] ?? '')
+            && !empty($cashupVerified['sender_identifier'] ?? '')
+            && abs((float) ($cashupVerified['amount'] ?? 0) - $currentFee) < 0.02;
+
+        return view('store.checkout', compact('items', 'subtotal', 'governorates', 'cashupEnabled', 'cashupVerified', 'canRestoreCashup', 'currentFee'));
     }
 
     public function placeOrder(CheckoutRequest $request)
@@ -159,6 +168,7 @@ class StoreController extends Controller
                     if ($result['success'] && !empty($result['shipping_data'])) {
                         $order->update(['shipping_data' => $result['shipping_data']]);
                         \Illuminate\Support\Facades\Log::info('Mylerz: Order sent successfully', ['order_id' => $order->id, 'barcode' => $result['barcode'] ?? '']);
+                        $this->sendWhatsAppOrderConfirmation($order);
                     } else {
                         $mylerzError = $result['error'] ?? 'فشل إرسال الطلب لـ Mylerz';
                         \Illuminate\Support\Facades\Log::error('Mylerz: createShipment failed', ['order_id' => $order->id, 'result' => $result]);
@@ -198,5 +208,29 @@ class StoreController extends Controller
             abort(404, 'الطلب غير موجود');
         }
         return view('store.track', compact('order'));
+    }
+
+    /**
+     * Public signed URL for Mylerz label PDF (used by WhatsApp API to fetch file).
+     */
+    public function mylerzLabelPublic(Order $order)
+    {
+        $barcode = $order->shipping_data['barcode'] ?? null;
+        if (!$barcode) {
+            abort(404, 'لا يوجد ملصق لهذا الطلب');
+        }
+
+        $mylerz = app(\Plugins\Shipping\Mylerz\MylerzService::class);
+        $pdf = $mylerz->getShippingLabelPdf($order);
+        if (!$pdf) {
+            abort(404, 'فشل تحميل الملصق');
+        }
+
+        $filename = 'mylerz-' . $order->tracking_id . '.pdf';
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
     }
 }

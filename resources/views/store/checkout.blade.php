@@ -39,7 +39,7 @@
                         <select name="governorate_id" id="delivery-fees" class="w-full border border-gray-200 rounded-xl px-4 py-3" @if($cashupEnabled ?? false) required @endif>
                             <option value="">اختر المحافظة</option>
                             @foreach($governorates as $gov)
-                            <option value="{{ $gov->id }}" data-fee="{{ $gov->shipping_fee }}">{{ $gov->name }} - {{ number_format($gov->shipping_fee, 0) }} ج.م</option>
+                            <option value="{{ $gov->id }}" data-fee="{{ $gov->shipping_fee }}" {{ old('governorate_id') == $gov->id ? 'selected' : '' }}>{{ $gov->name }} - {{ number_format($gov->shipping_fee, 0) }} ج.م</option>
                             @endforeach
                         </select>
                     </div>
@@ -164,8 +164,8 @@
                     </div>
                     <div id="cashup-message" class="hidden mt-4 p-4 rounded-xl"></div>
                 </div>
-                <input type="hidden" name="cashup_payment_intent_id" id="cashup-payment-intent-id" value="">
-                <input type="hidden" name="cashup_sender_identifier" id="cashup-sender-identifier" value="">
+                <input type="hidden" name="cashup_payment_intent_id" id="cashup-payment-intent-id" value="{{ $canRestoreCashup ? ($cashupVerified['payment_intent_id'] ?? '') : '' }}">
+                <input type="hidden" name="cashup_sender_identifier" id="cashup-sender-identifier" value="{{ $canRestoreCashup ? ($cashupVerified['sender_identifier'] ?? '') : '' }}">
             </div>
             @endif
 
@@ -193,6 +193,10 @@
 
 @if($cashupEnabled ?? false)
 (function() {
+    const canRestoreCashup = @json($canRestoreCashup ?? false);
+    const restoredPaymentIntentId = @json($canRestoreCashup ? ($cashupVerified['payment_intent_id'] ?? '') : '');
+    const restoredSenderIdentifier = @json($canRestoreCashup ? ($cashupVerified['sender_identifier'] ?? '') : '');
+
     document.getElementById('checkout-form')?.addEventListener('submit', function(e) {
         const fee = document.getElementById('delivery-fees')?.options[document.getElementById('delivery-fees')?.selectedIndex]?.dataset?.fee;
         const d = parseFloat(fee || 0) || 0;
@@ -326,7 +330,26 @@
         updateCashUpUI();
         if (fee > 0) createPaymentIntent();
     });
+
+    function restoreVerifiedState() {
+        if (!canRestoreCashup || !restoredPaymentIntentId) return false;
+        const fee = getDeliveryFee();
+        if (fee <= 0) return false;
+        sessionStorage.setItem('cashup_payment_intent_id', restoredPaymentIntentId);
+        document.getElementById('cashup-payment-intent-id').value = restoredPaymentIntentId;
+        document.getElementById('cashup-sender-identifier').value = restoredSenderIdentifier;
+        loadingEl?.classList.add('hidden');
+        step2?.classList.add('hidden');
+        verified?.classList.remove('hidden');
+        confirmBtn.disabled = false;
+        confirmBtn?.classList.remove('opacity-50', 'cursor-not-allowed');
+        return true;
+    }
+
     updateCashUpUI();
+    if (!restoreVerifiedState() && getDeliveryFee() > 0) {
+        createPaymentIntent();
+    }
 
     let uploadedImageUrl = null;
     const transferImageInput = document.getElementById('cashup-transfer-image');

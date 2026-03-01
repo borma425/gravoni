@@ -10,6 +10,13 @@ return [
         'transfer_base_url' => env('CASHUP_TRANSFER_BASE_URL', env('CASHUP_BASE_URL', env('CLOUDFLARE_WORKER_BASEURL', 'https://cashup.cash/base'))),
         'transfer_api_key' => env('CASHUP_TRANSFER_API_KEY', env('CASHUP_API_KEY', '')),
     ],
+    'whatsapp_sog' => [
+        'enabled' => env('WHATSAPP_SOG_ENABLED', false),
+        'appkey' => env('WHATSAPP_SOG_APPKEY', ''),
+        'authkey' => env('WHATSAPP_SOG_AUTHKEY', ''),
+        'admin_number' => env('WHATSAPP_SOG_ADMIN_NUMBER', ''),
+        'admin_send_file' => env('WHATSAPP_SOG_ADMIN_SEND_FILE', true),
+    ],
     'mylerz' => [
         'username' => env('MYLERZ_USERNAME', ''),
         'password' => env('MYLERZ_PASSWORD', ''),

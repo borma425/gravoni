@@ -94,6 +94,7 @@ class OrderController extends Controller
                     if ($result['success'] && !empty($result['shipping_data'])) {
                         $order->update(['shipping_data' => $result['shipping_data']]);
                         \Illuminate\Support\Facades\Log::info('Mylerz: Manual order sent successfully', ['order_id' => $order->id, 'barcode' => $result['barcode'] ?? '']);
+                        $this->sendWhatsAppOrderConfirmation($order);
                     } else {
                         $mylerzError = $result['error'] ?? 'فشل إرسال الطلب لـ Mylerz';
                         \Illuminate\Support\Facades\Log::error('Mylerz: createShipment failed for manual order', ['order_id' => $order->id, 'result' => $result]);
@@ -127,6 +128,42 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         return view('orders.show', compact('order'));
+    }
+
+    /**
+     * Download/print Mylerz shipping label (AWB) PDF.
+     */
+    public function mylerzLabel(Order $order)
+    {
+        $barcode = $order->shipping_data['barcode'] ?? null;
+        if (!$barcode) {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'لا يوجد باركود Mylerz لهذا الطلب.');
+        }
+
+        if (!config('plugins.mylerz.enabled', false)) {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'تكامل Mylerz غير مفعّل.');
+        }
+
+        $mylerz = app(\Plugins\Shipping\Mylerz\MylerzService::class);
+        if (!$mylerz->isConfigured()) {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'Mylerz غير مُعد بشكل صحيح.');
+        }
+
+        $pdf = $mylerz->getShippingLabelPdf($order);
+        if (!$pdf) {
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'فشل تحميل ملصق الشحن من Mylerz.');
+        }
+
+        $filename = 'mylerz-label-' . $order->tracking_id . '.pdf';
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ]);
     }
 
     /**

@@ -71,16 +71,39 @@
                 <h2 class="font-bold text-slate-900 mt-6 mb-4">المنتجات</h2>
                 <ul class="space-y-2">
                     @foreach($order->items ?? [] as $item)
+                    @php
+                        $size = trim($item['size'] ?? '');
+                        $color = trim($item['color'] ?? '');
+                        $details = array_filter([$size ? 'مقاس ' . $size : null, $color ? 'لون ' . $color : null]);
+                        $suffix = count($details) > 0 ? ' (' . implode('، ', $details) . ')' : '';
+                    @endphp
                     <li class="flex justify-between py-2 border-b border-gray-50 last:border-0">
-                        <span>{{ $item['product_name'] ?? '' }} × {{ $item['quantity'] ?? 1 }}</span>
+                        <span>{{ $item['product_name'] ?? '' }}{{ $suffix }} × {{ $item['quantity'] ?? 1 }}</span>
                         <span>{{ number_format(($item['price'] ?? 0) * ($item['quantity'] ?? 1), 0) }} ج.م</span>
                     </li>
                     @endforeach
                 </ul>
 
-                <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between font-bold">
-                    <span>الإجمالي</span>
-                    <span>{{ number_format($order->total_amount, 0) }} ج.م</span>
+                @php
+                    $itemsTotal = (float) ($order->items_revenue ?? 0);
+                    $deliveryFees = (float) ($order->delivery_fees ?? 0);
+                    $isCashup = ($order->payment_method ?? '') === 'cashup';
+                @endphp
+                <div class="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-600">مبلغ المنتجات</span>
+                        <span>{{ number_format($itemsTotal, 0) }} ج.م</span>
+                    </div>
+                    @if($deliveryFees > 0)
+                    <div class="flex justify-between text-sm">
+                        <span class="text-slate-600">رسوم التوصيل</span>
+                        <span>{{ number_format($deliveryFees, 0) }} ج.م @if($isCashup)<span class="text-emerald-600">(مدفوعة)</span>@endif</span>
+                    </div>
+                    @endif
+                    <div class="flex justify-between font-bold pt-2">
+                        <span>@if($isCashup && $deliveryFees > 0)المبلغ عند الاستلام@else الإجمالي @endif</span>
+                        <span>{{ number_format($isCashup && $deliveryFees > 0 ? $itemsTotal : $order->total_amount, 0) }} ج.م</span>
+                    </div>
                 </div>
             </div>
         </div>

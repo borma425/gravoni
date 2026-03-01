@@ -88,6 +88,26 @@ class MylerzService implements ShippingProviderInterface
         return $this->client->getPackageStatus($barcode);
     }
 
+    /**
+     * Get shipping label (AWB) PDF for an order.
+     * Returns raw PDF binary or null on failure.
+     */
+    public function getShippingLabelPdf(Order $order): ?string
+    {
+        $barcode = $order->shipping_data['barcode'] ?? null;
+        if (!$barcode) {
+            return null;
+        }
+
+        $result = $this->client->getAWB($barcode);
+        if (!$result['success'] || empty($result['pdf_base64'])) {
+            return null;
+        }
+
+        $decoded = base64_decode($result['pdf_base64'], true);
+        return $decoded !== false ? $decoded : null;
+    }
+
     protected function mapOrderToMylerz(Order $order): array
     {
         // Mylerz expects Egyptian mobile: +20 + 10 digits (e.g. +201012345678)
