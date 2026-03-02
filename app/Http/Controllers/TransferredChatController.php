@@ -12,8 +12,7 @@ class TransferredChatController extends Controller
      */
     public function index(Request $request)
     {
-        $chats = ChatSession::where('agent_type', 'human')
-            ->orderByDesc('updated_at')
+        $chats = ChatSession::orderByDesc('updated_at')
             ->limit(10)
             ->get();
 

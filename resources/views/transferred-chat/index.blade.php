@@ -5,7 +5,7 @@
 @section('content')
 <div class="mb-6 sm:mb-8">
     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">دردشة محولة</h1>
-    <p class="mt-2 text-sm text-gray-600">آخر 10 محادثات محولة — اختر محادثة للتبديل بينها</p>
+    <p class="mt-2 text-sm text-gray-600">آخر 10 محادثات — اختر محادثة للتبديل بينها (لا تُزال عند التحويل لذكاء اصطناعي)</p>
 </div>
 
 @if(count($chats) === 0)
@@ -164,13 +164,6 @@
                 body: JSON.stringify({ type: type })
             })
             .then(function(res) { return res.json().then(function(data) { return { ok: res.ok, data: data }; }); })
-            .then(function(result) {
-                if (result.ok && result.data.success && type === 'greeting') {
-                    const tab = document.querySelector('.chat-tab[data-chat-index="' + panelIdx + '"]');
-                    if (tab) tab.remove();
-                    panel.remove();
-                }
-            })
             .catch(function() {});
         });
     });
