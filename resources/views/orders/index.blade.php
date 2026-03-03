@@ -3,13 +3,13 @@
 @section('title', 'جميع الأوردرات')
 
 @section('content')
-<div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
     <div class="min-w-0">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">جميع الأوردرات</h1>
-        <p class="mt-1 sm:mt-2 text-sm text-gray-600">إدارة جميع الطلبات</p>
+        <h1 class="text-xl sm:text-3xl font-bold text-gray-900">جميع الأوردرات</h1>
+        <p class="mt-0.5 sm:mt-2 text-sm text-gray-600">إدارة جميع الطلبات</p>
     </div>
-    <a href="{{ route('orders.create') }}" class="inline-flex items-center justify-center px-4 py-2.5 flex-shrink-0 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-        <svg class="ml-2 -mr-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <a href="{{ route('orders.create') }}" class="inline-flex items-center justify-center gap-2 min-h-[48px] sm:min-h-[40px] px-5 py-3 sm:py-2.5 flex-shrink-0 border border-transparent rounded-xl sm:rounded-lg shadow-sm text-sm font-medium text-white bg-slate-700 hover:bg-slate-800 active:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors touch-manipulation w-full sm:w-auto">
+        <svg class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
         إضافة طلب جديد
@@ -23,9 +23,9 @@
 <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">{{ session('error') }}</div>
 @endif
 
-{{-- Modern Search Box --}}
-<div class="mb-6">
-    <div class="relative max-w-2xl">
+{{-- Modern Search Box - متجاوب للموبايل --}}
+<div class="mb-4 sm:mb-6">
+    <div class="relative w-full max-w-2xl">
         <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-gray-400">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -33,9 +33,10 @@
         </div>
         <input type="text" id="orders-search" value="{{ request('q') }}"
                placeholder="ابحث باسم العميل، العنوان، رقم التتبع، رقم الهاتف..."
-               class="w-full py-3.5 pl-4 pr-12 rounded-2xl border border-gray-200 bg-white shadow-sm
+               class="w-full min-h-[48px] py-3.5 pl-4 pr-12 rounded-xl sm:rounded-2xl border border-gray-200 bg-white shadow-sm text-base
                       focus:ring-2 focus:ring-slate-400 focus:border-slate-400 focus:outline-none
-                      placeholder-gray-400 text-gray-900 transition-all duration-200">
+                      placeholder-gray-400 text-gray-900 transition-all duration-200
+                      [-webkit-tap-highlight-color:transparent] touch-manipulation">
         <div id="search-spinner" class="absolute inset-y-0 left-4 flex items-center hidden">
             <svg class="animate-spin h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -45,7 +46,7 @@
     </div>
 </div>
 
-<div id="orders-container" class="bg-white shadow rounded-xl overflow-hidden">
+<div id="orders-container" class="bg-white shadow rounded-xl overflow-hidden -mx-3 sm:mx-0">
     @include('orders.partials.table', ['orders' => $orders])
 </div>
 @endsection
