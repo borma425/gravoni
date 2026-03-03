@@ -16,6 +16,9 @@ class OrderController extends Controller
     {
         $query = Order::query();
 
+        // مؤقت: استبعاد أوردرات "قيد الانتظار" من القائمة
+        $query->where('status', '!=', 'pending');
+
         if ($request->filled('q')) {
             $q = $request->q;
             $query->where(function ($qry) use ($q) {
