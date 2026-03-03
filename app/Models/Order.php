@@ -18,6 +18,7 @@ class Order extends Model
         'status',
         'payment_method',
         'shipping_data',
+        'seen_at',
     ];
 
     protected $casts = [
@@ -26,6 +27,7 @@ class Order extends Model
         'shipping_data' => 'array',
         'delivery_fees' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'seen_at' => 'datetime',
     ];
 
     public function governorate()

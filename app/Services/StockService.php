@@ -230,6 +230,51 @@ class StockService
     }
 
     /**
+     * Record order item return (مرتجع أوردر من الموقع)
+     */
+    public function recordOrderItemReturn(int $orderId, int $itemIndex, int $quantity): StockMovement
+    {
+        $order = \App\Models\Order::findOrFail($orderId);
+        $items = $order->items ?? [];
+        $item = $items[$itemIndex] ?? null;
+        if (!$item) {
+            throw new \Exception('بند الأوردر غير موجود');
+        }
+        $product = Product::findOrFail($item['product_id'] ?? 0);
+        $size = $item['size'] ?? null;
+        $color = $item['color'] ?? null;
+        $maxQty = (int) ($item['quantity'] ?? 0);
+
+        $returned = (int) \App\Models\StockMovement::where('type', 'order_return')
+            ->where('reference_id', $orderId)
+            ->where('order_item_index', $itemIndex)
+            ->get()
+            ->sum(fn ($m) => abs($m->quantity));
+        $remaining = max(0, $maxQty - (int) $returned);
+        if ($quantity > $remaining) {
+            throw new \Exception("الكمية المرتجعة ({$quantity}) أكبر من القابلة للإرجاع ({$remaining})");
+        }
+
+        $this->updateProductStock($product, $quantity, $size, $color);
+
+        $noteDetails = [];
+        if ($size) $noteDetails[] = "المقاس: {$size}";
+        if ($color) $noteDetails[] = "اللون: {$color}";
+        $noteSuffix = empty($noteDetails) ? "" : " (" . implode(' - ', $noteDetails) . ")";
+
+        return StockMovement::create([
+            'product_id' => $product->id,
+            'size' => $size,
+            'color' => $color,
+            'type' => 'order_return',
+            'quantity' => $quantity,
+            'reference_id' => $orderId,
+            'order_item_index' => $itemIndex,
+            'note' => "مرتجع أوردر #{$order->tracking_id} بند {$itemIndex}: {$quantity} وحدة{$noteSuffix}",
+        ]);
+    }
+
+    /**
      * Record a purchase return
      */
     public function recordPurchaseReturn(Purchase $purchase, int $quantity): StockMovement
@@ -269,20 +314,21 @@ class StockService
 
     /**
      * Record damage
+     * @param float|null $costPriceAtLoss سعر التكلفة عند التلف - إن وُجد يُستخدم، وإلا يُستخدم متوسط التكلفة
      */
-    public function recordDamage(Product $product, int $quantity, string $note = null, ?string $size = null, ?string $color = null): array
+    public function recordDamage(Product $product, int $quantity, string $note = null, ?string $size = null, ?string $color = null, ?float $costPriceAtLoss = null): array
     {
-        return DB::transaction(function () use ($product, $quantity, $note, $size, $color) {
+        return DB::transaction(function () use ($product, $quantity, $note, $size, $color, $costPriceAtLoss) {
             $currentStock = $this->getCurrentStock($product);
             if ($currentStock < $quantity) {
                 throw new \Exception("المخزون غير كافي. المخزون الحالي: {$currentStock}");
             }
 
-            // Get average cost price
-            $averageCost = $this->calculateAverageCost($product);
-            
-            // Calculate total loss
-            $totalLoss = $averageCost * $quantity;
+            $costPrice = $costPriceAtLoss !== null && $costPriceAtLoss >= 0
+                ? $costPriceAtLoss
+                : $this->calculateAverageCost($product);
+
+            $totalLoss = $costPrice * $quantity;
 
             // Update product quantity and size stock
             $this->updateProductStock($product, -$quantity, $size, $color);
@@ -309,7 +355,7 @@ class StockService
                 'size' => $size,
                 'color' => $color,
                 'quantity' => $quantity,
-                'cost_price_at_loss' => $averageCost,
+                'cost_price_at_loss' => $costPrice,
                 'total_loss' => $totalLoss,
                 'note' => $note,
                 'stock_movement_id' => $movement->id,

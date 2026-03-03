@@ -182,6 +182,10 @@ class SaleController extends Controller
         if (!in_array($order->status, self::SOLD_ORDER_STATUSES, true)) {
             return redirect()->route('sales.index')->with('error', 'لا يمكن حذف طلب غير مقبول من صفحة المبيعات.');
         }
+        $daysLimit = (int) config('orders.order_reject_delete_days_limit', 14);
+        if ($order->created_at->copy()->startOfDay()->addDays($daysLimit)->isPast()) {
+            return redirect()->route('sales.index')->with('error', 'لا يمكن حذف طلب مضى عليه أكثر من ' . $daysLimit . ' يوماً.');
+        }
         $order->delete();
         return redirect()->route('sales.index')->with('success', 'تم حذف المبيعة بنجاح.');
     }

@@ -121,6 +121,12 @@
                                 </svg>
                                 الخسائر
                             </a>
+                            <a href="{{ route('expenses.index') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-200 hover:bg-slate-700 hover:text-white transition-colors {{ request()->routeIs('expenses*') ? 'bg-slate-700 text-white' : '' }}">
+                                <svg class="ml-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2h-2m-4-1V7a2 2 0 012-2h2a2 2 0 012 2v1" />
+                                </svg>
+                                المصاريف
+                            </a>
                             <a href="{{ route('reports.low-stock') }}" class="group flex items-center px-3 py-2 text-sm font-medium rounded-lg text-slate-200 hover:bg-slate-700 hover:text-white transition-colors {{ request()->routeIs('reports.low-stock') ? 'bg-slate-700 text-white' : '' }}">
                                 <svg class="ml-3 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />

@@ -92,9 +92,51 @@
                 </div>
                 <div class="mr-5 w-0 flex-1">
                     <dl>
-                        <dt class="text-sm font-medium text-gray-500 truncate">إجمالي الأرباح</dt>
+                        <dt class="text-sm font-medium text-gray-500 truncate">ربح إجمالي (قبل المصاريف)</dt>
                         <dd class="text-lg font-semibold text-gray-900">{{ number_format($totalProfit, 2) }} ج.م</dd>
-                        <dd class="text-xs text-gray-400 mt-1">الإيرادات - تكلفة البضاعة (أوردرات + يدوية)</dd>
+                        <dd class="text-xs text-gray-400 mt-1">الإيرادات - تكلفة البضاعة</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="bg-amber-600 rounded-md p-3">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2h-2m-4-1V7a2 2 0 012-2h2a2 2 0 012 2v1" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="mr-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">إجمالي المصاريف</dt>
+                        <dd class="text-lg font-semibold text-red-600">- {{ number_format($totalExpenses ?? 0, 2) }} ج.م</dd>
+                        <dd class="text-xs text-gray-400 mt-1"><a href="{{ route('expenses.index') }}" class="text-slate-600 hover:text-slate-800">عرض المصاريف</a></dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-5">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div class="bg-emerald-600 rounded-md p-3">
+                        <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="mr-5 w-0 flex-1">
+                    <dl>
+                        <dt class="text-sm font-medium text-gray-500 truncate">الربح الصافي</dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ number_format($netProfitTotal ?? $totalProfit, 2) }} ج.م</dd>
+                        <dd class="text-xs text-gray-400 mt-1">الربح الإجمالي - المصاريف التشغيلية</dd>
                     </dl>
                 </div>
             </div>
@@ -141,6 +183,43 @@
         </div>
     </div>
 </div>
+
+<!-- إحصائيات الفترات -->
+@isset($periodStats)
+<div class="bg-white shadow rounded-lg mb-8">
+    <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">إحصائيات المبيعات والأرباح حسب الفترة</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الفترة</th>
+                        <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عدد المبيعات</th>
+                        <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإيرادات</th>
+                        <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">ربح إجمالي</th>
+                        <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">المصاريف</th>
+                        <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الربح الصافي</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($periodStats as $key => $p)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{{ $p['label'] }}</td>
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ number_format($p['sales_count']) }}</td>
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ number_format($p['revenue'], 2) }} ج.م</td>
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ number_format($p['gross_profit'], 2) }} ج.م</td>
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap text-sm text-red-600">{{ number_format($p['expenses'], 2) }} ج.م</td>
+                        <td class="px-4 sm:px-6 py-3 whitespace-nowrap text-sm font-semibold {{ ($p['net_profit'] ?? 0) >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                            {{ number_format($p['net_profit'] ?? 0, 2) }} ج.م
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endisset
 
 <!-- Low Stock Alert -->
 @if($lowStockProducts->count() > 0)

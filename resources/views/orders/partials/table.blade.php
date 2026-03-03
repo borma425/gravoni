@@ -11,12 +11,13 @@
                 <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">عدد المنتجات</th>
                 <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">سعر البيع</th>
                 <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
                 <th scope="col" class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
             </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($orders as $order)
-            <tr class="hover:bg-gray-50 transition-colors">
+            <tr class="transition-colors {{ $order->seen_at ? 'bg-emerald-50/70 hover:bg-emerald-100/70' : 'hover:bg-gray-50' }}">
                 <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
                     @if($order->tracking_id)
                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-800" title="تم الشراء من الموقع">
@@ -95,14 +96,43 @@
                         {{ $order->status_label }}
                     </span>
                 </td>
+                <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    @if($order->created_at->isToday())
+                    <span class="font-medium text-emerald-600">اليوم</span><br><span class="text-xs">{{ $order->created_at->format('H:i') }}</span>
+                    @else
+                    {{ $order->created_at->format('Y-m-d') }}<br><span class="text-xs">{{ $order->created_at->format('H:i') }}</span>
+                    @endif
+                </td>
                 <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex flex-wrap items-center gap-2">
+                        @php
+                            $daysLimit = (int) config('orders.order_reject_delete_days_limit', 14);
+                            $isAcceptedOrder = in_array($order->status, ['accepted', 'delivery_fees_paid', 'shipped']);
+                            $isTooOldToReject = $isAcceptedOrder && $order->created_at->copy()->startOfDay()->addDays($daysLimit)->isPast();
+                        @endphp
                         @if($order->status !== 'cancelled')
+                        @if(!$isTooOldToReject)
                         <form action="{{ route('orders.reject', $order) }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من رفض هذا الطلب؟ سيتم إلغاؤه في Mylerz أيضاً.')">
                             @csrf
                             <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700">رفض</button>
                         </form>
-                        @else
+                        @endif
+                        @endif
+                        @if($order->status !== 'cancelled' && !$order->seen_at)
+                        <form action="{{ route('orders.mark-seen', $order) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-lg hover:bg-emerald-700" title="رأيت الأوردر وسأقوم بتجهيزه">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                رأيت الأوردر
+                            </button>
+                        </form>
+                        @elseif($order->seen_at)
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-lg" title="تم التأشير في {{ $order->seen_at->format('Y-m-d H:i') }}">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            مُجهَّز
+                        </span>
+                        @endif
+                        @if($order->status === 'cancelled')
                         <form action="{{ route('orders.destroy', $order) }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا الطلب نهائياً؟ لن يظهر بعدها في القائمة.')">
                             @csrf
                             @method('DELETE')
@@ -120,7 +150,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="10" class="px-4 sm:px-6 py-12 text-center">
+                <td colspan="11" class="px-4 sm:px-6 py-12 text-center">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>

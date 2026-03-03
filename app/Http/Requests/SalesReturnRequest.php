@@ -22,7 +22,7 @@ class SalesReturnRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sale_id' => 'required|exists:sales,id',
+            'returnable_key' => 'required|string|max:100',
             'quantity' => 'required|integer|min:1',
         ];
     }

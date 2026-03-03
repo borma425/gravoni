@@ -14,8 +14,11 @@ class StockMovement extends Model
         'type',
         'quantity',
         'reference_id',
+        'order_item_index',
         'note',
     ];
+
+    const TYPE_ORDER_RETURN = 'order_return';
 
     const TYPE_PURCHASE = 'purchase';
     const TYPE_SALE = 'sale';

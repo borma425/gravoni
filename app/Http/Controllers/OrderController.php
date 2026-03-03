@@ -42,6 +42,10 @@ class OrderController extends Controller
         if ($order->status === 'cancelled') {
             return redirect()->route('orders.index')->with('error', 'الطلب مرفوض بالفعل');
         }
+        $daysLimit = (int) config('orders.order_reject_delete_days_limit', 14);
+        if ($order->created_at->copy()->startOfDay()->addDays($daysLimit)->isPast()) {
+            return redirect()->route('orders.index')->with('error', 'لا يمكن رفض طلب مضى عليه أكثر من ' . $daysLimit . ' يوماً.');
+        }
 
         $barcode = $order->shipping_data['barcode'] ?? null;
         if ($barcode && config('plugins.mylerz.enabled', false)) {
@@ -61,6 +65,19 @@ class OrderController extends Controller
 
         $order->update(['status' => 'cancelled']);
         return redirect()->route('orders.index')->with('success', $barcode ? 'تم رفض الطلب وإلغاؤه في Mylerz' : 'تم رفض الطلب');
+    }
+
+    /**
+     * Mark order as seen / سأقوم بتجهيزه
+     */
+    public function markSeen(Order $order)
+    {
+        $order->update(['seen_at' => now()]);
+        $isAjax = request()->ajax() || request()->wantsJson();
+        if ($isAjax) {
+            return response()->json(['success' => true, 'message' => 'تم التأشير']);
+        }
+        return redirect()->route('orders.index')->with('success', 'تم التأشير: رأيت الأوردر وسأقوم بتجهيزه');
     }
 
     /**

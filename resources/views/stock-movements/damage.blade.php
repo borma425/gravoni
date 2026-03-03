@@ -30,6 +30,7 @@
                     @foreach($products as $product)
                     <option value="{{ $product->id }}" 
                             data-sizes="{{ json_encode($product->available_sizes ?? []) }}"
+                            data-average-cost="{{ ($product->average_cost ?? 0) > 0 ? number_format($product->average_cost, 2, '.', '') : '' }}"
                             {{ old('product_id') == $product->id ? 'selected' : '' }}>
                         {{ $product->name }} ({{ $product->sku }}) - المخزون الإجمالي: {{ $product->total_stock ?? 0 }}
                     </option>
@@ -55,6 +56,16 @@
                     <option value="">اختر اللون</option>
                 </select>
                 <p id="stock-info" class="mt-1 text-sm font-bold text-violet-600 hidden"></p>
+            </div>
+
+            <div>
+                <label for="cost_price_at_loss" class="block text-sm font-medium text-gray-700">سعر التكلفة عند التلف (ج.م)</label>
+                <input type="number" name="cost_price_at_loss" id="cost_price_at_loss" step="0.01" min="0" value="{{ old('cost_price_at_loss') }}" placeholder="اتركه فارغاً لاستخدام متوسط التكلفة تلقائياً"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-slate-500 focus:border-slate-500 sm:text-sm @error('cost_price_at_loss') border-red-300 @enderror">
+                <p class="mt-1 text-xs text-gray-500">إجمالي الخسارة = سعر التكلفة × الكمية. إن تركت الحقل فارغاً سيُستخدم متوسط تكلفة الشراء.</p>
+                @error('cost_price_at_loss')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
@@ -128,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    productSelect.dispatchEvent(new Event('change'));
     sizeSelect.addEventListener('change', function() {
         const selectedSizeName = this.value;
         colorSelect.innerHTML = '<option value="">اختر اللون</option>';

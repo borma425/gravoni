@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Services\SalesStatsService;
 use App\Services\StockService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
@@ -46,7 +48,71 @@ class DashboardController extends Controller
         $totalLosses = \App\Models\Loss::sum('total_loss');
         $recentLosses = \App\Models\Loss::with('product')->latest()->limit(5)->get();
 
-        return view('dashboard', compact('totalProducts', 'totalSales', 'totalProfit', 'totalRevenue', 'lowStockProducts', 'recentDamages', 'totalDamaged', 'totalLosses', 'recentLosses'));
+        // إحصائيات لفترات محددة (اليوم، أمس، الشهر الحالي، الشهر السابق، السنوي)
+        $today = SalesStatsService::forToday();
+        $yesterday = SalesStatsService::forYesterday();
+        $currentMonth = SalesStatsService::forCurrentMonth();
+        $previousMonth = SalesStatsService::forPreviousMonth();
+        $currentYear = SalesStatsService::forCurrentYear();
+
+        // المصاريف لكل فترة (تُخصم من الأرباح)
+        $expensesToday = Expense::sumBetween(Carbon::today(), Carbon::today());
+        $expensesYesterday = Expense::sumBetween(Carbon::yesterday(), Carbon::yesterday());
+        $expensesCurrentMonth = Expense::sumBetween(Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth());
+        $expensesPreviousMonth = Expense::sumBetween(Carbon::now()->subMonth()->startOfMonth(), Carbon::now()->subMonth()->endOfMonth());
+        $expensesCurrentYear = Expense::sumBetween(Carbon::now()->startOfYear(), Carbon::now()->endOfYear());
+
+        $periodStats = [
+            'today' => [
+                'label' => 'اليوم (' . Carbon::today()->format('Y-m-d') . ')',
+                'sales_count' => $today['sales_count'],
+                'revenue' => $today['revenue'],
+                'gross_profit' => $today['profit'],
+                'expenses' => $expensesToday,
+                'net_profit' => $today['profit'] - $expensesToday,
+            ],
+            'yesterday' => [
+                'label' => 'أمس (' . Carbon::yesterday()->format('Y-m-d') . ')',
+                'sales_count' => $yesterday['sales_count'],
+                'revenue' => $yesterday['revenue'],
+                'gross_profit' => $yesterday['profit'],
+                'expenses' => $expensesYesterday,
+                'net_profit' => $yesterday['profit'] - $expensesYesterday,
+            ],
+            'current_month' => [
+                'label' => 'الشهر الحالي (' . Carbon::now()->translatedFormat('F Y') . ')',
+                'sales_count' => $currentMonth['sales_count'],
+                'revenue' => $currentMonth['revenue'],
+                'gross_profit' => $currentMonth['profit'],
+                'expenses' => $expensesCurrentMonth,
+                'net_profit' => $currentMonth['profit'] - $expensesCurrentMonth,
+            ],
+            'previous_month' => [
+                'label' => 'الشهر السابق (' . Carbon::now()->subMonth()->translatedFormat('F Y') . ')',
+                'sales_count' => $previousMonth['sales_count'],
+                'revenue' => $previousMonth['revenue'],
+                'gross_profit' => $previousMonth['profit'],
+                'expenses' => $expensesPreviousMonth,
+                'net_profit' => $previousMonth['profit'] - $expensesPreviousMonth,
+            ],
+            'current_year' => [
+                'label' => 'السنة الحالية (' . Carbon::now()->year . ')',
+                'sales_count' => $currentYear['sales_count'],
+                'revenue' => $currentYear['revenue'],
+                'gross_profit' => $currentYear['profit'],
+                'expenses' => $expensesCurrentYear,
+                'net_profit' => $currentYear['profit'] - $expensesCurrentYear,
+            ],
+        ];
+
+        $totalExpenses = Expense::sum('amount');
+        $netProfitTotal = $totalProfit - $totalExpenses;
+
+        return view('dashboard', compact(
+            'totalProducts', 'totalSales', 'totalProfit', 'totalRevenue',
+            'lowStockProducts', 'recentDamages', 'totalDamaged', 'totalLosses', 'recentLosses',
+            'periodStats', 'totalExpenses', 'netProfitTotal'
+        ));
     }
 
     /**

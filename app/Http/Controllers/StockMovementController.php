@@ -21,27 +21,93 @@ class StockMovementController extends Controller
     }
 
     /**
-     * Show form for sales return
+     * Show form for sales return (مبيعات يدوية + أوردرات الموقع)
      */
     public function showSalesReturnForm()
     {
-        $sales = Sale::with('product')->latest()->get();
+        $returnables = collect();
 
-        return view('stock-movements.sales-return', compact('sales'));
+        // مبيعات يدوية
+        foreach (Sale::with('product')->latest()->get() as $sale) {
+            $returned = abs($sale->returns()->sum('quantity'));
+            $maxQty = max(0, $sale->quantity - $returned);
+            if ($maxQty > 0 && $sale->product) {
+                $returnables->put('sale-' . $sale->id, [
+                    'type' => 'sale',
+                    'label' => $sale->product->name . ($sale->size ? ' - ' . $sale->size : '') . ($sale->color ? ' - ' . $sale->color : ''),
+                    'max_qty' => $maxQty,
+                    'date' => $sale->created_at->format('Y-m-d'),
+                ]);
+            }
+        }
+
+        // أوردرات الموقع (مقبولة / شحن / مدفوع توصيل)
+        $orders = \App\Models\Order::whereIn('status', ['accepted', 'delivery_fees_paid', 'shipped'])
+            ->latest()
+            ->get();
+        foreach ($orders as $order) {
+            $items = $order->items ?? [];
+            $returnedByItem = $this->getOrderItemReturnedQuantities($order->id);
+            foreach ($items as $idx => $item) {
+                $pid = $item['product_id'] ?? null;
+                $qty = (int) ($item['quantity'] ?? 0);
+                if (!$pid || $qty <= 0) continue;
+                $returned = $returnedByItem[$idx] ?? 0;
+                $maxQty = max(0, $qty - $returned);
+                if ($maxQty <= 0) continue;
+                $product = \App\Models\Product::find($pid);
+                $name = $product ? $product->name : ($item['product_name'] ?? 'منتج #' . $pid);
+                $key = 'order-' . $order->id . '-' . $idx;
+                $returnables->put($key, [
+                    'type' => 'order',
+                    'label' => $name . ($item['size'] ?? '') . ($item['color'] ?? ''),
+                    'max_qty' => $maxQty,
+                    'date' => $order->created_at->format('Y-m-d'),
+                ]);
+            }
+        }
+
+        return view('stock-movements.sales-return', compact('returnables'));
+    }
+
+    private function getOrderItemReturnedQuantities(int $orderId): array
+    {
+        $movements = \App\Models\StockMovement::where('type', 'order_return')
+            ->where('reference_id', $orderId)
+            ->get();
+        $result = [];
+        foreach ($movements as $m) {
+            $idx = (int) ($m->order_item_index ?? 0);
+            $result[$idx] = ($result[$idx] ?? 0) + abs($m->quantity);
+        }
+        return $result;
     }
 
     /**
-     * Record sales return
+     * Record sales return (مبيع أو أوردر)
      */
     public function recordSalesReturn(SalesReturnRequest $request)
     {
-        $sale = Sale::findOrFail($request->sale_id);
+        $key = $request->returnable_key;
+        $quantity = (int) $request->quantity;
 
         try {
-            $this->stockService->recordSalesReturn($sale, $request->quantity);
-
-            return redirect()->route('stock-movements.sales-return')
-                ->with('success', 'تم تسجيل مرتجع البيع بنجاح');
+            if (str_starts_with($key, 'sale-')) {
+                $saleId = (int) substr($key, 5);
+                $sale = Sale::findOrFail($saleId);
+                $this->stockService->recordSalesReturn($sale, $quantity);
+                return redirect()->route('stock-movements.sales-return')
+                    ->with('success', 'تم تسجيل مرتجع البيع بنجاح');
+            }
+            if (str_starts_with($key, 'order-')) {
+                $parts = explode('-', $key);
+                $orderId = (int) ($parts[1] ?? 0);
+                $itemIndex = (int) ($parts[2] ?? 0);
+                $this->stockService->recordOrderItemReturn($orderId, $itemIndex, $quantity);
+                return redirect()->route('stock-movements.sales-return')
+                    ->with('success', 'تم تسجيل مرتجع الأوردر بنجاح');
+            }
+            throw new \Exception('مصدر غير صالح');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
@@ -79,7 +145,10 @@ class StockMovementController extends Controller
      */
     public function showDamageForm()
     {
-        $products = Product::all();
+        $products = Product::all()->map(function ($p) {
+            $p->average_cost = $this->stockService->calculateAverageCost($p);
+            return $p;
+        });
 
         return view('stock-movements.damage', compact('products'));
     }
@@ -90,9 +159,10 @@ class StockMovementController extends Controller
     public function recordDamage(DamageRequest $request)
     {
         $product = Product::findOrFail($request->product_id);
+        $costPrice = $request->filled('cost_price_at_loss') ? (float) $request->cost_price_at_loss : null;
 
         try {
-            $result = $this->stockService->recordDamage($product, $request->quantity, $request->note, $request->size, $request->color);
+            $result = $this->stockService->recordDamage($product, $request->quantity, $request->note, $request->size, $request->color, $costPrice);
 
             return redirect()->route('losses.index')
                 ->with('success', 'تم تسجيل التلف والخسارة بنجاح');

@@ -169,10 +169,18 @@
                         </span>
                     </td>
                     <td class="px-4 sm:px-6 py-4 text-sm text-slate-500">
-                        {{ $order->created_at->format('Y-m-d') }}<br>
-                        <span class="text-xs">{{ $order->created_at->format('H:i') }}</span>
+                        @if($order->created_at->isToday())
+                        <span class="font-medium text-emerald-600">اليوم</span><br><span class="text-xs">{{ $order->created_at->format('H:i') }}</span>
+                        @else
+                        {{ $order->created_at->format('Y-m-d') }}<br><span class="text-xs">{{ $order->created_at->format('H:i') }}</span>
+                        @endif
                     </td>
                     <td class="px-4 sm:px-6 py-4">
+                        @php
+                            $daysLimit = (int) config('orders.order_reject_delete_days_limit', 14);
+                            $canDeleteOrder = !$order->created_at->copy()->startOfDay()->addDays($daysLimit)->isPast();
+                        @endphp
+                        @if($canDeleteOrder)
                         <form action="{{ route('sales.destroy-order', $order) }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من حذف هذه المبيعة؟ سيتم حذف الطلب نهائياً.');">
                             @csrf
                             @method('DELETE')
@@ -182,6 +190,7 @@
                                 </svg>
                             </button>
                         </form>
+                        @endif
                     </td>
                 </tr>
                 @empty
@@ -245,7 +254,13 @@
                             </span>
                         </td>
                         <td class="px-4 sm:px-6 py-4 text-sm text-slate-600">{{ $sale->governorate ?? '—' }}</td>
-                        <td class="px-4 sm:px-6 py-4 text-sm text-slate-500">{{ $sale->created_at->format('Y-m-d H:i') }}</td>
+                        <td class="px-4 sm:px-6 py-4 text-sm text-slate-500">
+                            @if($sale->created_at->isToday())
+                            <span class="font-medium text-emerald-600">اليوم</span> {{ $sale->created_at->format('H:i') }}
+                            @else
+                            {{ $sale->created_at->format('Y-m-d H:i') }}
+                            @endif
+                        </td>
                         <td class="px-4 sm:px-6 py-4">
                             <form action="{{ route('sales.destroy', $sale) }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا البيع؟ سيتم استعادة الكمية للمنتج.');">
                                 @csrf

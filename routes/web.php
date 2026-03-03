@@ -60,6 +60,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Orders
     Route::post('orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
+    Route::post('orders/{order}/mark-seen', [OrderController::class, 'markSeen'])->name('orders.mark-seen');
     Route::get('orders/{order}/mylerz-label', [OrderController::class, 'mylerzLabel'])->name('orders.mylerz-label');
     Route::resource('orders', OrderController::class);
 
@@ -75,6 +76,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Losses
     Route::resource('losses', \App\Http\Controllers\LossController::class)->only(['index', 'show', 'destroy']);
+
+    // Expenses (المصاريف التشغيلية)
+    Route::resource('expenses', \App\Http\Controllers\ExpenseController::class);
 
     // Stock Movements
     Route::prefix('stock-movements')->name('stock-movements.')->group(function () {

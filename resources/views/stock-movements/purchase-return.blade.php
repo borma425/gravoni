@@ -20,6 +20,15 @@
 
 <div class="bg-white shadow rounded-lg">
     <div class="px-4 py-5 sm:p-6">
+        @if($purchases->isEmpty())
+        <div class="rounded-lg bg-amber-50 border border-amber-200 p-6 text-center">
+            <svg class="mx-auto h-12 w-12 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-amber-800">لا توجد مشتريات</h3>
+            <p class="mt-1 text-sm text-amber-700">لا يمكن تسجيل مرتجع - لم يتم تسجيل أي مشتريات حتى الآن.</p>
+        </div>
+        @else
         <form action="{{ route('stock-movements.purchase-return.store') }}" method="POST" class="space-y-6">
             @csrf
             <div>
@@ -59,6 +68,7 @@
                 </button>
             </div>
         </form>
+        @endif
     </div>
 </div>
 @endsection

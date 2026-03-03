@@ -20,8 +20,9 @@ class LossController extends Controller
     public function index()
     {
         $losses = Loss::with('product')->latest()->paginate(20);
+        $totalLosses = Loss::sum('total_loss');
 
-        return view('losses.index', compact('losses'));
+        return view('losses.index', compact('losses', 'totalLosses'));
     }
 
     /**

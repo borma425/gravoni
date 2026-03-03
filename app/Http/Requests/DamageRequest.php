@@ -24,6 +24,7 @@ class DamageRequest extends FormRequest
         return [
             'product_id' => 'required|exists:products,id',
             'quantity' => 'required|integer|min:1',
+            'cost_price_at_loss' => 'nullable|numeric|min:0',
             'note' => 'nullable|string|max:500',
         ];
     }
