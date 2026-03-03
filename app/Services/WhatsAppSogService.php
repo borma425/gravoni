@@ -103,7 +103,7 @@ class WhatsAppSogService
         Log::info('WhatsApp SOG API response', ['http_code' => $httpCode, 'body' => $body]);
 
         if ($httpCode < 200 || $httpCode >= 300) {
-            $errMsg = $body['message'] ?? $body['error'] ?? $response;
+            $errMsg = $body['message'] ?? $body['error'] ?? $this->sanitizeErrorResponse($response, $httpCode);
             return ['success' => false, 'error' => $errMsg];
         }
 
@@ -114,6 +114,26 @@ class WhatsAppSogService
         }
 
         return ['success' => true];
+    }
+
+    /**
+     * Extract a short error summary from HTML/raw response to avoid logging huge payloads.
+     */
+    protected function sanitizeErrorResponse(string $response, int $httpCode): string
+    {
+        if (strlen($response) <= 500) {
+            return $response;
+        }
+        if (stripos($response, '<html') !== false || stripos($response, '<!DOCTYPE') !== false) {
+            if (preg_match('/<title>(.+?)<\/title>/is', $response, $m)) {
+                return 'HTTP ' . $httpCode . ': ' . trim(strip_tags($m[1]));
+            }
+            if (preg_match('/ConnectionException: (.+?)(?:\s+in\s+file|$)/s', $response, $m)) {
+                return 'HTTP ' . $httpCode . ': ' . trim($m[1]);
+            }
+            return 'HTTP ' . $httpCode . ': خطأ من الخادم (استجابة HTML)';
+        }
+        return 'HTTP ' . $httpCode . ': ' . substr($response, 0, 300) . '...';
     }
 
     /**
