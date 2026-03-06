@@ -25,22 +25,74 @@
         <div class="p-3 border-b border-gray-100 bg-gray-50/50">
             <h2 class="text-sm font-semibold text-gray-700">المحادثات ({{ count($chats) }})</h2>
         </div>
-        <div class="flex-1 overflow-y-auto divide-y divide-gray-100">
-            @foreach($chats as $index => $chat)
-            <button type="button"
-                    class="chat-tab w-full text-right p-4 hover:bg-slate-50 transition-colors {{ $index === 0 ? 'bg-slate-100 border-r-4 border-slate-600' : '' }}"
-                    data-chat-index="{{ $index }}">
-                <div class="flex items-center gap-3">
-                    <div class="flex-shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center text-white font-bold text-sm">
-                        {{ mb_substr($chat->user_name ?? $chat->user_id, 0, 1) }}
+        <div class="flex-1 overflow-y-auto">
+            {{-- قسم: إنسان بشري --}}
+            @php $humanChats = $chats->filter(fn($c) => $c->conversation_type === 'human'); @endphp
+            @if($humanChats->count())
+            <div class="px-3 pt-3 pb-1">
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    إنسان بشري ({{ $humanChats->count() }})
+                </span>
+            </div>
+            <div class="divide-y divide-gray-100">
+                @foreach($humanChats as $index => $chat)
+                <button type="button"
+                        class="chat-tab w-full text-right p-4 hover:bg-slate-50 transition-colors {{ $loop->first ? 'bg-slate-100 border-r-4 border-slate-600' : '' }}"
+                        data-chat-index="{{ $index }}">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center">
+                            @if(Str::startsWith($chat->user_id, 'ig-'))
+                            {{-- Instagram Logo --}}
+                            <svg class="w-9 h-9" viewBox="0 0 48 48" fill="none"><defs><radialGradient id="ig1_{{ $index }}" cx="19.38" cy="42.04" r="44.9" gradientUnits="userSpaceOnUse"><stop stop-color="#FD5"/><stop offset=".1" stop-color="#FD5"/><stop offset=".5" stop-color="#FF543E"/><stop offset="1" stop-color="#C837AB"/></radialGradient><radialGradient id="ig2_{{ $index }}" cx="11.79" cy="-2.99" r="65.29" gradientUnits="userSpaceOnUse"><stop stop-color="#3771C8"/><stop offset=".13" stop-color="#3771C8"/><stop offset="1" stop-color="#6600FF" stop-opacity="0"/></radialGradient></defs><rect x="2" y="2" width="44" height="44" rx="14" fill="url(#ig1_{{ $index }})"/><rect x="2" y="2" width="44" height="44" rx="14" fill="url(#ig2_{{ $index }})"/><circle cx="24" cy="24" r="9" stroke="#fff" stroke-width="3"/><circle cx="35" cy="13" r="2" fill="#fff"/></svg>
+                            @else
+                            {{-- Facebook Logo --}}
+                            <svg class="w-9 h-9" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#1877F2"/><path d="M33.1 30.9l1.1-7h-6.7v-4.5c0-1.9.9-3.8 4-3.8h3.1v-6s-2.8-.5-5.5-.5c-5.6 0-9.3 3.4-9.3 9.6v5.3h-6.2v7h6.2V48.3a24.7 24.7 0 007.6 0V30.9h5.7z" fill="#fff"/></svg>
+                            @endif
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 truncate">{{ $chat->user_name ?? $chat->user_id ?? 'غير معروف' }}</p>
+                            <p class="text-xs text-gray-500">{{ $chat->updated_at?->format('Y-m-d H:i') ?? '-' }}</p>
+                        </div>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="font-medium text-gray-900 truncate">{{ $chat->user_name ?? $chat->user_id ?? 'غير معروف' }}</p>
-                        <p class="text-xs text-gray-500">{{ $chat->updated_at?->format('Y-m-d H:i') ?? '-' }}</p>
+                </button>
+                @endforeach
+            </div>
+            @endif
+
+            {{-- قسم: ذكاء اصطناعي --}}
+            @php $aiChats = $chats->filter(fn($c) => $c->conversation_type === 'greeting'); @endphp
+            @if($aiChats->count())
+            <div class="px-3 pt-3 pb-1">
+                <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    ذكاء اصطناعي ({{ $aiChats->count() }})
+                </span>
+            </div>
+            <div class="divide-y divide-gray-100">
+                @foreach($aiChats as $index => $chat)
+                <button type="button"
+                        class="chat-tab w-full text-right p-4 hover:bg-slate-50 transition-colors"
+                        data-chat-index="{{ $index }}">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center">
+                            @if(Str::startsWith($chat->user_id, 'ig-'))
+                            {{-- Instagram Logo --}}
+                            <svg class="w-9 h-9" viewBox="0 0 48 48" fill="none"><defs><radialGradient id="ig1a_{{ $index }}" cx="19.38" cy="42.04" r="44.9" gradientUnits="userSpaceOnUse"><stop stop-color="#FD5"/><stop offset=".1" stop-color="#FD5"/><stop offset=".5" stop-color="#FF543E"/><stop offset="1" stop-color="#C837AB"/></radialGradient><radialGradient id="ig2a_{{ $index }}" cx="11.79" cy="-2.99" r="65.29" gradientUnits="userSpaceOnUse"><stop stop-color="#3771C8"/><stop offset=".13" stop-color="#3771C8"/><stop offset="1" stop-color="#6600FF" stop-opacity="0"/></radialGradient></defs><rect x="2" y="2" width="44" height="44" rx="14" fill="url(#ig1a_{{ $index }})"/><rect x="2" y="2" width="44" height="44" rx="14" fill="url(#ig2a_{{ $index }})"/><circle cx="24" cy="24" r="9" stroke="#fff" stroke-width="3"/><circle cx="35" cy="13" r="2" fill="#fff"/></svg>
+                            @else
+                            {{-- Facebook Logo --}}
+                            <svg class="w-9 h-9" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#1877F2"/><path d="M33.1 30.9l1.1-7h-6.7v-4.5c0-1.9.9-3.8 4-3.8h3.1v-6s-2.8-.5-5.5-.5c-5.6 0-9.3 3.4-9.3 9.6v5.3h-6.2v7h6.2V48.3a24.7 24.7 0 007.6 0V30.9h5.7z" fill="#fff"/></svg>
+                            @endif
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 truncate">{{ $chat->user_name ?? $chat->user_id ?? 'غير معروف' }}</p>
+                            <p class="text-xs text-gray-500">{{ $chat->updated_at?->format('Y-m-d H:i') ?? '-' }}</p>
+                        </div>
                     </div>
-                </div>
-            </button>
-            @endforeach
+                </button>
+                @endforeach
+            </div>
+            @endif
         </div>
     </div>
 
@@ -53,8 +105,14 @@
                     {{-- اسم المستخدم واسم الوكيل --}}
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-3">
-                            <div class="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center text-white font-bold text-lg shadow-inner">
-                                {{ mb_substr($chat->user_name ?? $chat->user_id, 0, 1) }}
+                            <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center">
+                                @if(Str::startsWith($chat->user_id, 'ig-'))
+                                {{-- Instagram Logo --}}
+                                <svg class="w-12 h-12" viewBox="0 0 48 48" fill="none"><defs><radialGradient id="igp_{{ $index }}" cx="19.38" cy="42.04" r="44.9" gradientUnits="userSpaceOnUse"><stop stop-color="#FD5"/><stop offset=".1" stop-color="#FD5"/><stop offset=".5" stop-color="#FF543E"/><stop offset="1" stop-color="#C837AB"/></radialGradient><radialGradient id="igp2_{{ $index }}" cx="11.79" cy="-2.99" r="65.29" gradientUnits="userSpaceOnUse"><stop stop-color="#3771C8"/><stop offset=".13" stop-color="#3771C8"/><stop offset="1" stop-color="#6600FF" stop-opacity="0"/></radialGradient></defs><rect x="2" y="2" width="44" height="44" rx="14" fill="url(#igp_{{ $index }})"/><rect x="2" y="2" width="44" height="44" rx="14" fill="url(#igp2_{{ $index }})"/><circle cx="24" cy="24" r="9" stroke="#fff" stroke-width="3"/><circle cx="35" cy="13" r="2" fill="#fff"/></svg>
+                                @else
+                                {{-- Facebook Logo --}}
+                                <svg class="w-12 h-12" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" fill="#1877F2"/><path d="M33.1 30.9l1.1-7h-6.7v-4.5c0-1.9.9-3.8 4-3.8h3.1v-6s-2.8-.5-5.5-.5c-5.6 0-9.3 3.4-9.3 9.6v5.3h-6.2v7h6.2V48.3a24.7 24.7 0 007.6 0V30.9h5.7z" fill="#fff"/></svg>
+                                @endif
                             </div>
                             <div class="flex flex-col gap-1">
                                 <div class="flex items-baseline gap-2">
