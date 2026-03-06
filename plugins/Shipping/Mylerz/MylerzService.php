@@ -155,6 +155,8 @@ class MylerzService implements ShippingProviderInterface
             'Neighborhood' => $zoneCode,
             'Address_Category' => config('plugins.mylerz.address_category', 'H'),
             'Currency' => 'EGP',
+            'Allow_Open_Package' => config('plugins.mylerz.allow_open_package', true),
+            'Save_In_Address_Book' => config('plugins.mylerz.save_in_address_book', true),
         ];
     }
 

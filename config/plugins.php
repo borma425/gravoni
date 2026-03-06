@@ -26,5 +26,7 @@ return [
         'address_category' => env('MYLERZ_ADDRESS_CATEGORY', 'H'),
         'default_zone' => env('MYLERZ_DEFAULT_ZONE', 'NASR'),
         'enabled' => env('MYLERZ_ENABLED', false),
+        'allow_open_package' => env('MYLERZ_ALLOW_OPEN_PACKAGE', true),
+        'save_in_address_book' => env('MYLERZ_SAVE_IN_ADDRESS_BOOK', true),
     ],
 ];
